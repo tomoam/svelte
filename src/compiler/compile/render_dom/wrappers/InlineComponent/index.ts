@@ -530,8 +530,9 @@ export default class InlineComponentWrapper extends Wrapper {
 				let nodes = parent_nodes;
 				if (has_css_custom_properties) {
 					nodes = block.get_unique_name(`${css_custom_properties_wrapper.name}_nodes`);
+					const create_element = "@element";
 					block.chunks.claim.push(b`
-						${css_custom_properties_wrapper} = @claim_element(${parent_nodes}, "DIV", { style: true })
+						${css_custom_properties_wrapper} = @claim_element(${parent_nodes}, "DIV", { style: true }, ${create_element})
 						var ${nodes} = @children(${css_custom_properties_wrapper});
 					`);
 				}

@@ -29,9 +29,9 @@ function create_fragment(ctx) {
 			this.h();
 		},
 		l(nodes) {
-			img = claim_element(nodes, "IMG", { src: true, alt: true });
+			img = claim_element(nodes, "IMG", { src: true, alt: true }, element);
 			t = claim_space(nodes);
-			div = claim_element(nodes, "DIV", {});
+			div = claim_element(nodes, "DIV", {}, element);
 			children(div).forEach(detach);
 			this.h();
 		},

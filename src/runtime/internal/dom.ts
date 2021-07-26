@@ -433,7 +433,7 @@ function claim_node<R extends ChildNodeEx>(nodes: ChildNodeArray, predicate: (no
 	return resultNode;
 }
 
-export function claim_element(nodes: ChildNodeArray, name: string, attributes: { [key: string]: boolean }, create_element: (name: string) => Element | SVGElement = element) {
+export function claim_element(nodes: ChildNodeArray, name: string, attributes: { [key: string]: boolean }, create_element: (name: string) => Element | SVGElement) {
 	return claim_node<Element | SVGElement>(
 		nodes,
 		(node: ChildNode): node is Element | SVGElement => node.nodeName === name,
