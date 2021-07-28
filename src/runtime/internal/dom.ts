@@ -350,6 +350,20 @@ export function time_ranges_to_array(ranges) {
 	return array;
 }
 
+export function make_renderer(html) {
+	const template = document.createElement('template');
+	template.innerHTML = html;
+  
+	const textNode = template.content.querySelectorAll('!');
+	for (let i = 0; i < textNode.length; i += 1) {
+	  textNode[i].replaceWith(text(""));
+	}
+	
+	return () => {
+	  return template.content.firstChild.cloneNode(true);
+	};
+}
+
 type ChildNodeEx = ChildNode & NodeEx;
 
 type ChildNodeArray = ChildNodeEx[] & {
