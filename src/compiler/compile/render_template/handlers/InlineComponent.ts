@@ -17,6 +17,12 @@ function get_prop_value(attribute) {
 }
 
 export default function(node: InlineComponent, renderer: Renderer, options: RenderOptions) {
+
+	if (options.generate && options.generate === 'template') {
+		renderer.add_string('<!>');
+		return;
+	}
+
 	const binding_props = [];
 	const binding_fns = [];
 

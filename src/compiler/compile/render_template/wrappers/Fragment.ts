@@ -21,6 +21,7 @@ import Block from '../Block';
 import { trim_start, trim_end } from '../../../utils/trim';
 import { link } from '../../../utils/link';
 import { Identifier } from 'estree';
+import TemplateRenderer from '../TemplateRenderer';
 
 const wrappers = {
 	AwaitBlock,
@@ -98,6 +99,7 @@ export default class FragmentWrapper {
 					if (should_trim) {
 						data = trim_end(data);
 						if (!data) continue;
+						child.data = data;
 					}
 				}
 
@@ -140,6 +142,55 @@ export default class FragmentWrapper {
 			}
 		}
 
+		if (this.nodes.length > 0 && (!parent || !(parent instanceof Element))) {
+			const frag_nodes = this.nodes.filter(n => !(n instanceof Head));
+			frag_nodes[0].template_index = renderer.component.get_unique_name('render').name;
+			frag_nodes[0].template = to_template_literal(
+					frag_nodes.map(n => n.node as INode),
+					renderer.component.name,
+					renderer.component.locate,
+					renderer.options
+				);
+		}
+
+		const filter = (node) => {
+			if (node instanceof Text) {
+				if (!node.parent) return true;
+
+				if (
+					node.next instanceof IfBlock || 
+					node.prev instanceof IfBlock ||
+					node.next instanceof EachBlock ||
+					node.prev instanceof EachBlock ||
+					node.next instanceof InlineComponent ||
+					node.prev instanceof InlineComponent ||
+					node.next instanceof MustacheTag
+				) {
+					return true;
+				}
+
+				if (renderer.options.hydratable) {
+					if (node.prev instanceof MustacheTag) {
+						return true;
+					}
+				}
+
+				return false;
+			}
+			return true;
+		};
+
+		this.nodes.filter((n) => !filter(n)).forEach((node) => {
+			if (node.prev) {
+				link(node.next, node.prev);
+			} else if (node.next) {
+				node.next.prev = null;
+				node.next = null;
+			}
+		});
+
+		this.nodes = this.nodes.filter(filter);
+
 		if (window_wrapper) {
 			this.nodes.unshift(window_wrapper);
 			link(last_child, window_wrapper);
@@ -151,4 +202,22 @@ export default class FragmentWrapper {
 			this.nodes[i].render(block, parent_node, parent_nodes);
 		}
 	}
+}
+
+function to_template_literal(nodes: INode[], name, locate, options) {
+
+	const templateRenderer = new TemplateRenderer({
+		name: name 
+	});
+	
+	// create $$render function
+	// templateRenderer.render((nodes.map(node => node.node) as INode[]), Object.assign({
+	templateRenderer.render((nodes), Object.assign({
+		locate: locate
+	}, options));
+	
+	// TODO put this inside the Renderer class
+	const templateLiteral = templateRenderer.pop();
+
+	return templateLiteral;
 }

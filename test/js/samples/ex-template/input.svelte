@@ -4,9 +4,9 @@
 </script>
 
 <section>
-  <div>
-	<input bind:value={name}>
-    <h1>Hello {name}!</h1>
-    <p>{description}</p>
-  </div>
+	<div class="test">
+		<input bind:value={name} />
+		<h1>Hello {name}!</h1>
+		<p>{description}</p>
+	</div>
 </section>

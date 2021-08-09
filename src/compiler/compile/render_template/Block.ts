@@ -2,7 +2,11 @@ import Renderer from './Renderer';
 import Wrapper from './wrappers/shared/Wrapper';
 import { b, x } from 'code-red';
 import { Node, Identifier, ArrayPattern } from 'estree';
+// import { Node, Identifier, ArrayPattern, TemplateLiteral } from 'estree';
 import { is_head } from './wrappers/shared/is_head';
+// import { trim } from '.';
+// import TemplateRenderer from './TemplateRenderer';
+// import { INode } from '../nodes/interfaces';
 
 export interface Bindings {
 	object: Identifier;
@@ -39,6 +43,9 @@ export default class Block {
 
 	bindings: Map<string, Bindings>;
 	binding_group_initialised: Set<string> = new Set();
+
+	// template_literal: TemplateLiteral[] = [];
+	// template_literal: TemplateElement[] = [];
 
 	chunks: {
 		declarations: Array<Node | Node[]>;
@@ -151,6 +158,10 @@ export default class Block {
 		}
 	}
 
+	//create_template_literals() {
+	//	this.template_literal = to_template_literals(this.renderer.fragment.nodes);
+	//}
+
 	add_dependencies(dependencies: Set<string>) {
 		dependencies.forEach(dependency => {
 			this.dependencies.add(dependency);
@@ -173,11 +184,15 @@ export default class Block {
 		this.chunks.create.push(b`${id} = ${render_statement};`);
 
 		if (this.renderer.options.hydratable) {
-			this.chunks.claim.push(b`${id} = ${claim_statement || render_statement};`);
+			if (parent_node) {
+				this.chunks.claim.push(b`if (!${parent_node}.ic) ${id} = ${claim_statement || render_statement};`);
+			} else {
+				this.chunks.claim.push(b`${id} = ${claim_statement || render_statement};`);
+			}
 		}
 
 		if (parent_node) {
-			this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
+			// this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
 			if (is_head(parent_node) && !no_detach) this.chunks.destroy.push(b`@detach(${id});`);
 		} else {
 			this.chunks.mount.push(b`@insert(#target, ${id}, #anchor);`);
@@ -262,6 +277,11 @@ export default class Block {
 		if (this.chunks.create.length === 0 && this.chunks.hydrate.length === 0) {
 			properties.create = noop;
 		} else {
+			if (this.renderer.options.hydratable) {
+				this.add_variable({ type: 'Identifier', name: '#cloned' });
+				this.chunks.create.push(b`#cloned = true`);
+			}
+
 			const hydrate = this.chunks.hydrate.length > 0 && (
 				this.renderer.options.hydratable
 					? b`this.h();`
@@ -278,6 +298,23 @@ export default class Block {
 			if (this.chunks.claim.length === 0 && this.chunks.hydrate.length === 0) {
 				properties.claim = noop;
 			} else {
+				// this.chunks.claim.unshift(b`
+				// 	console.log("this.l")
+				// 	#nodes.forEach((n1, i) => {
+				// 		console.log(i, n1.nodeName, n1.nodeValue);
+				// 		n1.childNodes.forEach((n2, j) => {
+				// 			console.log(i, j, n2.nodeName, n2.nodeValue);
+				// 		})
+				// 	});
+				// 	console.log("cloned", #cloned);
+				// 	if (!#cloned) this.c();
+				// 	console.log("nodes.length", #nodes.length);
+				// 	if (#nodes.length === 0) return;
+				// `);
+				this.chunks.claim.unshift(b`
+					if (!#cloned) this.c();
+					if (#nodes.length === 0) return;
+				`);
 				properties.claim = x`function #claim(#nodes) {
 					${this.chunks.claim}
 					${this.renderer.options.hydratable && this.chunks.hydrate.length > 0 && b`this.h();`}
@@ -438,15 +475,35 @@ export default class Block {
 		const args: any[] = [x`#ctx`];
 		if (key) args.unshift(key);
 
+		const body = [];
+
+		this.wrappers.forEach((node) => {
+			if (node.template) {
+				body.push(b`
+					const ${node.template_index} = @make_renderer(
+						${node.template}
+					)
+				`);
+			}
+		});
+
 		const fn = b`function ${this.name}(${args}) {
 			${this.get_contents(key)}
 		}`;
 
-		return this.comment
+		body.push(this.comment
 			? b`
 				// ${this.comment}
 				${fn}`
-			: fn;
+			: fn);
+
+		return body;
+
+		// return this.comment
+		// 	? b`
+		// 		// ${this.comment}
+		// 		${fn}`
+		// 	: fn;
 	}
 
 	render_listeners(chunk: string = '') {

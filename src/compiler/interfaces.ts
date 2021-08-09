@@ -122,7 +122,7 @@ export interface CompileOptions {
 	format?: ModuleFormat;
 	name?: string;
 	filename?: string;
-	generate?: 'dom' | 'ssr' | false;
+	generate?: 'dom' | 'ssr' | 'template' | false;
 	errorMode?: 'throw' | 'warn';
 	varsReport?: 'full' | 'strict' | false;
 

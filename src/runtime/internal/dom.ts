@@ -166,6 +166,7 @@ function append_stylesheet(node: ShadowRoot | Document, style: HTMLStyleElement)
 
 export function append_hydration(target: NodeEx, node: NodeEx) {
 	if (is_hydrating) {
+		// console.log("append_hydration is_hydrating");
 		init_hydrate(target);
 
 		if ((target.actual_end_child === undefined) || ((target.actual_end_child !== null) && (target.actual_end_child.parentElement !== target))) {
@@ -180,12 +181,14 @@ export function append_hydration(target: NodeEx, node: NodeEx) {
 		if (node !== target.actual_end_child) {
 			// We only insert if the ordering of this node should be modified or the parent node is not target
 			if (node.claim_order !== undefined || node.parentNode !== target) {
+				// console.log("append_hydration target.insertBefore");
 				target.insertBefore(node, target.actual_end_child);
 			}
 		} else {
 			target.actual_end_child = node.nextSibling;
 		}
 	} else if (node.parentNode !== target) {
+		// console.log("append_hydration target.appendChild");
 		target.appendChild(node);
 	}
 }
@@ -195,8 +198,12 @@ export function insert(target: Node, node: Node, anchor?: Node) {
 }
 
 export function insert_hydration(target: NodeEx, node: NodeEx, anchor?: NodeEx) {
-	if (is_hydrating && !anchor) {
-		append_hydration(target, node);
+	// console.log("insert_hydration:", target.nodeName, node.nodeName, anchor, is_hydrating)
+	// if (node.childNodes[0]) console.log("insert_hydration node.childNodes[0].nodeValue:", node.childNodes[0].nodeValue);
+	// if (is_hydrating && !anchor) {
+	// 	append_hydration(target, node);
+	if (is_hydrating && !anchor && node.parentNode !== target) {
+		target.appendChild(node);
 	} else if (node.parentNode !== target || node.nextSibling != anchor) {
 		target.insertBefore(node, anchor || null);
 	}
@@ -241,6 +248,34 @@ export function svg_element<K extends keyof SVGElementTagNameMap>(name: K): SVGE
 
 export function text(data: string) {
 	return document.createTextNode(data);
+}
+
+export function replace_text(elm: ChildNode, data: string) {
+	const textNode = text(data);
+	elm.replaceWith(textNode);
+	return textNode;
+}
+
+export function first_child(node: Node) {
+	return node.firstChild;
+}
+
+export function next_sibling(node: Node) {
+	return node.nextSibling;
+}
+
+export function first_element_child(node: Element) {
+	return node.firstElementChild;
+}
+
+export function next_element_sibling(node: Element) {
+	return node.nextElementSibling;
+}
+
+export function make_renderer(html) {
+	const template = document.createElement('template');
+	template.innerHTML = html;
+	return () => template.content.cloneNode(true);
 }
 
 export function space() {
@@ -350,19 +385,6 @@ export function time_ranges_to_array(ranges) {
 	return array;
 }
 
-export function make_renderer(html) {
-	const template = document.createElement('template');
-	template.innerHTML = html;
-  
-	const textNode = template.content.querySelectorAll('!');
-	for (let i = 0; i < textNode.length; i += 1) {
-	  textNode[i].replaceWith(text(""));
-	}
-	
-	return () => {
-	  return template.content.firstChild.cloneNode(true);
-	};
-}
 
 type ChildNodeEx = ChildNode & NodeEx;
 
@@ -381,6 +403,24 @@ type ChildNodeArray = ChildNodeEx[] & {
 
 export function children(element: Element) {
 	return Array.from(element.childNodes);
+}
+
+export function trim_children(element: Element) {
+	return trim(children(element));
+}
+
+function trim(nodes: ChildNode[]) {
+	if (nodes.length > 1) {
+		if (is_whitespace(nodes[0])) nodes.shift(); 
+
+		if (is_whitespace(nodes[nodes.length - 1])) nodes.pop();
+	}
+
+	return nodes;
+}
+
+function is_whitespace(node: ChildNode) {
+	return node.nodeType === 3 && !(node as Text).data.replace(/^\s+/, '');
 }
 
 function init_claim_info(nodes: ChildNodeArray) {
@@ -446,6 +486,39 @@ function claim_node<R extends ChildNodeEx>(nodes: ChildNodeArray, predicate: (no
 	return resultNode;
 }
 
+function claim_template_node<R extends ChildNodeEx>(ssr_node: ChildNode, nodes: ChildNodeArray, predicate: (node: ChildNodeEx) => node is R, processNode: (node: ChildNodeEx) => ChildNodeEx | undefined, createNode: () => R) {
+
+	// init_claim_info(nodes);
+
+	const resultNode = (() => {
+
+		// console.log("claim_template_node ssr_node:", ssr_node);
+		if (ssr_node) {
+			if (predicate(ssr_node)) {
+				// console.log("claim_template_node in first predicate");
+				return processNode(ssr_node);
+			} else if (is_whitespace(ssr_node)) {
+				const next_node = ssr_node.nextSibling;
+				// console.log("claim_template_node in is_whitespace next_node:", next_node);
+				if (nodes.length > 0) nodes.splice(0, 1);
+
+				if (predicate(next_node)) {
+					// console.log("claim_template_node in second predicate");
+					return processNode(next_node);
+				}
+			}
+		}
+		// console.log("claim_template_node before createNode");
+
+		// If we can't find any matching node, we create a new one
+		return createNode();
+	})();
+
+	// resultNode.claim_order = nodes.claim_info.total_claimed;
+	// nodes.claim_info.total_claimed += 1;
+	return resultNode;
+}
+
 export function claim_element(nodes: ChildNodeArray, name: string, attributes: {[key: string]: boolean}, svg) {
 	return claim_node<Element | SVGElement>(
 		nodes,
@@ -465,6 +538,57 @@ export function claim_element(nodes: ChildNodeArray, name: string, attributes: {
 	);
 }
 
+
+export function claim_template_element(template_node: Element, ssr_node: ChildNode, nodes: ChildNodeArray, target?: ChildNode) {
+	// console.log("claim_template_element:", "template_node:", template_node, "ssr_node:", ssr_node, "target", target);
+	// if (template_node.parentNode) {
+	// 	console.log(template_node.parentNode);
+	// 	console.log(template_node.parentNode.childNodes);
+	// }
+	// if (ssr_node.parentNode) {
+	// 	console.log(ssr_node.parentNode);
+	// 	console.log(ssr_node.parentNode.childNodes);
+	// }
+
+	// console.log("claim_template_element indexof:", Array.from(ssr_node.parentNode.childNodes.values()).indexOf(ssr_node));
+	// ssr_node.parentNode.childNodes.forEach((n1, i) => {
+	// 	console.log(i, n1.nodeName, n1.nodeValue);
+
+	// 	n1.childNodes.forEach((n2, j) => {
+	// 		console.log(i, j, n2.nodeName, n2.nodeValue);
+	// 	})
+
+	// })
+
+	return claim_template_node<Element | SVGElement>(
+		ssr_node,
+		nodes,
+		(node: ChildNode): node is Element | SVGElement => node.nodeName === template_node.nodeName,
+		(node: Element) => {
+			const remove = [];
+			for (let j = 0; j < node.attributes.length; j++) {
+				const attribute = node.attributes[j];
+				if (!template_node.attributes[attribute.name]) {
+					remove.push(attribute.name);
+				}
+			}
+			remove.forEach(v => node.removeAttribute(v));
+			if (nodes.length > 0) nodes.splice(0, 1);
+			return node;
+		},
+		() =>  {
+			// is cloned
+			type ElementTemplate = Element & {ic: boolean};
+
+			// console.log("claim_template_element createNode")
+			const node = template_node.cloneNode(true) as Element | SVGElement;
+			if (target) insert_hydration(target, node);
+			(node as ElementTemplate).ic = true;
+			return node;
+		}
+	);
+}
+
 export function claim_text(nodes: ChildNodeArray, data) {
 	return claim_node<Text>(
 		nodes,
@@ -481,6 +605,34 @@ export function claim_text(nodes: ChildNodeArray, data) {
 		},
 		() => text(data),
 		true	// Text nodes should not update last index since it is likely not worth it to eliminate an increasing subsequence of actual elements
+	);
+}
+
+export function claim_template_text(template_node: Text, ssr_node: ChildNode, nodes: ChildNodeArray, target?: ChildNode) {
+	// console.log("claim_template_text:", "template_node", template_node, "ssr_node", ssr_node, "target", target);
+	return claim_template_node<Text>(
+		ssr_node,
+		nodes,
+		(node: ChildNode): node is Text => node.nodeType === 3 && (node as Text).data.startsWith(template_node.data),
+		(node: Text) => {
+			// console.log("claim_template_text node.data:", node.data, "template_node.data:", template_node.data)
+			if (node.data.length !== template_node.data.length) {
+				// console.log("claim_template_text before splice(1, 0, node.splitText)")
+				nodes.splice(1, 0, node.splitText(template_node.data.length));
+			}
+			if (nodes.length > 0) nodes.splice(0, 1);
+			return node;
+		},
+		() => {
+			// console.log("claim_template_text createText")
+			const node = (template_node as ChildNode).cloneNode(true) as Text
+			if (ssr_node && (ssr_node.nodeType === 3 || ssr_node.nodeType === 8)) {
+				ssr_node.replaceWith(node);
+			} else if (target) {
+				insert_hydration(target, node);
+			}
+			return node;
+		},
 	);
 }
 

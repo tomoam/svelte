@@ -10,12 +10,10 @@ import { ClassDeclaration, FunctionExpression, Node, Statement, ObjectExpression
 import { apply_preprocessor_sourcemap } from '../../utils/mapped_code';
 import { RawSourceMap, DecodedSourceMap } from '@ampproject/remapping/dist/types/types';
 import { flatten } from '../../utils/flatten';
-import Element from '../nodes/Element';
 import { INode as TemplateNode } from '../nodes/interfaces'; // TODO
-import TemplateRenderer from './TemplateRenderer';
 import Text from '../nodes/Text';
 
-export default function dom(
+export default function template(
 	component: Component,
 	options: CompileOptions
 ): { js: Node[]; css: CssResult } {
@@ -64,12 +62,23 @@ export default function dom(
 	// TODO the deconflicted names of blocks are reversed... should set them here
 	const blocks = renderer.blocks.slice().reverse();
 
-	body.push(...blocks.map(block => {
-		// TODO this is a horrible mess — renderer.blocks
-		// contains a mixture of Blocks and Nodes
-		if ((block as Block).render) return (block as Block).render();
-		return block;
-	}));
+	// body.push(...blocks.map(block => {
+	// 	// TODO this is a horrible mess — renderer.blocks
+	// 	// contains a mixture of Blocks and Nodes
+	// 	if ((block as Block).render) return (block as Block).render();
+	// 	return block;
+	// }));
+
+	blocks.forEach(blk => {
+		if ((blk as Block).render) {
+			const blk_bodies = (blk as Block).render();
+			blk_bodies.forEach(blk_body => {
+				body.push(blk_body);
+			});
+		} else {
+			body.push(blk);
+		}
+	});
 
 	if (options.dev && !options.hydratable) {
 		block.chunks.claim.push(
@@ -277,39 +286,6 @@ export default function dom(
 		});
 	}
 
-	const templateRenderer = new TemplateRenderer({
-		name: component.name
-	});
-
-	// create $$render function
-	templateRenderer.render(trim(component.fragment.children), Object.assign({
-		locate: component.locate
-	}, options));
-
-	// TODO put this inside the Renderer class
-	const templateLiteral = templateRenderer.pop();
-
-	console.log(templateLiteral);
-
-	if (component.ast.html) {
-
-		walk(component.ast.html, {
-			enter(node: Element | TemplateNode) {
-				// console.log("enter");
-				if (node.type === 'Element') {
-					console.log(`<${node.name}>`)
-				}
-			},
-
-			leave(node: Element | TemplateNode) {
-				// console.log("leave");
-				if (node.type === 'Element') {
-					console.log(`</${node.name}>`)
-				}
-			}
-		});
-	}
-
 	const args = [x`$$self`];
 	const has_invalidate = props.length > 0 ||
 		component.has_reactive_assignments ||
@@ -325,11 +301,16 @@ export default function dom(
 
 	const has_create_fragment = component.compile_options.dev || block.has_content();
 	if (has_create_fragment) {
-		body.push(b`
-			const render = @make_renderer(
-				\`<section><div><input /><h1>Hello <!>!</h1><p><!></p></div></section>\`
-			)
-		`);
+
+		renderer.fragment.nodes.forEach((node) => {
+			if (node.template) {
+				body.push(b`
+					const ${node.template_index} = @make_renderer(
+						${node.template}
+					)
+				`);
+			}
+		});
 
 		body.push(b`
 			function create_fragment(#ctx) {
@@ -603,7 +584,7 @@ export default function dom(
 	return { js: flatten(body), css };
 }
 
-function trim(nodes: TemplateNode[]) {
+export function trim(nodes: TemplateNode[]) {
 	let start = 0;
 	for (; start < nodes.length; start += 1) {
 		const node = nodes[start] as Text;

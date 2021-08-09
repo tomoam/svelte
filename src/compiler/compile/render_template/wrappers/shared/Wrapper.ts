@@ -2,7 +2,7 @@ import Renderer from '../../Renderer';
 import Block from '../../Block';
 import { x } from 'code-red';
 import { TemplateNode } from '../../../../interfaces';
-import { Identifier } from 'estree';
+import { Identifier, TemplateLiteral } from 'estree';
 
 export default class Wrapper {
 	renderer: Renderer;
@@ -15,6 +15,9 @@ export default class Wrapper {
 	var: Identifier;
 	can_use_innerhtml: boolean;
 	is_static_content: boolean;
+
+	template_index: string;
+	template: TemplateLiteral;
 
 	constructor(
 		renderer: Renderer,

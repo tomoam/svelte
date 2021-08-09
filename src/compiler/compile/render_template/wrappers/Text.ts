@@ -4,6 +4,9 @@ import Text from '../../nodes/Text';
 import Wrapper from './shared/Wrapper';
 import { x } from 'code-red';
 import { Identifier } from 'estree';
+import IfBlockWrapper from './IfBlock';
+import EachBlockWrapper from './EachBlock';
+import InlineComponentWrapper from './InlineComponent';
 
 export default class TextWrapper extends Wrapper {
 	node: Text;
@@ -40,23 +43,48 @@ export default class TextWrapper extends Wrapper {
 		return true;
 	}
 
-	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
-		if (this.skip) return;
-		const use_space = this.use_space();
+	get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, target?: Identifier | string) {
+		if (target) {
+			return x`@claim_template_text(${template_node}, ${ssr_node}, [], ${target})`;
+		} else {
+			return x`@claim_template_text(${template_node}, ${ssr_node}, #nodes)`;
+		}
+	}
 
-		const string_literal = {
-			type: 'Literal',
-			value: this.data,
-			loc: {
-				start: this.renderer.locate(this.node.start),
-				end: this.renderer.locate(this.node.end)
+	render(block: Block, parent_node: Identifier, _parent_nodes: Identifier) {
+		if (this.skip) return;
+
+		let render_statement;
+		let claim_statement;
+		if (this.template_index) {
+			render_statement = x`@first_child(${this.template_index}())`;
+			claim_statement = this.get_claim_template_statement(this.var, "nodes[0]");
+		} else {
+			if (
+				this.prev instanceof IfBlockWrapper ||
+				this.prev instanceof EachBlockWrapper ||
+				this.prev instanceof InlineComponentWrapper
+			) {
+				if (this.prev.prev) {
+					render_statement = x`@next_sibling(next_sibling(${this.prev.prev.var}))`;
+				} else if (this.prev.parent) {
+					render_statement = x`@next_sibling(first_child(${this.prev.parent.var}))`;
+				} else {
+					render_statement = x`@next_sibling(first_child(${this.prev.template_index}()))`;
+				}
+			} else if (this.prev) {
+				render_statement = x`@next_sibling(${this.prev.var})`;
+			} else {
+				render_statement = x`@first_child(${parent_node})`;
 			}
-		};
+
+			claim_statement = this.get_claim_template_statement(this.var, render_statement, parent_node);
+		}
 
 		block.add_element(
 			this.var,
-			use_space ? x`@space()` : x`@text(${string_literal})`,
-			parent_nodes && (use_space ? x`@claim_space(${parent_nodes})` : x`@claim_text(${parent_nodes}, ${string_literal})`),
+			render_statement,
+			claim_statement,
 			parent_node as Identifier
 		);
 	}

@@ -435,7 +435,7 @@ export default class InlineComponentWrapper extends Wrapper {
 
 			block.chunks.mount.push(b`
 				if (${name}) {
-					@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? 'null' : '#anchor'});
+					@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? this.next ? this.next.var : 'null' : '#anchor'});
 				}
 			`);
 
@@ -535,8 +535,11 @@ export default class InlineComponentWrapper extends Wrapper {
 						var ${nodes} = @children(${css_custom_properties_wrapper});
 					`);
 				}
+				// block.chunks.claim.push(
+				// 	b`@claim_component(${name}.$$.fragment, ${nodes});`
+				// );
 				block.chunks.claim.push(
-					b`@claim_component(${name}.$$.fragment, ${nodes});`
+					b`@claim_component(${name}.$$.fragment, ${parent_nodes ? parent_nodes : nodes});`
 				);
 			}
 
@@ -555,7 +558,7 @@ export default class InlineComponentWrapper extends Wrapper {
 				block.chunks.mount.push(b`@mount_component(${name}, ${css_custom_properties_wrapper}, null);`);
 			} else {
 				block.chunks.mount.push(
-					b`@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? 'null' : '#anchor'});`
+					b`@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? this.next ? this.next.var : 'null' : '#anchor'});`
 				);
 			}
 

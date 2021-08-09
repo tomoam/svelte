@@ -81,20 +81,36 @@ export default function(node: Element, renderer: Renderer, options: RenderOption
 				attribute.chunks[0].type !== 'Text'
 			) {
 				// a boolean attribute with one non-Text chunk
-				renderer.add_string(' ');
-				renderer.add_expression(x`${(attribute.chunks[0] as Expression).node} ? "${attr_name}" : ""`);
+				// renderer.add_string(' ');
+				// renderer.add_expression(x`${(attribute.chunks[0] as Expression).node} ? "${attr_name}" : ""`);
 			} else if (name === 'class' && class_expression) {
 				add_class_attribute = false;
 				renderer.add_string(` ${attr_name}="`);
 				renderer.add_expression(x`[${get_class_attribute_value(attribute)}, ${class_expression}].join(' ').trim()`);
 				renderer.add_string('"');
-			} else if (attribute.chunks.length === 1 && attribute.chunks[0].type !== 'Text') {
-				const snippet = (attribute.chunks[0] as Expression).node;
-				renderer.add_expression(x`@add_attribute("${attr_name}", ${snippet}, ${boolean_attributes.has(name) ? 1 : 0})`);
-			} else {
+			// } else if (attribute.chunks.length === 1 && attribute.chunks[0].type !== 'Text') {
+			// 	const snippet = (attribute.chunks[0] as Expression).node;
+			// 	renderer.add_expression(x`@add_attribute("${attr_name}", ${snippet}, ${boolean_attributes.has(name) ? 1 : 0})`);
+			} else if (attribute.is_static) {
 				renderer.add_string(` ${attr_name}="`);
-				renderer.add_expression((name === 'class' ? get_class_attribute_value : get_attribute_value)(attribute));
+				attribute.chunks.forEach((chunk) => {
+					if (chunk.type === 'Text') {
+						renderer.add_string(chunk.data.replace(/"/g, '&quot;'))
+					}
+				})
 				renderer.add_string('"');
+			} else {
+				// renderer.add_string(` ${attr_name}="`);
+				// // renderer.add_expression((name === 'class' ? get_class_attribute_value : get_attribute_value)(attribute));
+				// attribute.chunks
+				// 	.map((chunk) => {
+				// 		console.log("chunk");
+				// 		console.log({chunk});
+				// 		return chunk.type === 'Text'
+				// 			? renderer.add_string(chunk.data.replace(/"/g, '&quot;'))
+				// 			: renderer.add_string("<!>")
+				// 	});
+				// renderer.add_string('"');
 			}
 		});
 		if (add_class_attribute) {
@@ -128,9 +144,11 @@ export default function(node: Element, renderer: Renderer, options: RenderOption
 			node_contents = x`${snippet} || ""`;
 		} else if (binding.name === 'value' && node.name === 'select') {
 			// NOTE: do not add "value" attribute on <select />
+		} else if (binding.name === 'value' && node.name === 'input') {
+			// NOTE: do not add "value" attribute on <input /> here. add it when m() with set_input_value.
 		} else {
-			const snippet = expression.node;
-			renderer.add_expression(x`@add_attribute("${name}", ${snippet}, ${boolean_attributes.has(name) ? 1 : 0})`);
+			// const snippet = expression.node;
+			// renderer.add_expression(x`@add_attribute("${name}", ${snippet}, ${boolean_attributes.has(name) ? 1 : 0})`);
 		}
 	});
 

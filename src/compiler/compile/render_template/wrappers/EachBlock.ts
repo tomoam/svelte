@@ -365,7 +365,7 @@ export default class EachBlockWrapper extends Wrapper {
 		parent_node,
 		parent_nodes,
 		snippet,
-		initial_anchor_node,
+		// initial_anchor_node,
 		initial_mount_node,
 		update_anchor_node,
 		update_mount_node
@@ -374,7 +374,7 @@ export default class EachBlockWrapper extends Wrapper {
 		parent_node: Identifier;
 		parent_nodes: Identifier;
 		snippet: Node;
-		initial_anchor_node: Identifier;
+		// initial_anchor_node: Identifier;
 		initial_mount_node: Identifier;
 		update_anchor_node: Identifier;
 		update_mount_node: Identifier;
@@ -431,7 +431,7 @@ export default class EachBlockWrapper extends Wrapper {
 
 		block.chunks.mount.push(b`
 			for (let #i = 0; #i < ${view_length}; #i += 1) {
-				${iterations}[#i].m(${initial_mount_node}, ${initial_anchor_node});
+				${iterations}[#i].m(${initial_mount_node}, ${update_anchor_node});
 			}
 		`);
 
@@ -480,7 +480,7 @@ export default class EachBlockWrapper extends Wrapper {
 		block,
 		parent_nodes,
 		snippet,
-		initial_anchor_node,
+		// initial_anchor_node,
 		initial_mount_node,
 		update_anchor_node,
 		update_mount_node
@@ -488,7 +488,7 @@ export default class EachBlockWrapper extends Wrapper {
 		block: Block;
 		parent_nodes: Identifier;
 		snippet: Node;
-		initial_anchor_node: Identifier;
+		// initial_anchor_node: Identifier;
 		initial_mount_node: Identifier;
 		update_anchor_node: Identifier;
 		update_mount_node: Identifier;
@@ -516,6 +516,15 @@ export default class EachBlockWrapper extends Wrapper {
 		`);
 
 		if (parent_nodes && this.renderer.options.hydratable) {
+			// block.chunks.claim.push(b`
+			// 	for (let #i = 0; #i < ${view_length}; #i += 1) {
+			// 		console.log("in for statement : parent_nodes.length:", ${parent_nodes}.length);
+			// 		console.log("in for statement : parent_nodes:", ${parent_nodes});
+			// 		if (${parent_nodes}[0].childNodes[0]) console.log("in for statement : parent_nodes[0].childNodes[0].nodeValue", ${parent_nodes}[0].childNodes[0].nodeValue);
+			// 		if (${parent_nodes}[1].childNodes[0]) console.log("in for statement : parent_nodes[1].childNodes[0].nodeValue", ${parent_nodes}[1].childNodes[0].nodeValue);
+			// 		${iterations}[#i].l(${parent_nodes});
+			// 	}
+			// `);
 			block.chunks.claim.push(b`
 				for (let #i = 0; #i < ${view_length}; #i += 1) {
 					${iterations}[#i].l(${parent_nodes});
@@ -525,7 +534,7 @@ export default class EachBlockWrapper extends Wrapper {
 
 		block.chunks.mount.push(b`
 			for (let #i = 0; #i < ${view_length}; #i += 1) {
-				${iterations}[#i].m(${initial_mount_node}, ${initial_anchor_node});
+				${iterations}[#i].m(${initial_mount_node}, ${update_anchor_node});
 			}
 		`);
 

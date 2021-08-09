@@ -4,7 +4,8 @@ import Wrapper from '../shared/Wrapper';
 import Block from '../../Block';
 import { is_void } from '../../../../utils/names';
 import FragmentWrapper from '../Fragment';
-import { escape_html, string_literal } from '../../../utils/stringify';
+// import { escape_html, string_literal } from '../../../utils/stringify';
+import { escape_html } from '../../../utils/stringify';
 import TextWrapper from '../Text';
 import fix_attribute_casing from './fix_attribute_casing';
 import { b, x, p } from 'code-red';
@@ -26,6 +27,9 @@ import Action from '../../../nodes/Action';
 import MustacheTagWrapper from '../MustacheTag';
 import RawMustacheTagWrapper from '../RawMustacheTag';
 import is_dynamic from '../shared/is_dynamic';
+import EachBlockWrapper from '../EachBlock';
+import InlineComponentWrapper from '../InlineComponent';
+// import EachBlock from '../EachBlock';
 
 interface BindingGroup {
 	events: string[];
@@ -236,7 +240,6 @@ export default class ElementWrapper extends Wrapper {
 
 		const node = this.var;
 		const nodes = parent_nodes && block.get_unique_name(`${this.var.name}_nodes`); // if we're in unclaimable territory, i.e. <head>, parent_nodes is null
-		const children = x`@children(${this.node.name === 'template' ? x`${node}.content` : node})`;
 
 		block.add_variable(node);
 		const render_statement = this.get_render_statement(block);
@@ -245,30 +248,43 @@ export default class ElementWrapper extends Wrapper {
 		);
 
 		if (renderer.options.hydratable) {
-			if (parent_nodes) {
-				block.chunks.claim.push(b`
-					${node} = ${this.get_claim_statement(parent_nodes)};
-				`);
-
-				if (!this.void && this.node.children.length > 0) {
-					block.chunks.claim.push(b`
-						var ${nodes} = ${children};
-					`);
-				}
+			let claim_statement;
+			if (this.template_index) {
+				claim_statement = this.get_claim_template_statement(node, "nodes[0]");
+			} else if (this.parent) {
+				claim_statement = this.get_claim_template_statement(node, render_statement, this.parent.var);
 			} else {
-				block.chunks.claim.push(
-					b`${node} = ${render_statement};`
-				);
+				claim_statement = this.get_claim_template_statement(node, render_statement);
+			}
+			if (parent_node) {
+				// is cloned
+				block.chunks.claim.push(b`
+					if (!${parent_node}.ic) ${node} = ${claim_statement};
+				`);
+			} else {
+				block.chunks.claim.push(b`
+					${node} = ${claim_statement};
+				`);
+			}
+
+			if (!this.void && this.node.children.length > 0 &&
+				this.fragment.nodes.some(n => 
+					n instanceof EachBlockWrapper || n instanceof InlineComponentWrapper
+			)) {
+				const children = this.node.name === 'template' ? x`@children(${node}.content)` : x`@children(${node})`;
+				block.chunks.claim.push(b`
+					var ${nodes} = ${children};
+				`);
 			}
 		}
 
 		if (parent_node) {
-			const append = b`@append(${parent_node}, ${node});`;
-			((append[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
-				start: this.renderer.locate(this.node.start),
-				end: this.renderer.locate(this.node.end)
-			};
-			block.chunks.mount.push(append);
+			//const append = b`@append(${parent_node}, ${node});`;
+			//((append[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
+			//	start: this.renderer.locate(this.node.start),
+			//	end: this.renderer.locate(this.node.end)
+			//};
+			//block.chunks.mount.push(append);
 
 			if (is_head(parent_node)) {
 				block.chunks.destroy.push(b`@detach(${node});`);
@@ -290,9 +306,9 @@ export default class ElementWrapper extends Wrapper {
 		const can_use_textcontent = this.can_use_textcontent();
 		if (!this.node.namespace && (this.can_use_innerhtml || can_use_textcontent) && this.fragment.nodes.length > 0) {
 			if (this.fragment.nodes.length === 1 && this.fragment.nodes[0].node.type === 'Text') {
-				block.chunks.create.push(
-					b`${node}.textContent = ${string_literal((this.fragment.nodes[0] as TextWrapper).data)};`
-				);
+				//block.chunks.create.push(
+				//	b`${node}.textContent = ${string_literal((this.fragment.nodes[0] as TextWrapper).data)};`
+				//);
 			} else {
 				const state = {
 					quasi: {
@@ -342,11 +358,11 @@ export default class ElementWrapper extends Wrapper {
 		this.add_classes(block);
 		this.add_manual_style_scoping(block);
 
-		if (nodes && this.renderer.options.hydratable && !this.void) {
-			block.chunks.claim.push(
-				b`${this.node.children.length > 0 ? nodes : children}.forEach(@detach);`
-			);
-		}
+		// if (nodes && this.renderer.options.hydratable && !this.void) {
+		// 	block.chunks.claim.push(
+		// 		b`${this.node.children.length > 0 ? nodes : children}.forEach(@detach);`
+		// 	);
+		// }
 
 		if (renderer.options.dev) {
 			const loc = renderer.locate(this.node.start);
@@ -361,6 +377,22 @@ export default class ElementWrapper extends Wrapper {
 	}
 
 	get_render_statement(block: Block) {
+		if (this.template_index) {
+			return x`@first_child(${this.template_index}())`;
+		}
+
+		if (this.parent && !this.prev) {
+			return x`@first_element_child(${this.parent.var.name})`;
+		}
+
+		if (this.prev) {
+			if (this.prev.node.type === "Element") {
+				return x`@next_element_sibling(${this.prev.var.name})`;
+			} else {
+				return x`@next_sibling(${this.prev.var.name})`;
+			}
+		}
+
 		const { name, namespace } = this.node;
 
 		if (namespace === namespaces.svg) {
@@ -391,6 +423,14 @@ export default class ElementWrapper extends Wrapper {
 		const svg = this.node.namespace === namespaces.svg ? 1 : null;
 
 		return x`@claim_element(${nodes}, "${name}", { ${attributes} }, ${svg})`;
+	}
+
+	get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, target?: Identifier | string) {
+		if (target) {
+			return x`@claim_template_element(${template_node}, ${ssr_node}, [], ${target})`;
+		} else {
+			return x`@claim_template_element(${template_node}, ${ssr_node}, #nodes)`;
+		}
 	}
 
 	add_directives_in_order (block: Block) {

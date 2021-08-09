@@ -2,36 +2,43 @@
 import {
 	SvelteComponent,
 	detach,
+	first_child,
+	first_element_child,
 	init,
 	insert,
 	listen,
 	make_renderer,
+	next_element_sibling,
+	next_sibling,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data,
 	set_input_value
 } from "svelte/internal";
 
-const render = make_renderer(`<section><div><input /><h1>Hello <!>!</h1><p><!></p></div></section>`);
+const render = make_renderer(`<section><div class="test"><input> <h1>Hello <!>!</h1> <p><!></p></div></section>`);
 
 function create_fragment(ctx) {
 	let section;
 	let div;
 	let input;
 	let h1;
-	let t0;
+	let t1;
+	let t2;
 	let p;
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			section = render();
-			div = section.firstChild;
-			input = div.firstChild;
-			h1 = input.nextSibling;
-			t0 = h1.firstChild;
-			p = h1.nextSibling;
+			section = first_child(render());
+			div = first_element_child(section);
+			input = first_element_child(div);
+			h1 = next_element_sibling(input);
+			t1 = first_child(h1);
+			t2 = replace_text(next_sibling(t1), /*name*/ ctx[0]);
+			p = next_element_sibling(h1);
 			p.textContent = `${description}`;
 		},
 		m(target, anchor) {
@@ -48,7 +55,7 @@ function create_fragment(ctx) {
 				set_input_value(input, /*name*/ ctx[0]);
 			}
 
-			if (dirty & /*name*/ 1) set_data(t0, /*name*/ ctx[0]);
+			if (dirty & /*name*/ 1) set_data(t2, /*name*/ ctx[0]);
 		},
 		i: noop,
 		o: noop,

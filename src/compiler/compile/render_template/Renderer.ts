@@ -7,6 +7,7 @@ import { Node, Identifier, MemberExpression, Literal, Expression, BinaryExpressi
 import flatten_reference from '../utils/flatten_reference';
 import { reserved_keywords } from '../utils/reserved_keywords';
 import { renderer_invalidate } from './invalidate';
+import { trim } from '.';
 
 interface ContextMember {
 	name: string;
@@ -85,7 +86,7 @@ export default class Renderer {
 		this.fragment = new FragmentWrapper(
 			this,
 			this.block,
-			component.fragment.children,
+			trim(component.fragment.children),
 			null,
 			true,
 			null
