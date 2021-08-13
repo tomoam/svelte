@@ -22,6 +22,7 @@ import { trim_start, trim_end } from '../../../utils/trim';
 import { link } from '../../../utils/link';
 import { Identifier } from 'estree';
 import TemplateRenderer from '../TemplateRenderer';
+import is_dynamic_wrapper from './shared/is_dynamic_wrapper';
 
 const wrappers = {
 	AwaitBlock,
@@ -66,6 +67,7 @@ export default class FragmentWrapper {
 
 		let last_child: Wrapper;
 		let window_wrapper;
+		let head_wrappers: Head[] = [];
 
 		let i = nodes.length;
 		while (i--) {
@@ -83,6 +85,12 @@ export default class FragmentWrapper {
 			// <svelte:window/>. lil hacky but it works
 			if (child.type === 'Window') {
 				window_wrapper = new Window(renderer, block, parent, child);
+				continue;
+			}
+
+			if (child.type === 'Head') {
+				const head_wrapper = new Head(renderer, block, parent, child, strip_whitespace, last_child || next_sibling);
+				head_wrappers.push(head_wrapper);
 				continue;
 			}
 
@@ -131,6 +139,7 @@ export default class FragmentWrapper {
 
 			if (first && first.node.type === 'Text') {
 				first.data = trim_start(first.data);
+				first.node.data = first.data;
 				if (!first.data) {
 					first.var = null;
 					this.nodes.shift();
@@ -142,39 +151,22 @@ export default class FragmentWrapper {
 			}
 		}
 
-		if (this.nodes.length > 0 && (!parent || !(parent instanceof Element))) {
-			const frag_nodes = this.nodes.filter(n => !(n instanceof Head));
-			frag_nodes[0].template_index = renderer.component.get_unique_name('render').name;
-			frag_nodes[0].template = to_template_literal(
-					frag_nodes.map(n => n.node as INode),
-					renderer.component.name,
-					renderer.component.locate,
-					renderer.options
-				);
+		if (this.nodes.length > 0 && !(parent instanceof Element) && !(parent instanceof Head)) {
+			create_template(this.nodes[0], this.nodes, renderer);
 		}
 
 		const filter = (node) => {
 			if (node instanceof Text) {
-				if (!node.parent) return true;
-
-				if (
-					node.next instanceof IfBlock || 
-					node.prev instanceof IfBlock ||
-					node.next instanceof EachBlock ||
-					node.prev instanceof EachBlock ||
-					node.next instanceof InlineComponent ||
-					node.prev instanceof InlineComponent ||
-					node.next instanceof MustacheTag
+				if (!node.parent ||
+					node.parent instanceof Slot ||
+					node.parent instanceof SlotTemplate ||
+					is_dynamic_wrapper(node.next) ||
+					is_dynamic_wrapper(node.prev) ||
+					node.next instanceof MustacheTag ||
+					(node.prev instanceof MustacheTag && renderer.options.hydratable)
 				) {
 					return true;
 				}
-
-				if (renderer.options.hydratable) {
-					if (node.prev instanceof MustacheTag) {
-						return true;
-					}
-				}
-
 				return false;
 			}
 			return true;
@@ -191,6 +183,13 @@ export default class FragmentWrapper {
 
 		this.nodes = this.nodes.filter(filter);
 
+		head_wrappers.forEach((head_node) => {
+			const frag_nodes = head_node.fragment.nodes.filter(n => !(n instanceof Title));
+			create_template(head_node, frag_nodes, renderer);
+			this.nodes.unshift(head_node);
+			link(last_child, head_node);
+		});
+
 		if (window_wrapper) {
 			this.nodes.unshift(window_wrapper);
 			link(last_child, window_wrapper);
@@ -204,6 +203,18 @@ export default class FragmentWrapper {
 	}
 }
 
+function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
+	node.template_index = renderer.component.get_unique_name('render').name;
+	// console.log("FragmentWrapper crete_template node.node.type", node.node.type);
+	// console.log("FragmentWrapper crete_template node.template_index", node.template_index);
+	node.template = to_template_literal(
+			nodes.map(n => n.node as INode),
+			renderer.component.name,
+			renderer.component.locate,
+			renderer.options
+		);
+}
+
 function to_template_literal(nodes: INode[], name, locate, options) {
 
 	const templateRenderer = new TemplateRenderer({
@@ -211,7 +222,6 @@ function to_template_literal(nodes: INode[], name, locate, options) {
 	});
 	
 	// create $$render function
-	// templateRenderer.render((nodes.map(node => node.node) as INode[]), Object.assign({
 	templateRenderer.render((nodes), Object.assign({
 		locate: locate
 	}, options));

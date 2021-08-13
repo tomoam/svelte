@@ -46,6 +46,7 @@ function create_if_block(ctx) {
 	let span;
 	let input;
 	let t2;
+	let fragment;
 	let if_block_anchor;
 	let mounted;
 	let dispose;
@@ -57,6 +58,7 @@ function create_if_block(ctx) {
 			input = next_element_sibling(span);
 			t2 = next_sibling(input);
 			if (if_block) if_block.c();
+			fragment = replace_component(if_block, next_sibling(t2));
 			if_block_anchor = empty();
 		},
 		m(target, anchor) {

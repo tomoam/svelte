@@ -303,7 +303,9 @@ export default function template(
 	if (has_create_fragment) {
 
 		renderer.fragment.nodes.forEach((node) => {
+		// block.wrappers.reverse().forEach((node) => {
 			if (node.template) {
+				// console.log("render_template index in has_crete_fragment", node.template_index);
 				body.push(b`
 					const ${node.template_index} = @make_renderer(
 						${node.template}

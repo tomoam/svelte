@@ -29,6 +29,7 @@ import RawMustacheTagWrapper from '../RawMustacheTag';
 import is_dynamic from '../shared/is_dynamic';
 import EachBlockWrapper from '../EachBlock';
 import InlineComponentWrapper from '../InlineComponent';
+import IfBlockWrapper from '../IfBlock';
 // import EachBlock from '../EachBlock';
 
 interface BindingGroup {
@@ -242,7 +243,7 @@ export default class ElementWrapper extends Wrapper {
 		const nodes = parent_nodes && block.get_unique_name(`${this.var.name}_nodes`); // if we're in unclaimable territory, i.e. <head>, parent_nodes is null
 
 		block.add_variable(node);
-		const render_statement = this.get_render_statement(block);
+		const render_statement = this.get_render_statement(block, parent_node);
 		block.chunks.create.push(
 			b`${node} = ${render_statement};`
 		);
@@ -250,13 +251,16 @@ export default class ElementWrapper extends Wrapper {
 		if (renderer.options.hydratable) {
 			let claim_statement;
 			if (this.template_index) {
-				claim_statement = this.get_claim_template_statement(node, "nodes[0]");
-			} else if (this.parent) {
-				claim_statement = this.get_claim_template_statement(node, render_statement, this.parent.var);
+				claim_statement = this.get_claim_template_statement(node, "nodes[0]", parent_nodes || "#nodes", parent_node);
+			} else if (is_head(parent_node)) {
+				claim_statement = this.get_claim_template_statement(node, `${parent_nodes.name}[0]`, parent_nodes || "#nodes", parent_node);
+			} else if (parent_node) {
+				const trim_parent_nodes = this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes;
+				claim_statement = this.get_claim_template_statement(node, render_statement, trim_parent_nodes, parent_node);
 			} else {
-				claim_statement = this.get_claim_template_statement(node, render_statement);
+				claim_statement = this.get_claim_template_statement(node, render_statement, "#nodes");
 			}
-			if (parent_node) {
+			if (parent_node && !is_head(parent_node)) {
 				// is cloned
 				block.chunks.claim.push(b`
 					if (!${parent_node}.ic) ${node} = ${claim_statement};
@@ -267,10 +271,16 @@ export default class ElementWrapper extends Wrapper {
 				`);
 			}
 
-			if (!this.void && this.node.children.length > 0 &&
-				this.fragment.nodes.some(n => 
-					n instanceof EachBlockWrapper || n instanceof InlineComponentWrapper
-			)) {
+			if (!this.void &&
+				(
+					this.node.children.length > 1 ||
+					this.fragment.nodes.some(n => 
+						n instanceof IfBlockWrapper ||
+						n instanceof EachBlockWrapper ||
+						n instanceof InlineComponentWrapper
+					)
+				)
+			) {
 				const children = this.node.name === 'template' ? x`@children(${node}.content)` : x`@children(${node})`;
 				block.chunks.claim.push(b`
 					var ${nodes} = ${children};
@@ -279,13 +289,12 @@ export default class ElementWrapper extends Wrapper {
 		}
 
 		if (parent_node) {
-			//const append = b`@append(${parent_node}, ${node});`;
-			//((append[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
-			//	start: this.renderer.locate(this.node.start),
-			//	end: this.renderer.locate(this.node.end)
-			//};
-			//block.chunks.mount.push(append);
-
+			// const append = b`@append(${parent_node}, ${node});`;
+			// ((append[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
+			// 	start: this.renderer.locate(this.node.start),
+			// 	end: this.renderer.locate(this.node.end)
+			// };
+			// block.chunks.mount.push(append);
 			if (is_head(parent_node)) {
 				block.chunks.destroy.push(b`@detach(${node});`);
 			}
@@ -376,20 +385,18 @@ export default class ElementWrapper extends Wrapper {
 		return this.is_static_content && this.fragment.nodes.every(node => node.node.type === 'Text' || node.node.type === 'MustacheTag');
 	}
 
-	get_render_statement(block: Block) {
+	get_render_statement(block: Block, parent_node: Identifier) {
 		if (this.template_index) {
 			return x`@first_child(${this.template_index}())`;
-		}
-
-		if (this.parent && !this.prev) {
-			return x`@first_element_child(${this.parent.var.name})`;
-		}
-
-		if (this.prev) {
+		} else if (is_head(parent_node) && this.parent.template_index && (!this.prev || !this.prev.var)) {
+			return x`@first_child(${this.parent.template_index}())`;
+		} else if (parent_node && !this.prev) {
+			return x`@first_element_child(${parent_node})`;
+		} else if (this.prev) {
 			if (this.prev.node.type === "Element") {
-				return x`@next_element_sibling(${this.prev.var.name})`;
+				return x`@next_element_sibling(${this.prev.var})`;
 			} else {
-				return x`@next_sibling(${this.prev.var.name})`;
+				return x`@next_sibling(${this.prev.var})`;
 			}
 		}
 
@@ -425,12 +432,9 @@ export default class ElementWrapper extends Wrapper {
 		return x`@claim_element(${nodes}, "${name}", { ${attributes} }, ${svg})`;
 	}
 
-	get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, target?: Identifier | string) {
-		if (target) {
-			return x`@claim_template_element(${template_node}, ${ssr_node}, [], ${target})`;
-		} else {
-			return x`@claim_template_element(${template_node}, ${ssr_node}, #nodes)`;
-		}
+	get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
+		const nodes = parent_nodes || '[]';
+		return x`@claim_template_element(${template_node}, ${ssr_node}, ${nodes}, ${target})`;
 	}
 
 	add_directives_in_order (block: Block) {

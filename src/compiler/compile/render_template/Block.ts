@@ -298,23 +298,24 @@ export default class Block {
 			if (this.chunks.claim.length === 0 && this.chunks.hydrate.length === 0) {
 				properties.claim = noop;
 			} else {
-				// this.chunks.claim.unshift(b`
+				let prefix = [];
+				// prefix.push(b`
 				// 	console.log("this.l")
 				// 	#nodes.forEach((n1, i) => {
-				// 		console.log(i, n1.nodeName, n1.nodeValue);
-				// 		n1.childNodes.forEach((n2, j) => {
-				// 			console.log(i, j, n2.nodeName, n2.nodeValue);
+				// 		console.log(i, n1.nodeName, n1.nodeValue, n1.firstChild, n1.nextSibling);
+				// 		if (n1) n1.childNodes.forEach((n2, j) => {
+				// 			console.log(i, j, n2.nodeName, n2.nodeValue, n2.firstChild, n2.nextSibling);
 				// 		})
 				// 	});
 				// 	console.log("cloned", #cloned);
-				// 	if (!#cloned) this.c();
 				// 	console.log("nodes.length", #nodes.length);
-				// 	if (#nodes.length === 0) return;
 				// `);
-				this.chunks.claim.unshift(b`
-					if (!#cloned) this.c();
-					if (#nodes.length === 0) return;
-				`);
+				prefix.push(b`if (!#cloned) this.c();`);
+				if (!this.wrappers.some((n) => n.node.type === 'Head')) {
+					prefix.push(b`if (#nodes.length === 0) return;`);
+				}
+
+				this.chunks.claim.unshift(prefix);
 				properties.claim = x`function #claim(#nodes) {
 					${this.chunks.claim}
 					${this.renderer.options.hydratable && this.chunks.hydrate.length > 0 && b`this.h();`}
@@ -479,6 +480,7 @@ export default class Block {
 
 		this.wrappers.forEach((node) => {
 			if (node.template) {
+				// console.log('block render node.template_index', node.template_index);
 				body.push(b`
 					const ${node.template_index} = @make_renderer(
 						${node.template}

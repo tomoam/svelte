@@ -429,7 +429,7 @@ export default class InlineComponentWrapper extends Wrapper {
 
 			if (parent_nodes && this.renderer.options.hydratable) {
 				block.chunks.claim.push(
-					b`if (${name}) @claim_component(${name}.$$.fragment, ${parent_nodes});`
+					b`if (${name}) @claim_component(${name}.$$.fragment, @trim_nodes(${parent_nodes}));`
 				);
 			}
 
@@ -539,7 +539,7 @@ export default class InlineComponentWrapper extends Wrapper {
 				// 	b`@claim_component(${name}.$$.fragment, ${nodes});`
 				// );
 				block.chunks.claim.push(
-					b`@claim_component(${name}.$$.fragment, ${parent_nodes ? parent_nodes : nodes});`
+					b`@claim_component(${name}.$$.fragment, @trim_nodes(${parent_nodes ? parent_nodes : nodes}));`
 				);
 			}
 

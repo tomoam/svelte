@@ -4,9 +4,7 @@ import Text from '../../nodes/Text';
 import Wrapper from './shared/Wrapper';
 import { x } from 'code-red';
 import { Identifier } from 'estree';
-import IfBlockWrapper from './IfBlock';
-import EachBlockWrapper from './EachBlock';
-import InlineComponentWrapper from './InlineComponent';
+import is_dynamic_wrapper from './shared/is_dynamic_wrapper';
 
 export default class TextWrapper extends Wrapper {
 	node: Text;
@@ -43,34 +41,29 @@ export default class TextWrapper extends Wrapper {
 		return true;
 	}
 
-	get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, target?: Identifier | string) {
-		if (target) {
-			return x`@claim_template_text(${template_node}, ${ssr_node}, [], ${target})`;
-		} else {
-			return x`@claim_template_text(${template_node}, ${ssr_node}, #nodes)`;
-		}
+	get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
+		const nodes = parent_nodes || '[]';
+		return x`@claim_template_text(${template_node}, ${ssr_node}, ${nodes}, ${target})`;
 	}
 
-	render(block: Block, parent_node: Identifier, _parent_nodes: Identifier) {
+	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.skip) return;
 
 		let render_statement;
 		let claim_statement;
+		let claim_ssr_path;
 		if (this.template_index) {
 			render_statement = x`@first_child(${this.template_index}())`;
-			claim_statement = this.get_claim_template_statement(this.var, "nodes[0]");
+			claim_statement = this.get_claim_template_statement(this.var, "nodes[0]", "#nodes");
 		} else {
-			if (
-				this.prev instanceof IfBlockWrapper ||
-				this.prev instanceof EachBlockWrapper ||
-				this.prev instanceof InlineComponentWrapper
-			) {
+			if (is_dynamic_wrapper(this.prev)) {
 				if (this.prev.prev) {
-					render_statement = x`@next_sibling(next_sibling(${this.prev.prev.var}))`;
+					render_statement = x`@next_sibling(@next_sibling(${this.prev.prev.var}))`;
 				} else if (this.prev.parent) {
-					render_statement = x`@next_sibling(first_child(${this.prev.parent.var}))`;
+					render_statement = x`@next_sibling(@first_child(${this.prev.parent.var}))`;
 				} else {
-					render_statement = x`@next_sibling(first_child(${this.prev.template_index}()))`;
+				 	render_statement = x`@next_sibling(@first_child(${this.prev.template_index}()))`;
+					claim_ssr_path = x`#nodes[0]`;
 				}
 			} else if (this.prev) {
 				render_statement = x`@next_sibling(${this.prev.var})`;
@@ -78,7 +71,8 @@ export default class TextWrapper extends Wrapper {
 				render_statement = x`@first_child(${parent_node})`;
 			}
 
-			claim_statement = this.get_claim_template_statement(this.var, render_statement, parent_node);
+			const trim_parent_nodes = this.parent && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes;
+			claim_statement = this.get_claim_template_statement(this.var, claim_ssr_path || render_statement, trim_parent_nodes, parent_node);
 		}
 
 		block.add_element(

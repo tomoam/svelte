@@ -33,6 +33,7 @@ export default class SlotWrapper extends Wrapper {
 		this.cannot_use_innerhtml();
 		this.not_static_content();
 
+		console.log("SlotWrapper constructor this.node.children.length:", this.node.children.length)
 		if (this.node.children.length) {
 			this.fallback = block.child({
 				comment: create_debugging_comment(this.node.children[0], this.renderer.component),
@@ -146,7 +147,7 @@ export default class SlotWrapper extends Wrapper {
 
 		block.chunks.mount.push(b`
 			if (${slot_or_fallback}) {
-				${slot_or_fallback}.m(${parent_node || '#target'}, ${parent_node ? 'null' : '#anchor'});
+				${slot_or_fallback}.m(${parent_node || '#target'}, ${parent_node ? this.next ? this.next.var : 'null' : '#anchor'});
 			}
 		`);
 

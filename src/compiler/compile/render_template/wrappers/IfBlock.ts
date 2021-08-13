@@ -181,6 +181,9 @@ export default class IfBlockWrapper extends Wrapper {
 			? block.get_unique_name(`${this.var.name}_anchor`)
 			: (this.next && this.next.var) || 'null';
 
+		// const outer_name = block.get_unique_name(`${this.var.name}_fragment`);
+		// this.var = outer_name;
+
 		const has_else = !(this.branches[this.branches.length - 1].condition);
 		const if_exists_condition = has_else ? null : name;
 
@@ -219,14 +222,27 @@ export default class IfBlockWrapper extends Wrapper {
 			block.chunks.create.push(b`${name}.c();`);
 		}
 
+		// let comment_node_path;
+		// if (this.template_index) {
+		// 	comment_node_path = x`@first_child(${this.template_index}())`;
+		// } else if (is_head(parent_node) && this.parent.template_index && (!this.prev || !this.prev.var)) {
+		// 	comment_node_path = x`@first_child(${this.parent.template_index}())`;
+		// } else if (parent_node && !this.prev) {
+		// 	comment_node_path = x`@first_child(${parent_node})`;
+		// } else if (this.prev) {
+		// 	comment_node_path = x`@next_sibling(${this.prev.var})`;
+		// }
+		// block.add_variable(outer_name);
+		// block.chunks.create.push(b`${outer_name} = @replace_node(${comment_node_path}, ${name})`);
+
 		if (parent_nodes && this.renderer.options.hydratable) {
 			if (if_exists_condition) {
 				block.chunks.claim.push(
-					b`if (${if_exists_condition}) ${name}.l(${parent_nodes});`
+					b`if (${if_exists_condition}) ${name}.l(@trim_nodes(${parent_nodes}));`
 				);
 			} else {
 				block.chunks.claim.push(
-					b`${name}.l(${parent_nodes});`
+					b`${name}.l(@trim_nodes(${parent_nodes}));`
 				);
 			}
 		}

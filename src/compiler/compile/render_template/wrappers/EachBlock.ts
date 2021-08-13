@@ -275,7 +275,7 @@ export default class EachBlockWrapper extends Wrapper {
 			if (this.renderer.options.hydratable) {
 				block.chunks.claim.push(b`
 					if (${each_block_else}) {
-						${each_block_else}.l(${parent_nodes});
+						${each_block_else}.l(@trim_nodes(${parent_nodes}));
 					}
 				`);
 			}
@@ -424,7 +424,7 @@ export default class EachBlockWrapper extends Wrapper {
 		if (parent_nodes && this.renderer.options.hydratable) {
 			block.chunks.claim.push(b`
 				for (let #i = 0; #i < ${view_length}; #i += 1) {
-					${iterations}[#i].l(${parent_nodes});
+					${iterations}[#i].l(@trim_nodes(${parent_nodes}));
 				}
 			`);
 		}
@@ -527,7 +527,7 @@ export default class EachBlockWrapper extends Wrapper {
 			// `);
 			block.chunks.claim.push(b`
 				for (let #i = 0; #i < ${view_length}; #i += 1) {
-					${iterations}[#i].l(${parent_nodes});
+					${iterations}[#i].l(@trim_nodes(${parent_nodes}));
 				}
 			`);
 		}

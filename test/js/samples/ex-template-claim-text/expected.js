@@ -9,7 +9,8 @@ import {
 	mount_component,
 	safe_not_equal,
 	transition_in,
-	transition_out
+	transition_out,
+	trim_nodes
 } from "svelte/internal";
 
 import Layout from './Layout.svelte';
@@ -31,7 +32,7 @@ function create_default_slot(ctx) {
 		l(nodes) {
 			if (!cloned) this.c();
 			if (nodes.length === 0) return;
-			claim_component(component.$$.fragment, nodes);
+			claim_component(component.$$.fragment, trim_nodes(nodes));
 		},
 		m(target, anchor) {
 			mount_component(component, target, anchor);
@@ -74,7 +75,7 @@ function create_fragment(ctx) {
 		l(nodes) {
 			if (!cloned) this.c();
 			if (nodes.length === 0) return;
-			claim_component(layout.$$.fragment, nodes);
+			claim_component(layout.$$.fragment, trim_nodes(nodes));
 		},
 		m(target, anchor) {
 			mount_component(layout, target, anchor);

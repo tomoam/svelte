@@ -18,15 +18,12 @@ export default class MustacheTagWrapper extends Tag {
 		// this.block = block;
 	}
 
-	get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, target?: Identifier | string) {
-		if (target) {
-			return x`@claim_template_text(${template_node}, ${ssr_node}, [], ${target})`;
-		} else {
-			return x`@claim_template_text(${template_node}, ${ssr_node}, #nodes)`;
-		}
+	get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
+		const nodes = parent_nodes || '[]';
+		return x`@claim_template_text(${template_node}, ${ssr_node}, ${nodes}, ${target})`;
 	}
 
-	render(block: Block, parent_node: Identifier, _parent_nodes: Identifier) {
+	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		const { init } = this.rename_this_method(
 			block,
 			value => x`@set_data(${this.var}, ${value})`
@@ -60,7 +57,9 @@ export default class MustacheTagWrapper extends Tag {
 		}
 
 		const render_statement = x`@replace_text(${node_path}, ${init})`;
-		const claim_statement = this.get_claim_template_statement(this.var, node_path, parent_node);
+
+		const trim_parent_nodes = this.parent && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes;
+		const claim_statement = this.get_claim_template_statement(this.var, node_path, trim_parent_nodes, parent_node);
 
 		block.add_element(
 			this.var,
