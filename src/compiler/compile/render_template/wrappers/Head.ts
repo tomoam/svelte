@@ -42,9 +42,9 @@ export default class HeadWrapper extends Wrapper {
 		this.fragment.render(block, x`@_document.head` as unknown as Identifier, nodes);
 
 		if (nodes && this.renderer.options.hydratable) {
-			// block.chunks.claim.push(
-			// 	b`${nodes}.forEach(@detach);`
-			// );
+			block.chunks.claim.push(
+				b`${nodes}.forEach(@detach);`
+			);
 
 			const index = block.wrappers.indexOf(this);
 			if (!block.wrappers.slice(0, index).some((n) => n instanceof Head)) {

@@ -43,7 +43,7 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			t0 = first_child(render());
-			section = next_sibling(t0);
+			section = next_element_sibling(t0);
 			div0 = first_element_child(section);
 			input = first_element_child(div0);
 			h1 = next_element_sibling(input);
@@ -53,27 +53,27 @@ function create_fragment(ctx) {
 			p = next_element_sibling(h1);
 			t8 = replace_text(first_child(p), description);
 			t11 = next_sibling(section);
-			div1 = next_sibling(t11);
+			div1 = next_element_sibling(t11);
 			cloned = true;
 		},
 		l(nodes) {
 			if (!cloned) this.c();
 			if (nodes.length === 0) return;
-			t0 = claim_template_text(t0, nodes[0], nodes);
-			section = claim_template_element(section, next_sibling(t0), nodes);
+			t0 = claim_template_text(t0, nodes);
+			section = claim_template_element(section, nodes);
 			var section_nodes = children(section);
-			if (!section.ic) div0 = claim_template_element(div0, first_element_child(section), section_nodes, section);
+			if (!section.ic) div0 = claim_template_element(div0, section_nodes, section);
 			var div0_nodes = children(div0);
-			if (!div0.ic) input = claim_template_element(input, first_element_child(div0), div0_nodes, div0);
-			if (!div0.ic) h1 = claim_template_element(h1, next_element_sibling(input), div0_nodes, div0);
+			if (!div0.ic) input = claim_template_element(input, div0_nodes, div0);
+			if (!div0.ic) h1 = claim_template_element(h1, div0_nodes, div0);
 			var h1_nodes = children(h1);
-			if (!h1.ic) t4 = claim_template_text(t4, first_child(h1), h1_nodes, h1);
-			if (!h1.ic) t5 = claim_template_text(t5, next_sibling(t4), h1_nodes, h1);
-			if (!h1.ic) t6 = claim_template_text(t6, next_sibling(t5), h1_nodes, h1);
-			if (!div0.ic) p = claim_template_element(p, next_element_sibling(h1), div0_nodes, div0);
-			if (!p.ic) t8 = claim_template_text(t8, first_child(p), trim_nodes(children(p)), p);
-			t11 = claim_template_text(t11, next_sibling(section), nodes);
-			div1 = claim_template_element(div1, next_sibling(t11), nodes);
+			if (!h1.ic) t4 = claim_template_text(t4, h1_nodes, h1);
+			if (!h1.ic) t5 = claim_template_text(t5, h1_nodes, h1);
+			if (!h1.ic) t6 = claim_template_text(t6, h1_nodes, h1);
+			if (!div0.ic) p = claim_template_element(p, div0_nodes, div0);
+			if (!p.ic) t8 = claim_template_text(t8, trim_nodes(children(p)), p);
+			t11 = claim_template_text(t11, nodes);
+			div1 = claim_template_element(div1, nodes);
 		},
 		m(target, anchor) {
 			insert_hydration(target, t0, anchor);

@@ -10,6 +10,7 @@ import {
 	insert,
 	make_renderer,
 	mount_component,
+	next_element_sibling,
 	next_sibling,
 	noop,
 	safe_not_equal,
@@ -37,7 +38,7 @@ function create_fragment(ctx) {
 			t1 = next_sibling(span);
 			create_component(nested.$$.fragment);
 			t2 = next_sibling(next_sibling(t1));
-			div0 = next_sibling(t2);
+			div0 = next_element_sibling(t2);
 		},
 		m(target, anchor) {
 			insert(target, div1, anchor);

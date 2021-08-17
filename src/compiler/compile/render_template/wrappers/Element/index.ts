@@ -27,10 +27,9 @@ import Action from '../../../nodes/Action';
 import MustacheTagWrapper from '../MustacheTag';
 import RawMustacheTagWrapper from '../RawMustacheTag';
 import is_dynamic from '../shared/is_dynamic';
-import EachBlockWrapper from '../EachBlock';
-import InlineComponentWrapper from '../InlineComponent';
-import IfBlockWrapper from '../IfBlock';
-// import EachBlock from '../EachBlock';
+// import EachBlockWrapper from '../EachBlock';
+// import InlineComponentWrapper from '../InlineComponent';
+// import IfBlockWrapper from '../IfBlock';
 
 interface BindingGroup {
 	events: string[];
@@ -241,6 +240,7 @@ export default class ElementWrapper extends Wrapper {
 
 		const node = this.var;
 		const nodes = parent_nodes && block.get_unique_name(`${this.var.name}_nodes`); // if we're in unclaimable territory, i.e. <head>, parent_nodes is null
+		const children = x`@children(${this.node.name === 'template' ? x`${node}.content` : node})`;
 
 		block.add_variable(node);
 		const render_statement = this.get_render_statement(block, parent_node);
@@ -251,17 +251,17 @@ export default class ElementWrapper extends Wrapper {
 		if (renderer.options.hydratable) {
 			let claim_statement;
 			if (this.template_index) {
-				claim_statement = this.get_claim_template_statement(node, "nodes[0]", parent_nodes || "#nodes", parent_node);
+				claim_statement = this.get_claim_template_statement(node, parent_nodes || "#nodes", parent_node);
 			} else if (is_head(parent_node)) {
-				claim_statement = this.get_claim_template_statement(node, `${parent_nodes.name}[0]`, parent_nodes || "#nodes", parent_node);
+				claim_statement = this.get_claim_template_statement(node, parent_nodes || "#nodes", parent_node);
 			} else if (parent_node) {
 				const trim_parent_nodes = this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes;
-				claim_statement = this.get_claim_template_statement(node, render_statement, trim_parent_nodes, parent_node);
+				claim_statement = this.get_claim_template_statement(node, trim_parent_nodes, parent_node);
 			} else {
-				claim_statement = this.get_claim_template_statement(node, render_statement, "#nodes");
+				claim_statement = this.get_claim_template_statement(node, "#nodes", parent_node);
 			}
+
 			if (parent_node && !is_head(parent_node)) {
-				// is cloned
 				block.chunks.claim.push(b`
 					if (!${parent_node}.ic) ${node} = ${claim_statement};
 				`);
@@ -271,17 +271,7 @@ export default class ElementWrapper extends Wrapper {
 				`);
 			}
 
-			if (!this.void &&
-				(
-					this.node.children.length > 1 ||
-					this.fragment.nodes.some(n => 
-						n instanceof IfBlockWrapper ||
-						n instanceof EachBlockWrapper ||
-						n instanceof InlineComponentWrapper
-					)
-				)
-			) {
-				const children = this.node.name === 'template' ? x`@children(${node}.content)` : x`@children(${node})`;
+			if (!this.void && (this.node.children.length > 1 || this.fragment.nodes.some(n => !n.is_dom_node()))) {
 				block.chunks.claim.push(b`
 					var ${nodes} = ${children};
 				`);
@@ -289,12 +279,15 @@ export default class ElementWrapper extends Wrapper {
 		}
 
 		if (parent_node) {
-			// const append = b`@append(${parent_node}, ${node});`;
-			// ((append[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
-			// 	start: this.renderer.locate(this.node.start),
-			// 	end: this.renderer.locate(this.node.end)
-			// };
-			// block.chunks.mount.push(append);
+			// if (this.node.namespace && this.node.namespace !== namespaces.svg) {
+			if (is_head(parent_node)) {
+				const append = b`@append(${parent_node}, ${node});`;
+				((append[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
+					start: this.renderer.locate(this.node.start),
+					end: this.renderer.locate(this.node.end)
+				};
+				block.chunks.mount.push(append);
+			}
 			if (is_head(parent_node)) {
 				block.chunks.destroy.push(b`@detach(${node});`);
 			}
@@ -312,43 +305,54 @@ export default class ElementWrapper extends Wrapper {
 		}
 
 		// insert static children with textContent or innerHTML
-		const can_use_textcontent = this.can_use_textcontent();
-		if (!this.node.namespace && (this.can_use_innerhtml || can_use_textcontent) && this.fragment.nodes.length > 0) {
-			if (this.fragment.nodes.length === 1 && this.fragment.nodes[0].node.type === 'Text') {
-				//block.chunks.create.push(
-				//	b`${node}.textContent = ${string_literal((this.fragment.nodes[0] as TextWrapper).data)};`
-				//);
-			} else {
-				const state = {
-					quasi: {
-						type: 'TemplateElement',
-						value: { raw: '' }
-					}
-				};
+		// const can_use_textcontent = this.can_use_textcontent();
+		// // if (!this.node.namespace && (this.can_use_innerhtml || can_use_textcontent) && this.fragment.nodes.length > 0) {
+		// if (!this.node.namespace && this.can_use_innerhtml && this.fragment.nodes.length > 0) {
+		// 	if (this.fragment.nodes.length === 1 && this.fragment.nodes[0].node.type === 'Text') {
+		// 		//block.chunks.create.push(
+		// 		//	b`${node}.textContent = ${string_literal((this.fragment.nodes[0] as TextWrapper).data)};`
+		// 		//);
+		// 	} else {
+		// 		const state = {
+		// 			quasi: {
+		// 				type: 'TemplateElement',
+		// 				value: { raw: '' }
+		// 			}
+		// 		};
 
-				const literal = {
-					type: 'TemplateLiteral',
-					expressions: [],
-					quasis: []
-				};
+		// 		const literal = {
+		// 			type: 'TemplateLiteral',
+		// 			expressions: [],
+		// 			quasis: []
+		// 		};
 
-				const can_use_raw_text = !this.can_use_innerhtml && can_use_textcontent;
-				to_html((this.fragment.nodes as unknown as Array<ElementWrapper | TextWrapper>), block, literal, state, can_use_raw_text);
-				literal.quasis.push(state.quasi);
+		// 		const can_use_raw_text = !this.can_use_innerhtml && can_use_textcontent;
+		// 		to_html((this.fragment.nodes as unknown as Array<ElementWrapper | TextWrapper>), block, literal, state, can_use_raw_text);
+		// 		literal.quasis.push(state.quasi);
 
-				block.chunks.create.push(
-					b`${node}.${this.can_use_innerhtml ? 'innerHTML' : 'textContent'} = ${literal};`
-				);
-			}
-		} else {
-			this.fragment.nodes.forEach((child: Wrapper) => {
-				child.render(
-					block,
-					this.node.name === 'template' ? x`${node}.content` : node,
-					nodes
-				);
-			});
-		}
+		// 		console.log({literal});
+
+		// 		block.chunks.create.push(
+		// 			b`${node}.${this.can_use_innerhtml ? 'innerHTML' : 'textContent'} = ${literal};`
+		// 		);
+		// 	}
+		// } else {
+		// 	this.fragment.nodes.forEach((child: Wrapper) => {
+		// 		child.render(
+		// 			block,
+		// 			this.node.name === 'template' ? x`${node}.content` : node,
+		// 			nodes
+		// 		);
+		// 	});
+		// }
+
+		this.fragment.nodes.forEach((child: Wrapper) => {
+			child.render(
+				block,
+				this.node.name === 'template' ? x`${node}.content` : node,
+				nodes
+			);
+		});
 
 		const event_handler_or_binding_uses_context = (
 			this.bindings.some(binding => binding.handler.uses_context) ||
@@ -367,11 +371,11 @@ export default class ElementWrapper extends Wrapper {
 		this.add_classes(block);
 		this.add_manual_style_scoping(block);
 
-		// if (nodes && this.renderer.options.hydratable && !this.void) {
-		// 	block.chunks.claim.push(
-		// 		b`${this.node.children.length > 0 ? nodes : children}.forEach(@detach);`
-		// 	);
-		// }
+		if (this.renderer.options.hydratable && !this.void && (this.node.name === 'textarea')) {
+			block.chunks.claim.push(
+				b`${children}.forEach(@detach);`
+			);
+		}
 
 		if (renderer.options.dev) {
 			const loc = renderer.locate(this.node.start);
@@ -386,36 +390,35 @@ export default class ElementWrapper extends Wrapper {
 	}
 
 	get_render_statement(block: Block, parent_node: Identifier) {
+
+		let render_statement;
+
 		if (this.template_index) {
-			return x`@first_child(${this.template_index}())`;
+			render_statement = x`@first_child(${this.template_index}())`;
 		} else if (is_head(parent_node) && this.parent.template_index && (!this.prev || !this.prev.var)) {
-			return x`@first_child(${this.parent.template_index}())`;
+			render_statement =  x`@first_child(${this.parent.template_index}())`;
 		} else if (parent_node && !this.prev) {
-			return x`@first_element_child(${parent_node})`;
+			render_statement =  x`@first_element_child(${parent_node})`;
 		} else if (this.prev) {
-			if (this.prev.node.type === "Element") {
-				return x`@next_element_sibling(${this.prev.var})`;
-			} else {
-				return x`@next_sibling(${this.prev.var})`;
-			}
+			render_statement =  x`@next_element_sibling(${this.prev.var})`;
 		}
 
 		const { name, namespace } = this.node;
-
-		if (namespace === namespaces.svg) {
-			return x`@svg_element("${name}")`;
-		}
-
-		if (namespace) {
-			return x`@_document.createElementNS("${namespace}", "${name}")`;
-		}
-
 		const is: AttributeWrapper = this.attributes.find(attr => attr.node.name === 'is') as any;
-		if (is) {
-			return x`@element_is("${name}", ${is.render_chunks(block).reduce((lhs, rhs) => x`${lhs} + ${rhs}`)})`;
+	
+		if (namespace && namespace !== namespaces.svg) {
+			const old_node = render_statement;
+			const new_node =  x`@_document.createElementNS("${namespace}", "${name}")`;
+			return x`@replace_or_appned_node(${old_node}, ${new_node}, ${this.parent && this.parent.var})`;
+		} else if (is) {
+			const old_node = render_statement;
+			const new_node =  x`@element_is("${name}", ${is.render_chunks(block).reduce((lhs, rhs) => x`${lhs} + ${rhs}`)})`;
+			return x`@replace_or_appned_node(${old_node}, ${new_node}, ${this.parent && this.parent.var})`;
+		} else {
+			return render_statement;
 		}
 
-		return x`@element("${name}")`;
+		// return x`@element("${name}")`;
 	}
 
 	get_claim_statement(nodes: Identifier) {
@@ -432,9 +435,10 @@ export default class ElementWrapper extends Wrapper {
 		return x`@claim_element(${nodes}, "${name}", { ${attributes} }, ${svg})`;
 	}
 
-	get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
+	// get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
+	get_claim_template_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
 		const nodes = parent_nodes || '[]';
-		return x`@claim_template_element(${template_node}, ${ssr_node}, ${nodes}, ${target})`;
+		return x`@claim_template_element(${template_node}, ${nodes}, ${target})`;
 	}
 
 	add_directives_in_order (block: Block) {
@@ -965,7 +969,7 @@ export default class ElementWrapper extends Wrapper {
 	}
 }
 
-function to_html(wrappers: Array<ElementWrapper | TextWrapper | MustacheTagWrapper | RawMustacheTagWrapper>, block: Block, literal: any, state: any, can_use_raw_text?: boolean) {
+export function to_html(wrappers: Array<ElementWrapper | TextWrapper | MustacheTagWrapper | RawMustacheTagWrapper>, block: Block, literal: any, state: any, can_use_raw_text?: boolean) {
 	wrappers.forEach(wrapper => {
 		if (wrapper instanceof TextWrapper) {
 			if ((wrapper as TextWrapper).use_space()) state.quasi.value.raw += ' ';

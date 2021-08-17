@@ -1,3 +1,4 @@
+import { slide } from 'svelte/transition';
 import { has_prop } from './utils';
 
 // Track which nodes are claimed during hydration. Unclaimed nodes can then be removed from the DOM
@@ -256,19 +257,46 @@ export function replace_text(elm: ChildNode, data: string) {
 	return textNode;
 }
 
-export function replace_node(old_node: ChildNode, new_node: ChildNode) {
-	console.log({old_node});
-	console.log(old_node.previousSibling);
-	console.log(old_node.nextSibling);
-	console.log({new_node});
+export function replace_blank(elm: ChildNode) {
+	return replace_text(elm, '');
+}
+
+export function insert_blank_anchor(nodes: ChildNodeArray, parent_node?: ChildNode) {
+	const next_node = trim_start(nodes)[0];
+	const target = parent_node || next_node.parentNode;
+	if (next_node && target) {
+		const anchor = empty();
+		insert_hydration(target, anchor, next_node);
+		return anchor;
+	}
+	return null;
+}
+
+function trim_start(nodes: ChildNodeArray) {
+	const first = nodes[0]
+
+	if (first && is_whitespace(first)) return nodes.slice(1);
+
+	return nodes;
+}
+
+export function replace_or_appned_node(old_node: ChildNode, new_node: ChildNode, parent_node?: ChildNode) {
+	// console.log({old_node});
+	// console.log(old_node.previousSibling);
+	// console.log(old_node.nextSibling);
+	// console.log({new_node});
 	if (!new_node) return old_node;
-	old_node.replaceWith(new_node);
-	console.log({old_node});
-	console.log(old_node.previousSibling);
-	console.log(old_node.nextSibling);
-	console.log({new_node});
-	console.log(new_node.previousSibling);
-	console.log(new_node.nextSibling);
+	if (old_node) {
+		old_node.replaceWith(new_node);
+	} else if (parent_node) {
+		parent_node.appendChild(new_node);
+	}
+	// console.log({old_node});
+	// console.log(old_node.previousSibling);
+	// console.log(old_node.nextSibling);
+	// console.log({new_node});
+	// console.log(new_node.previousSibling);
+	// console.log(new_node.nextSibling);
 	return new_node;
 }
 
@@ -284,7 +312,7 @@ export function first_element_child(node: Element) {
 	return node.firstElementChild;
 }
 
-export function next_element_sibling(node: Element) {
+export function next_element_sibling(node: Element | Text | Comment) {
 	return node.nextElementSibling;
 }
 
@@ -504,30 +532,29 @@ function claim_template_node<R extends ChildNodeEx>(ssr_node: ChildNode, nodes: 
 
 	const resultNode = (() => {
 
-		console.log("claim_template_node start");
+		// console.log("claim_template_node start");
 		if (ssr_node) {
-			console.log("claim_template_node ssr_node:", ssr_node.nodeName, ssr_node.nodeValue);
+			// console.log("claim_template_node ssr_node:", ssr_node.nodeName, ssr_node.nodeValue);
 			if (predicate(ssr_node)) {
-				console.log("claim_template_node in first predicate");
+				// console.log("claim_template_node in first predicate");
 				return processNode(ssr_node);
 			} else if (is_whitespace(ssr_node)) {
 				let next_node = ssr_node.nextSibling;
-				console.log("claim_template_node in is_whitespace next_node:", next_node);
+				// console.log("claim_template_node in is_whitespace next_node:", next_node);
 				if (nodes.length > 0) {
 					nodes.splice(0, 1);
-					detach(ssr_node);
 				}
 
 				if (!next_node) next_node = nodes[0];
-				console.log("claim_template_node in is_whitespace next_node:", next_node ? next_node.nodeName : undefined, next_node ? next_node.nodeValue : undefined);
+				// console.log("claim_template_node in is_whitespace next_node:", next_node ? next_node.nodeName : undefined, next_node ? next_node.nodeValue : undefined);
 
 				if (next_node && predicate(next_node)) {
-					console.log("claim_template_node in second predicate");
+					// console.log("claim_template_node in second predicate");
 					return processNode(next_node);
 				}
 			}
 		}
-		console.log("claim_template_node before createNode");
+		// console.log("claim_template_node before createNode");
 
 		// If we can't find any matching node, we create a new one
 		return createNode();
@@ -558,36 +585,26 @@ export function claim_element(nodes: ChildNodeArray, name: string, attributes: {
 }
 
 
-export function claim_template_element(template_node: Element, ssr_node: ChildNode, nodes: ChildNodeArray, target?: ChildNode) {
-	console.log("claim_template_element start");
-	console.log("claim_template_element:", "template_node:", template_node ? template_node.nodeName : undefined, template_node ? template_node.nodeValue : undefined, "ssr_node:", ssr_node ? ssr_node.nodeName : undefined, ssr_node ? ssr_node.nodeValue : undefined, "target:", target ? target.nodeName : undefined, target ? target.nodeValue : undefined);
+export function claim_template_element(template_node: Element, nodes: ChildNodeArray, target?: ChildNode) {
+	let ssr_node = nodes.length ? nodes[0] : undefined;
 
-	// console.log("ssr_node.nextSibling", ssr_node.nextSibling);
-	// console.log("ssr_node.nextSibling", next_sibling(ssr_node));
-	// console.log("ssr_node.nextElementSibling", next_element_sibling(ssr_node as Element));
-	// console.log("ssr_node.parentElement", ssr_node.parentElement);
-	// console.log("ssr_node.previousSibling", ssr_node.previousSibling);
+	if (ssr_node && ssr_node.nodeType !== 1) {
+		nodes.splice(0, 1);
+		ssr_node = next_element_sibling(ssr_node as Text);
+	}
 
-	// const parent_node = ssr_node.parentNode;
-	// if (parent_node) console.log("claim_template_element ssr_node indexof:", Array.from(parent_node.childNodes.values()).indexOf(ssr_node));
-	// if (parent_node) parent_node.childNodes.forEach((n1, i) => {
+	// console.log("claim_template_element start");
+	// console.log("claim_template_element:", "template_node:", template_node ? template_node.nodeName : undefined, template_node ? template_node.nodeValue : undefined, "ssr_node:", ssr_node ? ssr_node.nodeName : undefined, ssr_node ? ssr_node.nodeValue : undefined, "target:", target ? target.nodeName : undefined, target ? target.nodeValue : undefined);
+	// if (nodes) console.log("claim_template_element ssr_node indexof:", Array.from(nodes.values()).indexOf(ssr_node));
+	// if (nodes) nodes.forEach((n1, i) => {
 	// 	console.log(i, n1.nodeName, n1.nodeValue);
 	// 	if (n1) n1.childNodes.forEach((n2, j) => {
 	// 		console.log(i, j, n2.nodeName, n2.nodeValue);
+	// 		if (n2) n2.childNodes.forEach((n3, k) => {
+	// 			console.log(i, j, k, n3.nodeName, n3.nodeValue);
+	// 		})
 	// 	})
 	// })
-
-	console.log("claim_template_element nodes");
-	if (nodes) console.log("claim_template_element ssr_node indexof:", Array.from(nodes.values()).indexOf(ssr_node));
-	if (nodes) nodes.forEach((n1, i) => {
-		console.log(i, n1.nodeName, n1.nodeValue);
-		if (n1) n1.childNodes.forEach((n2, j) => {
-			console.log(i, j, n2.nodeName, n2.nodeValue);
-			if (n2) n2.childNodes.forEach((n3, k) => {
-				console.log(i, j, k, n3.nodeName, n3.nodeValue);
-			})
-		})
-	})
 
 	return claim_template_node<Element | SVGElement>(
 		ssr_node,
@@ -623,11 +640,10 @@ export function claim_template_element(template_node: Element, ssr_node: ChildNo
 			// is cloned
 			type ElementTemplate = Element & {ic: boolean};
 
-			console.log("claim_template_element createNode")
-			const node = template_node.cloneNode(true) as Element | SVGElement;
-			if (target) insert_hydration(target, node);
-			(node as ElementTemplate).ic = true;
-			return node;
+			// console.log("claim_template_element createNode")
+			if (target) insert_hydration(target, template_node);
+			(template_node as ElementTemplate).ic = true;
+			return template_node;
 		}
 	);
 }
@@ -651,20 +667,21 @@ export function claim_text(nodes: ChildNodeArray, data) {
 	);
 }
 
-export function claim_template_text(template_node: Text, ssr_node: ChildNode, nodes: ChildNodeArray, target?: ChildNode) {
-	console.log("claim_template_text start");
-	console.log("claim_template_text:", "template_node:", template_node ? template_node.nodeName : undefined, template_node ? template_node.nodeValue : undefined, "ssr_node:", ssr_node ? ssr_node.nodeName : undefined, ssr_node ? ssr_node.nodeValue : undefined, "target:", target ? target.nodeName : undefined, target ? target.nodeValue : undefined);
-	console.log("claim_template_text nodex[0]", nodes[0]);
-	if (nodes) console.log("claim_template_text ssr_node indexof:", Array.from(nodes.values()).indexOf(ssr_node));
-	if (nodes) nodes.forEach((n1, i) => {
-		console.log(i, n1.nodeName, n1.nodeValue);
-		if (n1) n1.childNodes.forEach((n2, j) => {
-			console.log(i, j, n2.nodeName, n2.nodeValue);
-			if (n2) n2.childNodes.forEach((n3, k) => {
-				console.log(i, j, k, n3.nodeName, n3.nodeValue);
-			})
-		})
-	})
+export function claim_template_text(template_node: Text, nodes: ChildNodeArray, target?: ChildNode) {
+	const ssr_node = nodes.length ? nodes[0] : undefined;
+
+	// console.log("claim_template_text start");
+	// console.log("claim_template_text:", "template_node:", template_node ? template_node.nodeName : undefined, template_node ? template_node.nodeValue : undefined, "ssr_node:", ssr_node ? ssr_node.nodeName : undefined, ssr_node ? ssr_node.nodeValue : undefined, "target:", target ? target.nodeName : undefined, target ? target.nodeValue : undefined);
+	// if (nodes) console.log("claim_template_text ssr_node indexof:", Array.from(nodes.values()).indexOf(ssr_node));
+	// if (nodes) nodes.forEach((n1, i) => {
+	// 	console.log(i, n1.nodeName, n1.nodeValue);
+	// 	if (n1) n1.childNodes.forEach((n2, j) => {
+	// 		console.log(i, j, n2.nodeName, n2.nodeValue);
+	// 		if (n2) n2.childNodes.forEach((n3, k) => {
+	// 			console.log(i, j, k, n3.nodeName, n3.nodeValue);
+	// 		})
+	// 	})
+	// })
 
 	let data;
 
@@ -678,26 +695,25 @@ export function claim_template_text(template_node: Text, ssr_node: ChildNode, no
 		},
 		(node: Text) => {
 			node.data = data;
-			console.log("claim_template_text node.data:", node.data, "template_node.data:", template_node.data)
+			// console.log("claim_template_text node.data:", node.data, "template_node.data:", template_node.data)
 			if (node.data.length !== template_node.data.length) {
-				console.log("claim_template_text before splice(1, 0, node.splitText)")
+				// console.log("claim_template_text before splice(1, 0, node.splitText)")
 				nodes.splice(1, 0, node.splitText(template_node.data.length));
 			}
 			if (nodes.length > 0) nodes.splice(0, 1);
 			return node;
 		},
 		() => {
-			console.log("claim_template_text createText")
-			const node = (template_node as ChildNode).cloneNode(true) as Text
+			// console.log("claim_template_text createText")
 			if (ssr_node && (ssr_node.nodeType === 3 || ssr_node.nodeType === 8)) {
-				console.log("claim_template_text replaceWith");
-				ssr_node.replaceWith(node);
+				// console.log("claim_template_text replaceWith");
+				ssr_node.replaceWith(template_node);
 				if (nodes.length > 0) nodes.splice(0, 1);
 			} else if (target) {
-				console.log("claim_template_text insert_hydration");
-				insert_hydration(target, node);
+				// console.log("claim_template_text insert_hydration");
+				insert_hydration(target, template_node);
 			}
-			return node;
+			return template_node;
 		},
 	);
 }

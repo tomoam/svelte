@@ -1,4 +1,5 @@
 export default {
+	skip_if_hydrate: true,
 	html: `
 		<span>
 			Style:

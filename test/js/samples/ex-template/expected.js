@@ -27,6 +27,7 @@ function create_fragment(ctx) {
 	let t1;
 	let t2;
 	let p;
+	let t5;
 	let mounted;
 	let dispose;
 
@@ -39,7 +40,7 @@ function create_fragment(ctx) {
 			t1 = first_child(h1);
 			t2 = replace_text(next_sibling(t1), /*name*/ ctx[0]);
 			p = next_element_sibling(h1);
-			p.textContent = `${description}`;
+			t5 = replace_text(first_child(p), description);
 		},
 		m(target, anchor) {
 			insert(target, section, anchor);

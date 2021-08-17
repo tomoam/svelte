@@ -7,6 +7,7 @@ import {
 	init,
 	insert,
 	make_renderer,
+	next_element_sibling,
 	next_sibling,
 	noop,
 	safe_not_equal
@@ -23,7 +24,7 @@ function create_fragment(ctx) {
 		c() {
 			div0 = first_child(render());
 			t = next_sibling(div0);
-			div1 = next_sibling(t);
+			div1 = next_element_sibling(t);
 			attr(div1, "data-foo", /*bar*/ ctx[0]);
 		},
 		m(target, anchor) {

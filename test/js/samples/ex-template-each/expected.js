@@ -9,6 +9,7 @@ import {
 	init,
 	insert,
 	make_renderer,
+	next_element_sibling,
 	next_sibling,
 	noop,
 	replace_text,
@@ -23,7 +24,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-const render = make_renderer(`<li><a target="_blank"><!>: <!> </a></li>`);
+const render = make_renderer(`<li><a target="_blank"><!>: <!></a></li>`);
 
 // (13:1) {#each cats as { id, name }
 function create_each_block(ctx) {
@@ -74,7 +75,7 @@ function create_fragment(ctx) {
 		c() {
 			h1 = first_child(render_1());
 			t1 = next_sibling(h1);
-			ul = next_sibling(t1);
+			ul = next_element_sibling(t1);
 			t2 = first_child(ul);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {

@@ -1,4 +1,5 @@
 export default {
+	show: true,
 	props: {
 		foo: false
 	},

@@ -193,7 +193,10 @@ export default class Block {
 
 		if (parent_node) {
 			// this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
-			if (is_head(parent_node) && !no_detach) this.chunks.destroy.push(b`@detach(${id});`);
+			if (is_head(parent_node) && !no_detach) {
+				this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
+				this.chunks.destroy.push(b`@detach(${id});`);
+			} 
 		} else {
 			this.chunks.mount.push(b`@insert(#target, ${id}, #anchor);`);
 			if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(${id});`);

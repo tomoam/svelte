@@ -22,7 +22,8 @@ import { trim_start, trim_end } from '../../../utils/trim';
 import { link } from '../../../utils/link';
 import { Identifier } from 'estree';
 import TemplateRenderer from '../TemplateRenderer';
-import is_dynamic_wrapper from './shared/is_dynamic_wrapper';
+import { is_static_keyblock } from './shared/is_static_keyblock';
+// import is_dynamic_wrapper from './shared/is_dynamic_wrapper';
 
 const wrappers = {
 	AwaitBlock,
@@ -68,6 +69,7 @@ export default class FragmentWrapper {
 		let last_child: Wrapper;
 		let window_wrapper;
 		let head_wrappers: Head[] = [];
+		let body_wrapper;
 
 		let i = nodes.length;
 		while (i--) {
@@ -94,6 +96,11 @@ export default class FragmentWrapper {
 				continue;
 			}
 
+			if (child.type === 'Body') {
+				body_wrapper = new Body(renderer, block, parent, child);
+				continue;
+			}
+
 			if (child.type === 'Text') {
 				let { data } = child;
 
@@ -106,14 +113,15 @@ export default class FragmentWrapper {
 
 					if (should_trim) {
 						data = trim_end(data);
-						if (!data) continue;
 						child.data = data;
+						if (!data) continue;
 					}
 				}
 
 				// glue text nodes (which could e.g. be separated by comments) together
-				if (last_child && last_child.node.type === 'Text') {
+				if (!renderer.options.preserveComments && last_child && last_child.node.type === 'Text') {
 					(last_child as Text).data = data + (last_child as Text).data;
+					child.data = "";
 					continue;
 				}
 
@@ -126,6 +134,16 @@ export default class FragmentWrapper {
 			} else {
 				const Wrapper = wrappers[child.type];
 				if (!Wrapper) continue;
+
+				if (is_static_keyblock(child)) {
+					nodes.splice(i, 1, ...child.children);
+					i = i + child.children.length;
+					continue;
+				}
+
+				if (child.type === 'Element' && child.name === 'noscript') {
+					continue;
+				}
 
 				const wrapper = new Wrapper(renderer, block, parent, child, strip_whitespace, last_child || next_sibling);
 				this.nodes.unshift(wrapper);
@@ -155,13 +173,14 @@ export default class FragmentWrapper {
 			create_template(this.nodes[0], this.nodes, renderer);
 		}
 
-		const filter = (node) => {
+		const filter = (node: Wrapper) => {
 			if (node instanceof Text) {
 				if (!node.parent ||
-					node.parent instanceof Slot ||
-					node.parent instanceof SlotTemplate ||
-					is_dynamic_wrapper(node.next) ||
-					is_dynamic_wrapper(node.prev) ||
+					!node.parent.is_dom_node() ||
+					// is_dynamic_wrapper(node.next) ||
+					// is_dynamic_wrapper(node.prev) ||
+					(node.next && !node.next.is_dom_node()) ||
+					(node.prev && !node.prev.is_dom_node()) ||
 					node.next instanceof MustacheTag ||
 					(node.prev instanceof MustacheTag && renderer.options.hydratable)
 				) {
@@ -183,11 +202,16 @@ export default class FragmentWrapper {
 
 		this.nodes = this.nodes.filter(filter);
 
+		if (body_wrapper) {
+			this.nodes.unshift(body_wrapper);
+			link(last_child, last_child = body_wrapper);
+		}
+
 		head_wrappers.forEach((head_node) => {
 			const frag_nodes = head_node.fragment.nodes.filter(n => !(n instanceof Title));
-			create_template(head_node, frag_nodes, renderer);
+			if (frag_nodes.length) create_template(head_node, frag_nodes, renderer);
 			this.nodes.unshift(head_node);
-			link(last_child, head_node);
+			link(last_child, last_child = head_node);
 		});
 
 		if (window_wrapper) {
@@ -220,7 +244,7 @@ function to_template_literal(nodes: INode[], name, locate, options) {
 	const templateRenderer = new TemplateRenderer({
 		name: name 
 	});
-	
+
 	// create $$render function
 	templateRenderer.render((nodes), Object.assign({
 		locate: locate

@@ -9,6 +9,7 @@ import {
 	init,
 	insert_hydration,
 	make_renderer,
+	next_element_sibling,
 	next_sibling,
 	noop,
 	safe_not_equal,
@@ -29,16 +30,16 @@ function create_fragment(ctx) {
 		c() {
 			img0 = first_child(render());
 			t = next_sibling(img0);
-			img1 = next_sibling(t);
+			img1 = next_element_sibling(t);
 			cloned = true;
 			this.h();
 		},
 		l(nodes) {
 			if (!cloned) this.c();
 			if (nodes.length === 0) return;
-			img0 = claim_template_element(img0, nodes[0], nodes);
-			t = claim_template_text(t, next_sibling(img0), nodes);
-			img1 = claim_template_element(img1, next_sibling(t), nodes);
+			img0 = claim_template_element(img0, nodes);
+			t = claim_template_text(t, nodes);
+			img1 = claim_template_element(img1, nodes);
 			this.h();
 		},
 		h() {

@@ -19,6 +19,8 @@ export default class Wrapper {
 	template_index: string;
 	template: TemplateLiteral;
 
+	anchor: Identifier;
+
 	constructor(
 		renderer: Renderer,
 		block: Block,
