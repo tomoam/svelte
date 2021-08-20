@@ -1,3 +1,2 @@
-export default {
-	show: true
-};
+export default {};
+

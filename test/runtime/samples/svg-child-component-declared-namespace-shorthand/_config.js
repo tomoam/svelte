@@ -17,6 +17,7 @@ export default {
 
 		component.width = 150;
 		component.height = 50;
-		assert.equal( target.innerHTML, '<svg><rect x="0" y="0" width="150" height="50"></rect></svg>' );
+		// assert.equal( target.innerHTML, '<svg><rect x="0" y="0" width="150" height="50"></rect></svg>' );
+		assert.htmlEqual( target.innerHTML, '<svg><rect x="0" y="0" width="150" height="50"></rect></svg>' );
 	}
 };

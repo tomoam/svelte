@@ -1,5 +1,4 @@
 export default {
-	show: true,
 	snapshot(target) {
 		const p = target.querySelector('p');
 

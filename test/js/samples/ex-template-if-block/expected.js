@@ -3,12 +3,12 @@ import {
 	SvelteComponent,
 	claim_template_element,
 	detach,
-	empty,
 	first_child,
 	init,
 	insert_hydration,
 	make_renderer,
 	noop,
+	replace_blank,
 	safe_not_equal,
 	trim_nodes
 } from "svelte/internal";
@@ -48,15 +48,15 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
+			if_block_anchor = replace_blank(first_child(render_1()));
 			if (if_block) if_block.c();
-			if_block_anchor = empty();
 			cloned = true;
 		},
 		l(nodes) {
 			if (!cloned) this.c();
 			if (nodes.length === 0) return;
+			if_block_anchor = if_block_anchor;
 			if (if_block) if_block.l(trim_nodes(nodes));
-			if_block_anchor = empty();
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -79,8 +79,8 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (if_block) if_block.d(detaching);
 			if (detaching) detach(if_block_anchor);
+			if (if_block) if_block.d(detaching);
 		}
 	};
 }

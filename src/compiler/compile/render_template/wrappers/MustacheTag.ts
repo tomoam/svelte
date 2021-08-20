@@ -6,6 +6,7 @@ import MustacheTag from '../../nodes/MustacheTag';
 import RawMustacheTag from '../../nodes/RawMustacheTag';
 import { x } from 'code-red';
 import { Identifier } from 'estree';
+import { is_head } from './shared/is_head';
 // import remove_whitespace_children from '../handlers/utils/remove_whitespace_children';
 // import { INode } from '../../nodes/interfaces';
 
@@ -33,28 +34,13 @@ export default class MustacheTagWrapper extends Tag {
 		let node_path;
 		if (this.template_index) {
 			node_path = x`@first_child(${this.template_index}())`;
-		// } else {
-		// 	const children = remove_whitespace_children(
-		// 		this.parent.node.children as INode[],
-		// 		this.parent.node.next);
-		// 	if (!this.prev) {
-		// 		const index = children.indexOf(this.node);
-		// 		node_path = x`@first_child(${parent_node})`;
-		// 		for (let i = 0 ; i < index ; i += 1) {
-		// 			node_path = x`@next_sibling(${node_path})`;
-		// 		}
-		// 	} else {
-		// 		const prev_index = children.indexOf(this.prev.node as INode)
-		// 		const index = children.indexOf(this.node);
-		// 		node_path = `${this.prev.var.name}`;
-		// 		for (let i = prev_index ; i < index ; i += 1) {
-		// 			node_path = x`@next_sibling(${node_path})`;
-		// 		}
-		// 	}
-		} else if (parent_node && !this.prev) {
-			node_path = x`@first_child(${parent_node})`;
+		} else if (is_head(parent_node) && this.parent.template_index && (!this.prev || !this.prev.var)) {
+			node_path =  x`@first_child(${this.parent.template_index}())`;
 		} else if (this.prev) {
-			node_path = x`@next_sibling(${this.prev.var})`;
+			const prev_var = this.prev.is_dom_node ? this.prev.var : this.prev.anchor;
+			node_path = x`@next_sibling(${prev_var})`;
+		} else {
+			node_path = x`@first_child(${parent_node})`;
 		}
 
 		const render_statement = x`@replace_text(${node_path}, ${init})`;

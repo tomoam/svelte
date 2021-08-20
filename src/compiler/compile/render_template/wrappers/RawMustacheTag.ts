@@ -7,6 +7,7 @@ import MustacheTag from '../../nodes/MustacheTag';
 import RawMustacheTag from '../../nodes/RawMustacheTag';
 import { is_head } from './shared/is_head';
 import { Identifier } from 'estree';
+import { get_initial_anchor_node } from './shared/get_initial_anchor_node';
 
 export default class RawMustacheTagWrapper extends Tag {
 	var: Identifier = { type: 'Identifier', name: 'raw' };
@@ -22,7 +23,7 @@ export default class RawMustacheTagWrapper extends Tag {
 		this.not_static_content();
 	}
 
-	render(block: Block, parent_node: Identifier, _parent_nodes: Identifier) {
+	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		const in_head = is_head(parent_node);
 
 		const can_use_innerhtml = !in_head && parent_node && !this.prev && !this.next;
@@ -37,33 +38,43 @@ export default class RawMustacheTagWrapper extends Tag {
 
 			block.chunks.mount.push(insert(init));
 		} else {
-			const needs_anchor = in_head || (this.next ? !this.next.is_dom_node() : (!this.parent || !this.parent.is_dom_node()));
-
+			// const needs_anchor = in_head || (this.next ? !this.next.is_dom_node() : (!this.parent || !this.parent.is_dom_node()));
 			const html_tag = block.get_unique_name('html_tag');
-			const html_anchor = needs_anchor && block.get_unique_name('html_anchor');
+			// const html_anchor = this.create_anchor(block, 'html_anchor');
+
+			// const needs_anchor = in_head || this.needs_anchor(parent_node);
+			// const update_anchor = this.get_update_anchor_node(needs_anchor, html_anchor);
 
 			block.add_variable(html_tag);
+			// block.add_variable(html_anchor);
 
 			const { init } = this.rename_this_method(
 				block,
 				content => x`${html_tag}.p(${content})`
 			);
 
-			const update_anchor = needs_anchor ? html_anchor : this.next ? this.next.var : 'null';
-
 			block.chunks.create.push(b`${html_tag} = new @HtmlTag();`);
-			if (this.renderer.options.hydratable) {
-				block.chunks.claim.push(b`${html_tag} = @claim_html_tag(${_parent_nodes});`);
-			}
-			block.chunks.hydrate.push(b`${html_tag}.a = ${update_anchor};`);
-			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${parent_node ? null : '#anchor'});`);
+			// block.chunks.create.push(b`${this.anchor} = @replace_blank(${this.get_node_path(parent_node)});`);
 
-			if (needs_anchor) {
-				block.add_element(html_anchor, x`@empty()`, x`@empty()`, parent_node);
+			if (this.renderer.options.hydratable) {
+				block.chunks.claim.push(b`${html_tag} = @claim_html_tag(${parent_nodes});`);
 			}
+
+			const insert_anchor = get_initial_anchor_node(this, parent_node);
+			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${insert_anchor});`);
+			// if (needs_anchor) {
+			// 	block.chunks.mount.push(b`@insert(${parent_node || '#target'}, ${html_anchor}, ${parent_node ? null : '#anchor'});`);
+			// }
+
+			const update_anchor = this.get_or_create_anchor(block, parent_node, parent_nodes, 'html_anchor');
+			block.chunks.hydrate.push(b`${html_tag}.a = ${update_anchor};`);
 
 			if (!parent_node || in_head) {
 				block.chunks.destroy.push(b`if (detaching) ${html_tag}.d();`);
+
+				// if (needs_anchor) {
+				// 	block.chunks.destroy.push(b`if (detaching) @detach(${html_anchor});`);
+				// }
 			}
 		}
 	}

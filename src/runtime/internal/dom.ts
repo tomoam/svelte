@@ -1,4 +1,3 @@
-import { slide } from 'svelte/transition';
 import { has_prop } from './utils';
 
 // Track which nodes are claimed during hydration. Unclaimed nodes can then be removed from the DOM
@@ -32,7 +31,7 @@ function upper_bound(low: number, high: number, key: (index: number) => number, 
 	return low;
 }
 
-function init_hydrate(target: NodeEx) {
+export function init_hydrate(target: NodeEx) {
 	if (target.hydrate_init) return;
 	target.hydrate_init = true;
 
@@ -166,32 +165,34 @@ function append_stylesheet(node: ShadowRoot | Document, style: HTMLStyleElement)
 }
 
 export function append_hydration(target: NodeEx, node: NodeEx) {
-	if (is_hydrating) {
-		// console.log("append_hydration is_hydrating");
-		init_hydrate(target);
+	target.appendChild(node);
 
-		if ((target.actual_end_child === undefined) || ((target.actual_end_child !== null) && (target.actual_end_child.parentElement !== target))) {
-			target.actual_end_child = target.firstChild;
-		}
+	// if (is_hydrating) {
+	// 	// console.log("append_hydration is_hydrating");
+	// 	init_hydrate(target);
 
-		// Skip nodes of undefined ordering
-		while ((target.actual_end_child !== null) && (target.actual_end_child.claim_order === undefined)) {
-			target.actual_end_child = target.actual_end_child.nextSibling;
-		}
+	// 	if ((target.actual_end_child === undefined) || ((target.actual_end_child !== null) && (target.actual_end_child.parentElement !== target))) {
+	// 		target.actual_end_child = target.firstChild;
+	// 	}
 
-		if (node !== target.actual_end_child) {
-			// We only insert if the ordering of this node should be modified or the parent node is not target
-			if (node.claim_order !== undefined || node.parentNode !== target) {
-				// console.log("append_hydration target.insertBefore");
-				target.insertBefore(node, target.actual_end_child);
-			}
-		} else {
-			target.actual_end_child = node.nextSibling;
-		}
-	} else if (node.parentNode !== target) {
-		// console.log("append_hydration target.appendChild");
-		target.appendChild(node);
-	}
+	// 	// Skip nodes of undefined ordering
+	// 	while ((target.actual_end_child !== null) && (target.actual_end_child.claim_order === undefined)) {
+	// 		target.actual_end_child = target.actual_end_child.nextSibling;
+	// 	}
+
+	// 	if (node !== target.actual_end_child) {
+	// 		// We only insert if the ordering of this node should be modified or the parent node is not target
+	// 		if (node.claim_order !== undefined || node.parentNode !== target) {
+	// 			// console.log("append_hydration target.insertBefore");
+	// 			target.insertBefore(node, target.actual_end_child);
+	// 		}
+	// 	} else {
+	// 		target.actual_end_child = node.nextSibling;
+	// 	}
+	// } else if (node.parentNode !== target) {
+	// 	// console.log("append_hydration target.appendChild");
+	// 	target.appendChild(node);
+	// }
 }
 
 export function insert(target: Node, node: Node, anchor?: Node) {
@@ -261,23 +262,21 @@ export function replace_blank(elm: ChildNode) {
 	return replace_text(elm, '');
 }
 
-export function insert_blank_anchor(nodes: ChildNodeArray, parent_node?: ChildNode) {
-	const next_node = trim_start(nodes)[0];
+export function insert_blank_anchor(next_node: ChildNode, parent_node?: ChildNode) {
 	const target = parent_node || next_node.parentNode;
-	if (next_node && target) {
-		const anchor = empty();
-		insert_hydration(target, anchor, next_node);
-		return anchor;
-	}
-	return null;
+	const anchor = empty();
+	insert_hydration(target, anchor, next_node);
+	return anchor;
 }
 
-function trim_start(nodes: ChildNodeArray) {
-	const first = nodes[0]
-
-	if (first && is_whitespace(first)) return nodes.slice(1);
-
-	return nodes;
+export function get_parent_from_nodes(nodes: ChildNodeArray) {
+	for (let i = 0 ; i < nodes.length ; i += 1) {
+		const parent_node = nodes[i].parentNode;
+		if (parent_node) {
+			return parent_node;
+		}
+	}
+	return null;
 }
 
 export function replace_or_appned_node(old_node: ChildNode, new_node: ChildNode, parent_node?: ChildNode) {
@@ -638,11 +637,11 @@ export function claim_template_element(template_node: Element, nodes: ChildNodeA
 		},
 		() =>  {
 			// is cloned
-			type ElementTemplate = Element & {ic: boolean};
+			// type ElementTemplate = Element & {ic: boolean};
 
 			// console.log("claim_template_element createNode")
 			if (target) insert_hydration(target, template_node);
-			(template_node as ElementTemplate).ic = true;
+			// (template_node as ElementTemplate).ic = true;
 			return template_node;
 		}
 	);

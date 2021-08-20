@@ -46,10 +46,10 @@ export default class HeadWrapper extends Wrapper {
 				b`${nodes}.forEach(@detach);`
 			);
 
-			const index = block.wrappers.indexOf(this);
-			if (!block.wrappers.slice(0, index).some((n) => n instanceof Head)) {
-				block.chunks.claim.push(b`if (#nodes.length === 0) return;`);
-			}
+			// const index = block.wrappers.indexOf(this);
+			// if (this.fragment.nodes.length > 1 && !block.wrappers.slice(0, index).some((n) => n instanceof Head)) {
+			// 	block.chunks.claim.push(b`if (#nodes.length === 0) return;`);
+			// }
 		}
 	}
 }

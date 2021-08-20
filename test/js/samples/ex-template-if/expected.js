@@ -5,7 +5,6 @@ import {
 	claim_template_element,
 	claim_template_text,
 	detach,
-	empty,
 	first_child,
 	first_element_child,
 	init,
@@ -15,6 +14,7 @@ import {
 	next_element_sibling,
 	next_sibling,
 	noop,
+	replace_blank,
 	replace_text,
 	run_all,
 	safe_not_equal,
@@ -70,8 +70,8 @@ function create_if_block(ctx) {
 			t1 = next_sibling(span);
 			input = next_element_sibling(t1);
 			t2 = next_sibling(input);
+			if_block_anchor = replace_blank(next_sibling(t2));
 			if (if_block) if_block.c();
-			if_block_anchor = empty();
 			cloned = true;
 		},
 		l(nodes) {
@@ -81,8 +81,8 @@ function create_if_block(ctx) {
 			t1 = claim_template_text(t1, nodes);
 			input = claim_template_element(input, nodes);
 			t2 = claim_template_text(t2, nodes);
+			if_block_anchor = if_block_anchor;
 			if (if_block) if_block.l(trim_nodes(nodes));
-			if_block_anchor = empty();
 		},
 		m(target, anchor) {
 			insert_hydration(target, span, anchor);
@@ -121,8 +121,8 @@ function create_if_block(ctx) {
 			if (detaching) detach(t1);
 			if (detaching) detach(input);
 			if (detaching) detach(t2);
-			if (if_block) if_block.d(detaching);
 			if (detaching) detach(if_block_anchor);
+			if (if_block) if_block.d(detaching);
 			mounted = false;
 			dispose();
 		}
@@ -150,8 +150,8 @@ function create_if_block_1(ctx) {
 			if (nodes.length === 0) return;
 			span = claim_template_element(span, nodes);
 			var span_nodes = children(span);
-			if (!span.ic) t0 = claim_template_text(t0, span_nodes, span);
-			if (!span.ic) t1 = claim_template_text(t1, span_nodes, span);
+			t0 = claim_template_text(t0, span_nodes, span);
+			t1 = claim_template_text(t1, span_nodes, span);
 		},
 		m(target, anchor) {
 			insert_hydration(target, span, anchor);
@@ -172,6 +172,7 @@ function create_fragment(ctx) {
 	let input0;
 	let input1;
 	let t1;
+	let if_block_anchor;
 	let mounted;
 	let dispose;
 	let cloned;
@@ -190,6 +191,7 @@ function create_fragment(ctx) {
 			input0 = first_element_child(div);
 			input1 = next_element_sibling(input0);
 			t1 = next_sibling(input1);
+			if_block_anchor = replace_blank(next_sibling(t1));
 			if_block.c();
 			cloned = true;
 		},
@@ -198,9 +200,9 @@ function create_fragment(ctx) {
 			if (nodes.length === 0) return;
 			div = claim_template_element(div, nodes);
 			var div_nodes = children(div);
-			if (!div.ic) input0 = claim_template_element(input0, div_nodes, div);
-			if (!div.ic) input1 = claim_template_element(input1, div_nodes, div);
-			if (!div.ic) t1 = claim_template_text(t1, div_nodes, div);
+			input0 = claim_template_element(input0, div_nodes, div);
+			input1 = claim_template_element(input1, div_nodes, div);
+			t1 = claim_template_text(t1, div_nodes, div);
 			if_block.l(trim_nodes(div_nodes));
 		},
 		m(target, anchor) {

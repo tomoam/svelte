@@ -10,6 +10,7 @@ import ThenBlock from '../../nodes/ThenBlock';
 import CatchBlock from '../../nodes/CatchBlock';
 import { Context } from '../../nodes/shared/Context';
 import { Identifier, Literal, Node } from 'estree';
+import { get_initial_anchor_node } from './shared/get_initial_anchor_node';
 
 type Status = 'pending' | 'then' | 'catch';
 
@@ -172,8 +173,8 @@ export default class AwaitBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		parent_nodes: Identifier
 	) {
-		const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
-		const update_mount_node = this.get_update_mount_node(anchor);
+		const update_anchor_node = this.get_or_create_anchor(block, parent_node, parent_nodes);
+		const update_mount_node = this.get_update_mount_node(update_anchor_node);
 
 		const snippet = this.node.expression.manipulate(block);
 
@@ -216,14 +217,20 @@ export default class AwaitBlockWrapper extends Wrapper {
 		}
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = parent_node ? 'null' : '#anchor';
+		const initial_anchor_node = get_initial_anchor_node(this, parent_node);
 
 		const has_transitions = this.pending.block.has_intro_method || this.pending.block.has_outro_method;
 
+		// block.chunks.mount.push(b`
+		// 	${info}.block.m(${initial_mount_node}, ${info}.anchor = ${anchor_node});
+		// 	${info}.mount = () => ${update_mount_node};
+		// 	${info}.anchor = ${anchor};
+		// `);
+
 		block.chunks.mount.push(b`
-			${info}.block.m(${initial_mount_node}, ${info}.anchor = ${anchor_node});
+			${info}.block.m(${initial_mount_node}, ${info}.anchor = ${initial_anchor_node});
 			${info}.mount = () => ${update_mount_node};
-			${info}.anchor = ${anchor};
+			${info}.anchor = ${update_anchor_node};
 		`);
 
 		if (has_transitions) {

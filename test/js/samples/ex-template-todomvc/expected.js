@@ -4,7 +4,6 @@ import {
 	attr,
 	destroy_block,
 	detach,
-	empty,
 	first_child,
 	first_element_child,
 	init,
@@ -14,6 +13,7 @@ import {
 	next_element_sibling,
 	next_sibling,
 	noop,
+	replace_blank,
 	replace_text,
 	run_all,
 	safe_not_equal,
@@ -40,6 +40,7 @@ function create_if_block(ctx) {
 	let ul0;
 	let each_blocks = [];
 	let each_1_lookup = new Map();
+	let each_1_anchor;
 	let footer;
 	let span;
 	let strong;
@@ -58,6 +59,7 @@ function create_if_block(ctx) {
 	let a2;
 	let a2_class_value;
 	let t14;
+	let if_block_anchor;
 	let mounted;
 	let dispose;
 	let each_value = /*filtered*/ ctx[5];
@@ -82,6 +84,7 @@ function create_if_block(ctx) {
 				each_blocks[i].c();
 			}
 
+			each_1_anchor = replace_blank(first_child(ul0));
 			footer = next_element_sibling(ul0);
 			span = first_element_child(footer);
 			strong = first_element_child(span);
@@ -96,6 +99,7 @@ function create_if_block(ctx) {
 			li2 = next_element_sibling(li1);
 			a2 = first_element_child(li2);
 			t14 = next_sibling(ul1);
+			if_block_anchor = replace_blank(next_sibling(t14));
 			if (if_block) if_block.c();
 			input.checked = input_checked_value = /*numCompleted*/ ctx[3] === /*items*/ ctx[1].length;
 			attr(a0, "class", a0_class_value = /*currentFilter*/ ctx[0] === 'all' ? 'selected' : '');
@@ -226,6 +230,7 @@ function create_each_block(key_1, ctx) {
 	let t1;
 	let button;
 	let t3;
+	let if_block_anchor;
 	let t4;
 	let li_class_value;
 	let mounted;
@@ -256,8 +261,9 @@ function create_each_block(key_1, ctx) {
 			t1 = replace_text(first_child(label), t1_value);
 			button = next_element_sibling(label);
 			t3 = next_sibling(div);
+			if_block_anchor = replace_blank(next_sibling(t3));
 			if (if_block) if_block.c();
-			t4 = next_sibling(next_sibling(t3));
+			t4 = next_sibling(if_block_anchor);
 
 			attr(li, "class", li_class_value = "" + ((/*item*/ ctx[16].completed ? 'completed' : '') + " " + (/*editing*/ ctx[2] === /*index*/ ctx[18]
 			? 'editing'
@@ -268,7 +274,7 @@ function create_each_block(key_1, ctx) {
 		m(target, anchor) {
 			insert(target, li, anchor);
 			input.checked = /*item*/ ctx[16].completed;
-			if (if_block) if_block.m(li, null);
+			if (if_block) if_block.m(li, t4);
 
 			if (!mounted) {
 				dispose = [
@@ -364,8 +370,8 @@ function create_fragment(ctx) {
 			h1 = first_element_child(header);
 			input = next_element_sibling(h1);
 			t2 = next_sibling(header);
+			if_block_anchor = replace_blank(next_sibling(t2));
 			if (if_block) if_block.c();
-			if_block_anchor = empty();
 			input.autofocus = true;
 		},
 		m(target, anchor) {
@@ -399,8 +405,8 @@ function create_fragment(ctx) {
 		d(detaching) {
 			if (detaching) detach(header);
 			if (detaching) detach(t2);
-			if (if_block) if_block.d(detaching);
 			if (detaching) detach(if_block_anchor);
+			if (if_block) if_block.d(detaching);
 			mounted = false;
 			dispose();
 		}

@@ -20,6 +20,7 @@ import { string_to_member_expression } from '../../../utils/string_to_member_exp
 import SlotTemplate from '../../../nodes/SlotTemplate';
 import { is_head } from '../shared/is_head';
 import compiler_warnings from '../../../compiler_warnings';
+import { get_initial_anchor_node } from '../shared/get_initial_anchor_node';
 
 type SlotDefinition = { block: Block; scope: TemplateScope; get_context?: Node; get_changes?: Node };
 
@@ -124,7 +125,13 @@ export default class InlineComponentWrapper extends Wrapper {
 		const { component } = renderer;
 
 		const name = this.var;
+		// const anchor = this.create_anchor(block);
+		// const needs_anchor = this.needs_anchor(parent_node);
+		// const initial_anchor_node = this.get_initial_anchor_node(parent_node);
+		// const update_anchor_node = this.get_update_anchor_node(needs_anchor, anchor);
+
 		block.add_variable(name);
+		// block.add_variable(anchor);
 
 		const component_opts = x`{}` as ObjectExpression;
 
@@ -433,14 +440,15 @@ export default class InlineComponentWrapper extends Wrapper {
 				);
 			}
 
+			const initial_anchor_node = get_initial_anchor_node(this, parent_node);
 			block.chunks.mount.push(b`
 				if (${name}) {
-					@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? this.next ? this.next.var : 'null' : '#anchor'});
+					@mount_component(${name}, ${parent_node || '#target'}, ${initial_anchor_node});
 				}
 			`);
 
-			const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
-			const update_mount_node = this.get_update_mount_node(anchor);
+			const update_anchor_node = this.get_or_create_anchor(block, parent_node, parent_nodes);
+			const update_mount_node = this.get_update_mount_node(update_anchor_node);
 
 			if (updates.length) {
 				block.chunks.update.push(b`
@@ -467,7 +475,7 @@ export default class InlineComponentWrapper extends Wrapper {
 
 						@create_component(${name}.$$.fragment);
 						@transition_in(${name}.$$.fragment, 1);
-						@mount_component(${name}, ${update_mount_node}, ${anchor});
+						@mount_component(${name}, ${update_mount_node}, ${update_anchor_node});
 					} else {
 						${name} = null;
 					}
@@ -558,9 +566,11 @@ export default class InlineComponentWrapper extends Wrapper {
 				block.chunks.mount.push(b`@mount_component(${name}, ${css_custom_properties_wrapper}, null);`);
 			} else {
 				block.chunks.mount.push(
-					b`@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? this.next ? this.next.var : 'null' : '#anchor'});`
+					b`@mount_component(${name}, ${parent_node || '#target'}, ${get_initial_anchor_node(this, parent_node)});`
 				);
 			}
+
+			this.get_or_create_anchor(block, parent_node, parent_nodes);
 
 			block.chunks.intro.push(b`
 				@transition_in(${name}.$$.fragment, #local);
@@ -581,5 +591,11 @@ export default class InlineComponentWrapper extends Wrapper {
 				b`@transition_out(${name}.$$.fragment, #local);`
 			);
 		}
+
+		// if (!parent_node || is_head(parent_node) ) {
+		// 	if (needs_anchor) {
+		// 		block.chunks.destroy.push(b`if (detaching) @detach(${this.anchor});`);
+		// 	}
+		// }
 	}
 }

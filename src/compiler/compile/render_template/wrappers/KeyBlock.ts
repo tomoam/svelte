@@ -7,6 +7,7 @@ import create_debugging_comment from './shared/create_debugging_comment';
 import FragmentWrapper from './Fragment';
 import { b, x } from 'code-red';
 import { Identifier } from 'estree';
+import { get_initial_anchor_node } from './shared/get_initial_anchor_node';
 
 export default class KeyBlockWrapper extends Wrapper {
 	node: KeyBlock;
@@ -89,9 +90,7 @@ export default class KeyBlockWrapper extends Wrapper {
 			block.chunks.claim.push(b`${this.var}.l(${parent_nodes});`);
 		}
 		block.chunks.mount.push(
-			b`${this.var}.m(${parent_node || '#target'}, ${
-				parent_node ? 'null' : '#anchor'
-			});`
+			b`${this.var}.m(${parent_node || '#target'}, ${get_initial_anchor_node(this, parent_node)});`
 		);
 		const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
 		const body = b`

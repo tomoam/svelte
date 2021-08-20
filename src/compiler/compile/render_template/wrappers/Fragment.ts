@@ -23,6 +23,7 @@ import { link } from '../../../utils/link';
 import { Identifier } from 'estree';
 import TemplateRenderer from '../TemplateRenderer';
 import { is_static_keyblock } from './shared/is_static_keyblock';
+import { namespaces } from '../../../utils/namespaces';
 // import is_dynamic_wrapper from './shared/is_dynamic_wrapper';
 
 const wrappers = {
@@ -170,15 +171,14 @@ export default class FragmentWrapper {
 		}
 
 		if (this.nodes.length > 0 && !(parent instanceof Element) && !(parent instanceof Head)) {
-			create_template(this.nodes[0], this.nodes, renderer);
+			const is_SVG = this.nodes.some(node => node instanceof Element && node.node.namespace === namespaces.svg);
+			create_template(this.nodes[0], this.nodes, renderer, is_SVG);
 		}
 
 		const filter = (node: Wrapper) => {
 			if (node instanceof Text) {
 				if (!node.parent ||
 					!node.parent.is_dom_node() ||
-					// is_dynamic_wrapper(node.next) ||
-					// is_dynamic_wrapper(node.prev) ||
 					(node.next && !node.next.is_dom_node()) ||
 					(node.prev && !node.prev.is_dom_node()) ||
 					node.next instanceof MustacheTag ||
@@ -227,7 +227,7 @@ export default class FragmentWrapper {
 	}
 }
 
-function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
+function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer, is_SVG?: boolean) {
 	node.template_index = renderer.component.get_unique_name('render').name;
 	// console.log("FragmentWrapper crete_template node.node.type", node.node.type);
 	// console.log("FragmentWrapper crete_template node.template_index", node.template_index);
@@ -235,21 +235,30 @@ function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
 			nodes.map(n => n.node as INode),
 			renderer.component.name,
 			renderer.component.locate,
-			renderer.options
+			renderer.options,
+			is_SVG
 		);
 }
 
-function to_template_literal(nodes: INode[], name, locate, options) {
+function to_template_literal(nodes: INode[], name, locate, options, is_SVG?: boolean) {
 
 	const templateRenderer = new TemplateRenderer({
 		name: name 
 	});
+
+	if(is_SVG) {
+		templateRenderer.add_string('<svg>');
+	}
 
 	// create $$render function
 	templateRenderer.render((nodes), Object.assign({
 		locate: locate
 	}, options));
 	
+	if(is_SVG) {
+		templateRenderer.add_string('</svg>');
+	}
+
 	// TODO put this inside the Renderer class
 	const templateLiteral = templateRenderer.pop();
 

@@ -13,6 +13,7 @@ import {
 	next_element_sibling,
 	next_sibling,
 	noop,
+	replace_blank,
 	safe_not_equal,
 	transition_in,
 	transition_out
@@ -26,6 +27,7 @@ function create_fragment(ctx) {
 	let span;
 	let t1;
 	let nested;
+	let nested_anchor;
 	let t2;
 	let div0;
 	let current;
@@ -37,7 +39,8 @@ function create_fragment(ctx) {
 			span = first_element_child(div1);
 			t1 = next_sibling(span);
 			create_component(nested.$$.fragment);
-			t2 = next_sibling(next_sibling(t1));
+			nested_anchor = replace_blank(next_sibling(t1));
+			t2 = next_sibling(nested_anchor);
 			div0 = next_element_sibling(t2);
 		},
 		m(target, anchor) {

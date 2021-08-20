@@ -1,6 +1,4 @@
 export default {
-	show: true,
-
 	compileOptions: {
 		generate: "template",
 	},

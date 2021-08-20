@@ -12,6 +12,7 @@ import {
 	next_element_sibling,
 	next_sibling,
 	noop,
+	replace_blank,
 	replace_text,
 	safe_not_equal
 } from "svelte/internal";
@@ -63,6 +64,7 @@ function create_fragment(ctx) {
 	let t1;
 	let ul;
 	let t2;
+	let each_1_anchor;
 	let t3;
 	let each_value = /*cats*/ ctx[0];
 	let each_blocks = [];
@@ -82,7 +84,8 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			t3 = next_sibling(next_sibling(t2));
+			each_1_anchor = replace_blank(next_sibling(t2));
+			t3 = next_sibling(each_1_anchor);
 		},
 		m(target, anchor) {
 			insert(target, h1, anchor);

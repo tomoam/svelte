@@ -62,16 +62,16 @@ function create_fragment(ctx) {
 			t0 = claim_template_text(t0, nodes);
 			section = claim_template_element(section, nodes);
 			var section_nodes = children(section);
-			if (!section.ic) div0 = claim_template_element(div0, section_nodes, section);
+			div0 = claim_template_element(div0, section_nodes, section);
 			var div0_nodes = children(div0);
-			if (!div0.ic) input = claim_template_element(input, div0_nodes, div0);
-			if (!div0.ic) h1 = claim_template_element(h1, div0_nodes, div0);
+			input = claim_template_element(input, div0_nodes, div0);
+			h1 = claim_template_element(h1, div0_nodes, div0);
 			var h1_nodes = children(h1);
-			if (!h1.ic) t4 = claim_template_text(t4, h1_nodes, h1);
-			if (!h1.ic) t5 = claim_template_text(t5, h1_nodes, h1);
-			if (!h1.ic) t6 = claim_template_text(t6, h1_nodes, h1);
-			if (!div0.ic) p = claim_template_element(p, div0_nodes, div0);
-			if (!p.ic) t8 = claim_template_text(t8, trim_nodes(children(p)), p);
+			t4 = claim_template_text(t4, h1_nodes, h1);
+			t5 = claim_template_text(t5, h1_nodes, h1);
+			t6 = claim_template_text(t6, h1_nodes, h1);
+			p = claim_template_element(p, div0_nodes, div0);
+			t8 = claim_template_text(t8, trim_nodes(children(p)), p);
 			t11 = claim_template_text(t11, nodes);
 			div1 = claim_template_element(div1, nodes);
 		},

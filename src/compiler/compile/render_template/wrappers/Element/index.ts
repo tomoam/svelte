@@ -261,15 +261,9 @@ export default class ElementWrapper extends Wrapper {
 				claim_statement = this.get_claim_template_statement(node, "#nodes", parent_node);
 			}
 
-			if (parent_node && !is_head(parent_node)) {
-				block.chunks.claim.push(b`
-					if (!${parent_node}.ic) ${node} = ${claim_statement};
-				`);
-			} else {
-				block.chunks.claim.push(b`
-					${node} = ${claim_statement};
-				`);
-			}
+			block.chunks.claim.push(b`
+				${node} = ${claim_statement};
+			`);
 
 			if (!this.void && (this.node.children.length > 1 || this.fragment.nodes.some(n => !n.is_dom_node()))) {
 				block.chunks.claim.push(b`
@@ -394,13 +388,15 @@ export default class ElementWrapper extends Wrapper {
 		let render_statement;
 
 		if (this.template_index) {
-			render_statement = x`@first_child(${this.template_index}())`;
+			const node_path = this.node.namespace === namespaces.svg ? x`@first_child(${this.template_index}())` : `${this.template_index}()`;
+			render_statement = x`@first_child(${node_path})`;
 		} else if (is_head(parent_node) && this.parent.template_index && (!this.prev || !this.prev.var)) {
 			render_statement =  x`@first_child(${this.parent.template_index}())`;
+		} else if (this.prev) {
+			const prev_var = this.prev.is_dom_node() ? this.prev.var : this.prev.anchor;
+			render_statement =  x`@next_element_sibling(${prev_var})`;
 		} else if (parent_node && !this.prev) {
 			render_statement =  x`@first_element_child(${parent_node})`;
-		} else if (this.prev) {
-			render_statement =  x`@next_element_sibling(${this.prev.var})`;
 		}
 
 		const { name, namespace } = this.node;

@@ -1,5 +1,4 @@
 export default {
-	show:true,
 	props: {
 		a: 3,
 		b: 4,

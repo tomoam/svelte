@@ -4,9 +4,13 @@ import {
 	claim_component,
 	create_component,
 	destroy_component,
+	detach,
+	first_child,
 	init,
+	insert_hydration,
 	make_renderer,
 	mount_component,
+	replace_blank,
 	safe_not_equal,
 	transition_in,
 	transition_out,
@@ -20,6 +24,7 @@ const render = make_renderer(`<!>`);
 // (6:0) <Layout>
 function create_default_slot(ctx) {
 	let component;
+	let component_anchor;
 	let current;
 	let cloned;
 	component = new Component({});
@@ -27,15 +32,18 @@ function create_default_slot(ctx) {
 	return {
 		c() {
 			create_component(component.$$.fragment);
+			component_anchor = replace_blank(first_child(render()));
 			cloned = true;
 		},
 		l(nodes) {
 			if (!cloned) this.c();
 			if (nodes.length === 0) return;
 			claim_component(component.$$.fragment, trim_nodes(nodes));
+			component_anchor = component_anchor;
 		},
 		m(target, anchor) {
 			mount_component(component, target, anchor);
+			insert_hydration(target, component_anchor, anchor);
 			current = true;
 		},
 		i(local) {
@@ -48,6 +56,7 @@ function create_default_slot(ctx) {
 			current = false;
 		},
 		d(detaching) {
+			if (detaching) detach(component_anchor);
 			destroy_component(component, detaching);
 		}
 	};
@@ -57,6 +66,7 @@ const render_1 = make_renderer(`<!>`);
 
 function create_fragment(ctx) {
 	let layout;
+	let layout_anchor;
 	let current;
 	let cloned;
 
@@ -70,15 +80,18 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(layout.$$.fragment);
+			layout_anchor = replace_blank(first_child(render_1()));
 			cloned = true;
 		},
 		l(nodes) {
 			if (!cloned) this.c();
 			if (nodes.length === 0) return;
 			claim_component(layout.$$.fragment, trim_nodes(nodes));
+			layout_anchor = layout_anchor;
 		},
 		m(target, anchor) {
 			mount_component(layout, target, anchor);
+			insert_hydration(target, layout_anchor, anchor);
 			current = true;
 		},
 		p(ctx, [dirty]) {
@@ -100,6 +113,7 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
+			if (detaching) detach(layout_anchor);
 			destroy_component(layout, detaching);
 		}
 	};

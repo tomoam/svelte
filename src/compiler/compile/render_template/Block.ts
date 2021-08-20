@@ -2,11 +2,7 @@ import Renderer from './Renderer';
 import Wrapper from './wrappers/shared/Wrapper';
 import { b, x } from 'code-red';
 import { Node, Identifier, ArrayPattern } from 'estree';
-// import { Node, Identifier, ArrayPattern, TemplateLiteral } from 'estree';
 import { is_head } from './wrappers/shared/is_head';
-// import { trim } from '.';
-// import TemplateRenderer from './TemplateRenderer';
-// import { INode } from '../nodes/interfaces';
 
 export interface Bindings {
 	object: Identifier;
@@ -43,9 +39,6 @@ export default class Block {
 
 	bindings: Map<string, Bindings>;
 	binding_group_initialised: Set<string> = new Set();
-
-	// template_literal: TemplateLiteral[] = [];
-	// template_literal: TemplateElement[] = [];
 
 	chunks: {
 		declarations: Array<Node | Node[]>;
@@ -158,10 +151,6 @@ export default class Block {
 		}
 	}
 
-	//create_template_literals() {
-	//	this.template_literal = to_template_literals(this.renderer.fragment.nodes);
-	//}
-
 	add_dependencies(dependencies: Set<string>) {
 		dependencies.forEach(dependency => {
 			this.dependencies.add(dependency);
@@ -184,11 +173,7 @@ export default class Block {
 		this.chunks.create.push(b`${id} = ${render_statement};`);
 
 		if (this.renderer.options.hydratable) {
-			if (parent_node) {
-				this.chunks.claim.push(b`if (!${parent_node}.ic) ${id} = ${claim_statement || render_statement};`);
-			} else {
-				this.chunks.claim.push(b`${id} = ${claim_statement || render_statement};`);
-			}
+			this.chunks.claim.push(b`${id} = ${claim_statement || render_statement};`);
 		}
 
 		if (parent_node) {
@@ -313,12 +298,16 @@ export default class Block {
 				// 	console.log("cloned", #cloned);
 				// 	console.log("nodes.length", #nodes.length);
 				// `);
-				prefix.push(b`if (!#cloned) this.c();`);
+				if (this.chunks.create.length > 0) {
+					prefix.push(b`if (!#cloned) this.c();`);
+				}
 				if (!this.wrappers.some((n) => n.node.type === 'Head')) {
 					prefix.push(b`if (#nodes.length === 0) return;`);
 				}
 
-				this.chunks.claim.unshift(prefix);
+				if (prefix.length > 0) {
+					this.chunks.claim.unshift(prefix);
+				}
 				properties.claim = x`function #claim(#nodes) {
 					${this.chunks.claim}
 					${this.renderer.options.hydratable && this.chunks.hydrate.length > 0 && b`this.h();`}

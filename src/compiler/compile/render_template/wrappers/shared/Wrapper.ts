@@ -1,8 +1,10 @@
 import Renderer from '../../Renderer';
 import Block from '../../Block';
-import { x } from 'code-red';
+import { b, x } from 'code-red';
 import { TemplateNode } from '../../../../interfaces';
 import { Identifier, TemplateLiteral } from 'estree';
+import { is_head } from './is_head';
+import { get_node_path } from './get_node_path';
 
 export default class Wrapper {
 	renderer: Renderer;
@@ -56,24 +58,27 @@ export default class Wrapper {
 		if (this.parent) this.parent.not_static_content();
 	}
 
-	get_or_create_anchor(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
+	get_or_create_anchor(block: Block, parent_node: Identifier, parent_nodes: Identifier, anchor_name?: string): Identifier {
 		// TODO use this in EachBlock and IfBlock — tricky because
 		// children need to be created first
-		const needs_anchor = this.next ? !this.next.is_dom_node() : !parent_node || !this.parent.is_dom_node();
-		const anchor = needs_anchor
-			? block.get_unique_name(`${this.var.name}_anchor`)
-			: (this.next && this.next.var) || { type: 'Identifier', name: 'null' };
+		const needs_anchor = is_head(parent_node) || (this.next ? !this.next.is_dom_node() : !parent_node || !this.parent.is_dom_node());
+		this.anchor = block.get_unique_name(anchor_name || `${this.var.name}_anchor`);
+		const node_path = get_node_path(this, parent_node);
+		const render_statement = x`@replace_blank(${node_path})`;
 
 		if (needs_anchor) {
 			block.add_element(
-				anchor,
-				x`@empty()`,
-				parent_nodes && x`@empty()`,
+				this.anchor,
+				render_statement,
+				parent_node && !is_head(parent_node) ? x`@insert_blank_anchor(${parent_nodes || "#nodes"}[0], ${parent_node})` : this.anchor,
 				parent_node as Identifier
 			);
+		} else {
+			block.add_variable(this.anchor);
+			block.chunks.create.push(b`${this.anchor} = ${render_statement};`);
 		}
 
-		return anchor;
+		return needs_anchor ? this.anchor : this.next ? this.next.var : { type: 'Identifier', name: 'null' };
 	}
 
 	get_update_mount_node(anchor: Identifier): Identifier {
