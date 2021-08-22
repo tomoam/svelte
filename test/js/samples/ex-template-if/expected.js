@@ -2,13 +2,13 @@
 import {
 	SvelteComponent,
 	children,
-	claim_template_element,
-	claim_template_text,
+	claim_element_experimental,
+	claim_text_experimental,
 	detach,
 	first_child,
 	first_element_child,
 	init,
-	insert_hydration,
+	insert_experimental_hydration,
 	listen,
 	make_renderer,
 	next_element_sibling,
@@ -28,20 +28,18 @@ const render_2 = make_renderer(`<article>abc</article>`);
 // (16:1) {:else}
 function create_else_block(ctx) {
 	let article;
-	let cloned;
 
 	return {
 		c() {
 			article = first_child(render_2());
-			cloned = true;
 		},
 		l(nodes) {
-			if (!cloned) this.c();
-			if (nodes.length === 0) return;
-			article = claim_template_element(article, nodes);
+			this.c();
+			if (!nodes.length) return;
+			article = claim_element_experimental(article, nodes);
 		},
 		m(target, anchor) {
-			insert_hydration(target, article, anchor);
+			insert_experimental_hydration(target, article, anchor);
 		},
 		p: noop,
 		d(detaching) {
@@ -61,7 +59,6 @@ function create_if_block(ctx) {
 	let if_block_anchor;
 	let mounted;
 	let dispose;
-	let cloned;
 	let if_block = /*childChecked*/ ctx[1] && create_if_block_1(ctx);
 
 	return {
@@ -72,26 +69,25 @@ function create_if_block(ctx) {
 			t2 = next_sibling(input);
 			if_block_anchor = replace_blank(next_sibling(t2));
 			if (if_block) if_block.c();
-			cloned = true;
 		},
 		l(nodes) {
-			if (!cloned) this.c();
-			if (nodes.length === 0) return;
-			span = claim_template_element(span, nodes);
-			t1 = claim_template_text(t1, nodes);
-			input = claim_template_element(input, nodes);
-			t2 = claim_template_text(t2, nodes);
+			this.c();
+			if (!nodes.length) return;
+			span = claim_element_experimental(span, nodes);
+			t1 = claim_text_experimental(t1, nodes);
+			input = claim_element_experimental(input, nodes);
+			t2 = claim_text_experimental(t2, nodes);
 			if_block_anchor = if_block_anchor;
 			if (if_block) if_block.l(trim_nodes(nodes));
 		},
 		m(target, anchor) {
-			insert_hydration(target, span, anchor);
-			insert_hydration(target, t1, anchor);
-			insert_hydration(target, input, anchor);
+			insert_experimental_hydration(target, span, anchor);
+			insert_experimental_hydration(target, t1, anchor);
+			insert_experimental_hydration(target, input, anchor);
 			input.checked = /*childChecked*/ ctx[1];
-			insert_hydration(target, t2, anchor);
+			insert_experimental_hydration(target, t2, anchor);
 			if (if_block) if_block.m(target, anchor);
-			insert_hydration(target, if_block_anchor, anchor);
+			insert_experimental_hydration(target, if_block_anchor, anchor);
 
 			if (!mounted) {
 				dispose = listen(input, "change", /*input_change_handler*/ ctx[5]);
@@ -136,25 +132,23 @@ function create_if_block_1(ctx) {
 	let span;
 	let t0;
 	let t1;
-	let cloned;
 
 	return {
 		c() {
 			span = first_child(render());
 			t0 = replace_text(first_child(span), /*str*/ ctx[2]);
 			t1 = next_sibling(t0);
-			cloned = true;
 		},
 		l(nodes) {
-			if (!cloned) this.c();
-			if (nodes.length === 0) return;
-			span = claim_template_element(span, nodes);
+			this.c();
+			if (!nodes.length) return;
+			span = claim_element_experimental(span, nodes);
 			var span_nodes = children(span);
-			t0 = claim_template_text(t0, span_nodes, span);
-			t1 = claim_template_text(t1, span_nodes, span);
+			t0 = claim_text_experimental(t0, span_nodes, span);
+			t1 = claim_text_experimental(t1, span_nodes, span);
 		},
 		m(target, anchor) {
-			insert_hydration(target, span, anchor);
+			insert_experimental_hydration(target, span, anchor);
 		},
 		p(ctx, dirty) {
 			if (dirty & /*str*/ 4) set_data(t0, /*str*/ ctx[2]);
@@ -175,7 +169,6 @@ function create_fragment(ctx) {
 	let if_block_anchor;
 	let mounted;
 	let dispose;
-	let cloned;
 
 	function select_block_type(ctx, dirty) {
 		if (/*checked*/ ctx[0]) return create_if_block;
@@ -193,20 +186,19 @@ function create_fragment(ctx) {
 			t1 = next_sibling(input1);
 			if_block_anchor = replace_blank(next_sibling(t1));
 			if_block.c();
-			cloned = true;
 		},
 		l(nodes) {
-			if (!cloned) this.c();
-			if (nodes.length === 0) return;
-			div = claim_template_element(div, nodes);
+			this.c();
+			if (!nodes.length) return;
+			div = claim_element_experimental(div, nodes);
 			var div_nodes = children(div);
-			input0 = claim_template_element(input0, div_nodes, div);
-			input1 = claim_template_element(input1, div_nodes, div);
-			t1 = claim_template_text(t1, div_nodes, div);
+			input0 = claim_element_experimental(input0, div_nodes, div);
+			input1 = claim_element_experimental(input1, div_nodes, div);
+			t1 = claim_text_experimental(t1, div_nodes, div);
 			if_block.l(trim_nodes(div_nodes));
 		},
 		m(target, anchor) {
-			insert_hydration(target, div, anchor);
+			insert_experimental_hydration(target, div, anchor);
 			set_input_value(input0, /*str*/ ctx[2]);
 			input1.checked = /*checked*/ ctx[0];
 			if_block.m(div, null);

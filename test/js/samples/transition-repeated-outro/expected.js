@@ -4,30 +4,35 @@ import {
 	check_outros,
 	create_out_transition,
 	detach,
-	element,
-	empty,
+	first_child,
+	first_element_child,
 	group_outros,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
+	replace_blank,
 	safe_not_equal,
 	transition_in,
 	transition_out
 } from "svelte/internal";
 
 import { fade } from 'svelte/transition';
+const render = make_renderer(`<div><p>wheeee</p></div>`);
 
+// (7:0) {#if num < 5}
 function create_if_block(ctx) {
 	let div;
+	let p;
 	let div_outro;
 	let current;
 
 	return {
 		c() {
-			div = element("div");
-			div.innerHTML = `<p>wheeee</p>`;
+			div = first_child(render());
+			p = first_element_child(div);
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert_experimental(target, div, anchor);
 			current = true;
 		},
 		i(local) {
@@ -46,6 +51,8 @@ function create_if_block(ctx) {
 	};
 }
 
+const render_1 = make_renderer(`<!>`);
+
 function create_fragment(ctx) {
 	let if_block_anchor;
 	let current;
@@ -53,12 +60,12 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
+			if_block_anchor = replace_blank(first_child(render_1()));
 			if (if_block) if_block.c();
-			if_block_anchor = empty();
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
+			insert_experimental(target, if_block_anchor, anchor);
 			current = true;
 		},
 		p(ctx, [dirty]) {
@@ -93,8 +100,8 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (if_block) if_block.d(detaching);
 			if (detaching) detach(if_block_anchor);
+			if (if_block) if_block.d(detaching);
 		}
 	};
 }

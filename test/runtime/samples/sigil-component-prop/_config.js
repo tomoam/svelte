@@ -1,6 +1,6 @@
 export default {
 	compileOptions: {
-		// dev: true
+		dev: true
 	},
 	props: { foo: 'foo' },
 	html: '<div>foo @ foo # foo</div>'

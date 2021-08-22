@@ -5,7 +5,7 @@ import {
 	detach,
 	first_child,
 	init,
-	insert,
+	insert_experimental,
 	make_renderer,
 	noop,
 	replace_text,
@@ -29,7 +29,7 @@ function create_fragment(ctx) {
 			t = replace_text(first_child(p), /*foo*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert_experimental(target, p, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*foo*/ 1) set_data(t, /*foo*/ ctx[0]);

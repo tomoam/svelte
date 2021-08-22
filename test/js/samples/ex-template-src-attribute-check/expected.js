@@ -2,12 +2,12 @@
 import {
 	SvelteComponent,
 	attr,
-	claim_template_element,
-	claim_template_text,
+	claim_element_experimental,
+	claim_text_experimental,
 	detach,
 	first_child,
 	init,
-	insert_hydration,
+	insert_experimental_hydration,
 	make_renderer,
 	next_element_sibling,
 	next_sibling,
@@ -24,22 +24,20 @@ function create_fragment(ctx) {
 	let t;
 	let img1;
 	let img1_src_value;
-	let cloned;
 
 	return {
 		c() {
 			img0 = first_child(render());
 			t = next_sibling(img0);
 			img1 = next_element_sibling(t);
-			cloned = true;
 			this.h();
 		},
 		l(nodes) {
-			if (!cloned) this.c();
-			if (nodes.length === 0) return;
-			img0 = claim_template_element(img0, nodes);
-			t = claim_template_text(t, nodes);
-			img1 = claim_template_element(img1, nodes);
+			this.c();
+			if (!nodes.length) return;
+			img0 = claim_element_experimental(img0, nodes);
+			t = claim_text_experimental(t, nodes);
+			img1 = claim_element_experimental(img1, nodes);
 			this.h();
 		},
 		h() {
@@ -47,9 +45,9 @@ function create_fragment(ctx) {
 			if (!src_url_equal(img1.src, img1_src_value = "" + (/*slug*/ ctx[1] + ".jpg"))) attr(img1, "src", img1_src_value);
 		},
 		m(target, anchor) {
-			insert_hydration(target, img0, anchor);
-			insert_hydration(target, t, anchor);
-			insert_hydration(target, img1, anchor);
+			insert_experimental_hydration(target, img0, anchor);
+			insert_experimental_hydration(target, t, anchor);
+			insert_experimental_hydration(target, img1, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*url*/ 1 && !src_url_equal(img0.src, img0_src_value = /*url*/ ctx[0])) {

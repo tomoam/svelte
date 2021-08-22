@@ -1,4 +1,4 @@
-import { custom_event, append, append_hydration, insert, insert_hydration, detach, listen, attr } from './dom';
+import { custom_event, append, append_hydration, insert, insert_hydration, detach, listen, attr, append_experimental, insert_experimental, insert_experimental_hydration } from './dom';
 import { SvelteComponent } from './Component';
 
 export function dispatch_dev<T=any>(type: string, detail?: T) {
@@ -23,6 +23,21 @@ export function insert_dev(target: Node, node: Node, anchor?: Node) {
 export function insert_hydration_dev(target: Node, node: Node, anchor?: Node) {
 	dispatch_dev('SvelteDOMInsert', { target, node, anchor });
 	insert_hydration(target, node, anchor);
+}
+
+export function append_experimental_dev(target: Node, node: Node) {
+	dispatch_dev('SvelteDOMInsert', { target, node });
+	append_experimental(target, node);
+}
+
+export function insert_experimental_dev(target: Node, node: Node, anchor?: Node) {
+	dispatch_dev('SvelteDOMInsert', { target, node, anchor });
+	insert_experimental(target, node, anchor);
+}
+
+export function insert_experimental_hydration_dev(target: Node, node: Node, anchor?: Node) {
+	dispatch_dev('SvelteDOMInsert', { target, node, anchor });
+	insert_experimental_hydration(target, node, anchor);
 }
 
 export function detach_dev(node: Node) {

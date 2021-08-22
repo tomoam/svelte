@@ -1,6 +1,6 @@
 export default {
 	compileOptions: {
-		// dev: true
+		dev: true
 	},
 
 	html: `

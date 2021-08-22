@@ -4,22 +4,28 @@ import {
 	create_component,
 	destroy_component,
 	detach,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
 	mount_component,
+	next_sibling,
 	noop,
+	replace_blank,
 	safe_not_equal,
-	space,
 	transition_in,
 	transition_out
 } from "svelte/internal";
 
 import Imported from 'Imported.svelte';
+const render = make_renderer(`<!> <!>`);
 
 function create_fragment(ctx) {
 	let imported;
+	let imported_anchor;
 	let t;
 	let nonimported;
+	let nonimported_anchor;
 	let current;
 	imported = new Imported({});
 	nonimported = new NonImported({});
@@ -27,13 +33,16 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(imported.$$.fragment);
-			t = space();
+			imported_anchor = replace_blank(first_child(render()));
+			t = next_sibling(imported_anchor);
 			create_component(nonimported.$$.fragment);
+			nonimported_anchor = replace_blank(next_sibling(t));
 		},
 		m(target, anchor) {
 			mount_component(imported, target, anchor);
-			insert(target, t, anchor);
+			insert_experimental(target, t, anchor);
 			mount_component(nonimported, target, anchor);
+			insert_experimental(target, nonimported_anchor, anchor);
 			current = true;
 		},
 		p: noop,
@@ -51,6 +60,7 @@ function create_fragment(ctx) {
 		d(detaching) {
 			destroy_component(imported, detaching);
 			if (detaching) detach(t);
+			if (detaching) detach(nonimported_anchor);
 			destroy_component(nonimported, detaching);
 		}
 	};

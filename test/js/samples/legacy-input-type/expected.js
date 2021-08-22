@@ -2,24 +2,27 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
 	noop,
 	safe_not_equal,
 	set_input_type
 } from "svelte/internal";
+
+const render = make_renderer(`<input type="search">`);
 
 function create_fragment(ctx) {
 	let input;
 
 	return {
 		c() {
-			input = element("input");
+			input = first_child(render());
 			set_input_type(input, "search");
 		},
 		m(target, anchor) {
-			insert(target, input, anchor);
+			insert_experimental(target, input, anchor);
 		},
 		p: noop,
 		i: noop,

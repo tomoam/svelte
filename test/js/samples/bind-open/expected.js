@@ -2,26 +2,31 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
+	first_child,
+	first_element_child,
 	init,
-	insert,
+	insert_experimental,
 	listen,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
 
+const render = make_renderer(`<details><summary>summary</summary>content</details>`);
+
 function create_fragment(ctx) {
 	let details;
+	let summary;
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			details = element("details");
-			details.innerHTML = `<summary>summary</summary>content`;
+			details = first_child(render());
+			summary = first_element_child(details);
 		},
 		m(target, anchor) {
-			insert(target, details, anchor);
+			insert_experimental(target, details, anchor);
 			details.open = /*open*/ ctx[0];
 
 			if (!mounted) {

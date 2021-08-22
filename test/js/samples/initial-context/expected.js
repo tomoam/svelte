@@ -2,13 +2,16 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
 	listen,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<button></button>`);
 
 function create_fragment(ctx) {
 	let button;
@@ -17,10 +20,10 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			button = element("button");
+			button = first_child(render());
 		},
 		m(target, anchor) {
-			insert(target, button, anchor);
+			insert_experimental(target, button, anchor);
 
 			if (!mounted) {
 				dispose = listen(button, "click", /*click_handler*/ ctx[1]);

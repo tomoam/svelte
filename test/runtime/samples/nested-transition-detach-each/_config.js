@@ -8,7 +8,7 @@ export default {
 	html: '',
 
 	compileOptions: {
-		// dev: true
+		dev: true
 	},
 
 	test({ assert, component, target, window, raf }) {

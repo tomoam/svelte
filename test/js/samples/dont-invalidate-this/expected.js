@@ -2,13 +2,16 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
 	listen,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<input>`);
 
 function create_fragment(ctx) {
 	let input;
@@ -17,10 +20,10 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			input = element("input");
+			input = first_child(render());
 		},
 		m(target, anchor) {
-			insert(target, input, anchor);
+			insert_experimental(target, input, anchor);
 
 			if (!mounted) {
 				dispose = listen(input, "input", make_uppercase);

@@ -3,24 +3,26 @@ import {
 	SvelteElement,
 	attribute_to_object,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<div>fades in</div>`);
 
 function create_fragment(ctx) {
 	let div;
 
 	return {
 		c() {
-			div = element("div");
-			div.textContent = "fades in";
+			div = first_child(render());
 			this.c = noop;
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert_experimental(target, div, anchor);
 		},
 		p: noop,
 		i: noop,
@@ -52,7 +54,7 @@ class Component extends SvelteElement {
 
 		if (options) {
 			if (options.target) {
-				insert(options.target, this, options.anchor);
+				insert_experimental(options.target, this, options.anchor);
 			}
 		}
 	}

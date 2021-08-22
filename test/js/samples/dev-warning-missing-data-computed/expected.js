@@ -2,21 +2,22 @@
 import {
 	SvelteComponentDev,
 	add_location,
-	append_dev,
 	detach_dev,
 	dispatch_dev,
-	element,
+	first_child,
 	init,
-	insert_dev,
+	insert_experimental_dev,
+	make_renderer,
+	next_sibling,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data_dev,
-	space,
-	text,
 	validate_slots
 } from "svelte/internal";
 
 const file = undefined;
+const render = make_renderer(`<p><!> <!></p>`);
 
 function create_fragment(ctx) {
 	let p;
@@ -27,20 +28,17 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
-			p = element("p");
-			t0 = text(t0_value);
-			t1 = space();
-			t2 = text(/*bar*/ ctx[1]);
+			p = first_child(render());
+			t0 = replace_text(first_child(p), t0_value);
+			t1 = next_sibling(t0);
+			t2 = replace_text(next_sibling(t1), /*bar*/ ctx[1]);
 			add_location(p, file, 7, 0, 67);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, p, anchor);
-			append_dev(p, t0);
-			append_dev(p, t1);
-			append_dev(p, t2);
+			insert_experimental_dev(target, p, anchor);
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*foo*/ 1 && t0_value !== (t0_value = Math.max(0, /*foo*/ ctx[0]) + "")) set_data_dev(t0, t0_value);

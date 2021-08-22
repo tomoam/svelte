@@ -2,13 +2,13 @@
 import {
 	SvelteComponent,
 	children,
-	claim_template_element,
-	claim_template_text,
+	claim_element_experimental,
+	claim_text_experimental,
 	detach,
 	first_child,
 	first_element_child,
 	init,
-	insert_hydration,
+	insert_experimental_hydration,
 	listen,
 	make_renderer,
 	next_element_sibling,
@@ -38,7 +38,6 @@ function create_fragment(ctx) {
 	let div1;
 	let mounted;
 	let dispose;
-	let cloned;
 
 	return {
 		c() {
@@ -54,33 +53,32 @@ function create_fragment(ctx) {
 			t8 = replace_text(first_child(p), description);
 			t11 = next_sibling(section);
 			div1 = next_element_sibling(t11);
-			cloned = true;
 		},
 		l(nodes) {
-			if (!cloned) this.c();
-			if (nodes.length === 0) return;
-			t0 = claim_template_text(t0, nodes);
-			section = claim_template_element(section, nodes);
+			this.c();
+			if (!nodes.length) return;
+			t0 = claim_text_experimental(t0, nodes);
+			section = claim_element_experimental(section, nodes);
 			var section_nodes = children(section);
-			div0 = claim_template_element(div0, section_nodes, section);
+			div0 = claim_element_experimental(div0, section_nodes, section);
 			var div0_nodes = children(div0);
-			input = claim_template_element(input, div0_nodes, div0);
-			h1 = claim_template_element(h1, div0_nodes, div0);
+			input = claim_element_experimental(input, div0_nodes, div0);
+			h1 = claim_element_experimental(h1, div0_nodes, div0);
 			var h1_nodes = children(h1);
-			t4 = claim_template_text(t4, h1_nodes, h1);
-			t5 = claim_template_text(t5, h1_nodes, h1);
-			t6 = claim_template_text(t6, h1_nodes, h1);
-			p = claim_template_element(p, div0_nodes, div0);
-			t8 = claim_template_text(t8, trim_nodes(children(p)), p);
-			t11 = claim_template_text(t11, nodes);
-			div1 = claim_template_element(div1, nodes);
+			t4 = claim_text_experimental(t4, h1_nodes, h1);
+			t5 = claim_text_experimental(t5, h1_nodes, h1);
+			t6 = claim_text_experimental(t6, h1_nodes, h1);
+			p = claim_element_experimental(p, div0_nodes, div0);
+			t8 = claim_text_experimental(t8, trim_nodes(children(p)), p);
+			t11 = claim_text_experimental(t11, nodes);
+			div1 = claim_element_experimental(div1, nodes);
 		},
 		m(target, anchor) {
-			insert_hydration(target, t0, anchor);
-			insert_hydration(target, section, anchor);
+			insert_experimental_hydration(target, t0, anchor);
+			insert_experimental_hydration(target, section, anchor);
 			set_input_value(input, /*name*/ ctx[0]);
-			insert_hydration(target, t11, anchor);
-			insert_hydration(target, div1, anchor);
+			insert_experimental_hydration(target, t11, anchor);
+			insert_experimental_hydration(target, div1, anchor);
 
 			if (!mounted) {
 				dispose = listen(input, "input", /*input_input_handler*/ ctx[1]);

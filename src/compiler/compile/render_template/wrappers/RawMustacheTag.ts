@@ -53,28 +53,20 @@ export default class RawMustacheTagWrapper extends Tag {
 				content => x`${html_tag}.p(${content})`
 			);
 
-			block.chunks.create.push(b`${html_tag} = new @HtmlTag();`);
-			// block.chunks.create.push(b`${this.anchor} = @replace_blank(${this.get_node_path(parent_node)});`);
+			block.chunks.create.push(b`${html_tag} = new @HtmlTagExperimental();`);
 
 			if (this.renderer.options.hydratable) {
-				block.chunks.claim.push(b`${html_tag} = @claim_html_tag(${parent_nodes});`);
+				block.chunks.claim.push(b`${html_tag} = @claim_html_tag_experimental(${parent_nodes});`);
 			}
 
 			const insert_anchor = get_initial_anchor_node(this, parent_node);
 			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${insert_anchor});`);
-			// if (needs_anchor) {
-			// 	block.chunks.mount.push(b`@insert(${parent_node || '#target'}, ${html_anchor}, ${parent_node ? null : '#anchor'});`);
-			// }
 
 			const update_anchor = this.get_or_create_anchor(block, parent_node, parent_nodes, 'html_anchor');
 			block.chunks.hydrate.push(b`${html_tag}.a = ${update_anchor};`);
 
 			if (!parent_node || in_head) {
 				block.chunks.destroy.push(b`if (detaching) ${html_tag}.d();`);
-
-				// if (needs_anchor) {
-				// 	block.chunks.destroy.push(b`if (detaching) @detach(${html_anchor});`);
-				// }
 			}
 		}
 	}

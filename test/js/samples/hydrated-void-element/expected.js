@@ -2,18 +2,21 @@
 import {
 	SvelteComponent,
 	attr,
-	children,
-	claim_element,
-	claim_space,
+	claim_element_experimental,
+	claim_text_experimental,
 	detach,
-	element,
+	first_child,
 	init,
-	insert_hydration,
+	insert_experimental_hydration,
+	make_renderer,
+	next_element_sibling,
+	next_sibling,
 	noop,
 	safe_not_equal,
-	space,
 	src_url_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<img src="donuts.jpg" alt="donuts"> <div></div>`);
 
 function create_fragment(ctx) {
 	let img;
@@ -23,26 +26,26 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			img = element("img");
-			t = space();
-			div = element("div");
+			img = first_child(render());
+			t = next_sibling(img);
+			div = next_element_sibling(t);
 			this.h();
 		},
 		l(nodes) {
-			img = claim_element(nodes, "IMG", { src: true, alt: true });
-			t = claim_space(nodes);
-			div = claim_element(nodes, "DIV", {});
-			children(div).forEach(detach);
+			this.c();
+			if (!nodes.length) return;
+			img = claim_element_experimental(img, nodes);
+			t = claim_text_experimental(t, nodes);
+			div = claim_element_experimental(div, nodes);
 			this.h();
 		},
 		h() {
 			if (!src_url_equal(img.src, img_src_value = "donuts.jpg")) attr(img, "src", img_src_value);
-			attr(img, "alt", "donuts");
 		},
 		m(target, anchor) {
-			insert_hydration(target, img, anchor);
-			insert_hydration(target, t, anchor);
-			insert_hydration(target, div, anchor);
+			insert_experimental_hydration(target, img, anchor);
+			insert_experimental_hydration(target, t, anchor);
+			insert_experimental_hydration(target, div, anchor);
 		},
 		p: noop,
 		i: noop,

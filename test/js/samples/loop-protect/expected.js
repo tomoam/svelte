@@ -5,11 +5,12 @@ import {
 	binding_callbacks,
 	detach_dev,
 	dispatch_dev,
-	element,
+	first_child,
 	globals,
 	init,
-	insert_dev,
+	insert_experimental_dev,
 	loop_guard,
+	make_renderer,
 	noop,
 	safe_not_equal,
 	validate_slots
@@ -17,20 +18,21 @@ import {
 
 const { console: console_1 } = globals;
 const file = undefined;
+const render = make_renderer(`<div></div>`);
 
 function create_fragment(ctx) {
 	let div;
 
 	const block = {
 		c: function create() {
-			div = element("div");
+			div = first_child(render());
 			add_location(div, file, 22, 0, 288);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, div, anchor);
+			insert_experimental_dev(target, div, anchor);
 			/*div_binding*/ ctx[1](div);
 		},
 		p: noop,

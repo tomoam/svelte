@@ -2,24 +2,27 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
 	noop,
 	safe_not_equal,
 	set_style
 } from "svelte/internal";
+
+const render = make_renderer(`<div></div>`);
 
 function create_fragment(ctx) {
 	let div;
 
 	return {
 		c() {
-			div = element("div");
+			div = first_child(render());
 			set_style(div, "color", color);
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert_experimental(target, div, anchor);
 		},
 		p: noop,
 		i: noop,

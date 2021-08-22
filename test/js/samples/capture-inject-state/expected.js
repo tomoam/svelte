@@ -2,23 +2,24 @@
 import {
 	SvelteComponentDev,
 	add_location,
-	append_dev,
 	detach_dev,
 	dispatch_dev,
-	element,
+	first_child,
 	init,
-	insert_dev,
+	insert_experimental_dev,
+	make_renderer,
+	next_sibling,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data_dev,
-	space,
 	subscribe,
-	text,
 	validate_slots,
 	validate_store
 } from "svelte/internal";
 
 const file = undefined;
+const render = make_renderer(`<p><!> <!> <!> <!> <!> <!></p>`);
 
 function create_fragment(ctx) {
 	let p;
@@ -36,36 +37,25 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
-			p = element("p");
-			t0 = text(/*prop*/ ctx[0]);
-			t1 = space();
-			t2 = text(/*realName*/ ctx[1]);
-			t3 = space();
-			t4 = text(/*local*/ ctx[3]);
-			t5 = space();
-			t6 = text(priv);
-			t7 = space();
-			t8 = text(/*$prop*/ ctx[2]);
-			t9 = space();
-			t10 = text(/*shadowedByModule*/ ctx[4]);
+			p = first_child(render());
+			t0 = replace_text(first_child(p), /*prop*/ ctx[0]);
+			t1 = next_sibling(t0);
+			t2 = replace_text(next_sibling(t1), /*realName*/ ctx[1]);
+			t3 = next_sibling(t2);
+			t4 = replace_text(next_sibling(t3), /*local*/ ctx[3]);
+			t5 = next_sibling(t4);
+			t6 = replace_text(next_sibling(t5), priv);
+			t7 = next_sibling(t6);
+			t8 = replace_text(next_sibling(t7), /*$prop*/ ctx[2]);
+			t9 = next_sibling(t8);
+			t10 = replace_text(next_sibling(t9), /*shadowedByModule*/ ctx[4]);
 			add_location(p, file, 22, 0, 430);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, p, anchor);
-			append_dev(p, t0);
-			append_dev(p, t1);
-			append_dev(p, t2);
-			append_dev(p, t3);
-			append_dev(p, t4);
-			append_dev(p, t5);
-			append_dev(p, t6);
-			append_dev(p, t7);
-			append_dev(p, t8);
-			append_dev(p, t9);
-			append_dev(p, t10);
+			insert_experimental_dev(target, p, anchor);
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*prop*/ 1) set_data_dev(t0, /*prop*/ ctx[0]);

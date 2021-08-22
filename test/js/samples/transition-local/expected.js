@@ -4,27 +4,31 @@ import {
 	add_render_callback,
 	create_in_transition,
 	detach,
-	element,
-	empty,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
 	noop,
+	replace_blank,
 	safe_not_equal,
 	transition_in
 } from "svelte/internal";
 
+const render_1 = make_renderer(`<!>`);
+
+// (8:0) {#if x}
 function create_if_block(ctx) {
 	let if_block_anchor;
 	let if_block = /*y*/ ctx[1] && create_if_block_1(ctx);
 
 	return {
 		c() {
+			if_block_anchor = replace_blank(first_child(render_1()));
 			if (if_block) if_block.c();
-			if_block_anchor = empty();
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
+			insert_experimental(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
 			if (/*y*/ ctx[1]) {
@@ -44,11 +48,13 @@ function create_if_block(ctx) {
 			}
 		},
 		d(detaching) {
-			if (if_block) if_block.d(detaching);
 			if (detaching) detach(if_block_anchor);
+			if (if_block) if_block.d(detaching);
 		}
 	};
 }
+
+const render = make_renderer(`<div>...</div>`);
 
 // (9:1) {#if y}
 function create_if_block_1(ctx) {
@@ -57,11 +63,10 @@ function create_if_block_1(ctx) {
 
 	return {
 		c() {
-			div = element("div");
-			div.textContent = "...";
+			div = first_child(render());
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert_experimental(target, div, anchor);
 		},
 		i(local) {
 			if (local) {
@@ -80,18 +85,20 @@ function create_if_block_1(ctx) {
 	};
 }
 
+const render_2 = make_renderer(`<!>`);
+
 function create_fragment(ctx) {
 	let if_block_anchor;
 	let if_block = /*x*/ ctx[0] && create_if_block(ctx);
 
 	return {
 		c() {
+			if_block_anchor = replace_blank(first_child(render_2()));
 			if (if_block) if_block.c();
-			if_block_anchor = empty();
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
+			insert_experimental(target, if_block_anchor, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (/*x*/ ctx[0]) {
@@ -110,8 +117,8 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (if_block) if_block.d(detaching);
 			if (detaching) detach(if_block_anchor);
+			if (if_block) if_block.d(detaching);
 		}
 	};
 }

@@ -5,7 +5,7 @@ import {
 	first_child,
 	first_element_child,
 	init,
-	insert,
+	insert_experimental,
 	listen,
 	make_renderer,
 	next_element_sibling,
@@ -43,7 +43,7 @@ function create_fragment(ctx) {
 			t5 = replace_text(first_child(p), description);
 		},
 		m(target, anchor) {
-			insert(target, section, anchor);
+			insert_experimental(target, section, anchor);
 			set_input_value(input, /*name*/ ctx[0]);
 
 			if (!mounted) {

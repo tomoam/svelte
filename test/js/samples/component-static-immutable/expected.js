@@ -3,25 +3,35 @@ import {
 	SvelteComponent,
 	create_component,
 	destroy_component,
+	detach,
+	first_child,
 	init,
+	insert_experimental,
+	make_renderer,
 	mount_component,
 	noop,
 	not_equal,
+	replace_blank,
 	transition_in,
 	transition_out
 } from "svelte/internal";
 
+const render = make_renderer(`<!>`);
+
 function create_fragment(ctx) {
 	let nested;
+	let nested_anchor;
 	let current;
 	nested = new /*Nested*/ ctx[0]({ props: { foo: "bar" } });
 
 	return {
 		c() {
 			create_component(nested.$$.fragment);
+			nested_anchor = replace_blank(first_child(render()));
 		},
 		m(target, anchor) {
 			mount_component(nested, target, anchor);
+			insert_experimental(target, nested_anchor, anchor);
 			current = true;
 		},
 		p: noop,
@@ -35,6 +45,7 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
+			if (detaching) detach(nested_anchor);
 			destroy_component(nested, detaching);
 		}
 	};

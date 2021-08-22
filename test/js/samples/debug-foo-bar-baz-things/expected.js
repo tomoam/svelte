@@ -2,18 +2,20 @@
 import {
 	SvelteComponentDev,
 	add_location,
-	append_dev,
 	destroy_each,
 	detach_dev,
 	dispatch_dev,
-	element,
+	first_child,
 	init,
-	insert_dev,
+	insert_experimental_dev,
+	make_renderer,
+	next_element_sibling,
+	next_sibling,
 	noop,
+	replace_blank,
+	replace_text,
 	safe_not_equal,
 	set_data_dev,
-	space,
-	text,
 	validate_each_argument,
 	validate_slots
 } from "svelte/internal";
@@ -26,18 +28,18 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
+const render = make_renderer(`<span><!></span>`);
+
 // (8:0) {#each things as thing}
 function create_each_block(ctx) {
 	let span;
-	let t0_value = /*thing*/ ctx[4].name + "";
-	let t0;
-	let t1;
+	let t_value = /*thing*/ ctx[4].name + "";
+	let t;
 
 	const block = {
 		c: function create() {
-			span = element("span");
-			t0 = text(t0_value);
-			t1 = space();
+			span = first_child(render());
+			t = replace_text(first_child(span), t_value);
 
 			{
 				const foo = /*foo*/ ctx[1];
@@ -51,12 +53,10 @@ function create_each_block(ctx) {
 			add_location(span, file, 8, 1, 116);
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, span, anchor);
-			append_dev(span, t0);
-			insert_dev(target, t1, anchor);
+			insert_experimental_dev(target, span, anchor);
 		},
 		p: function update(ctx, dirty) {
-			if (dirty & /*things*/ 1 && t0_value !== (t0_value = /*thing*/ ctx[4].name + "")) set_data_dev(t0, t0_value);
+			if (dirty & /*things*/ 1 && t_value !== (t_value = /*thing*/ ctx[4].name + "")) set_data_dev(t, t_value);
 
 			if (dirty & /*foo, bar, baz, things*/ 15) {
 				const foo = /*foo*/ ctx[1];
@@ -69,7 +69,6 @@ function create_each_block(ctx) {
 		},
 		d: function destroy(detaching) {
 			if (detaching) detach_dev(span);
-			if (detaching) detach_dev(t1);
 		}
 	};
 
@@ -84,7 +83,10 @@ function create_each_block(ctx) {
 	return block;
 }
 
+const render_1 = make_renderer(`<!> <p>foo: <!></p>`);
+
 function create_fragment(ctx) {
+	let each_1_anchor;
 	let t0;
 	let p;
 	let t1;
@@ -103,10 +105,11 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			t0 = space();
-			p = element("p");
-			t1 = text("foo: ");
-			t2 = text(/*foo*/ ctx[1]);
+			each_1_anchor = replace_blank(first_child(render_1()));
+			t0 = next_sibling(each_1_anchor);
+			p = next_element_sibling(t0);
+			t1 = first_child(p);
+			t2 = replace_text(next_sibling(t1), /*foo*/ ctx[1]);
 			add_location(p, file, 12, 0, 182);
 		},
 		l: function claim(nodes) {
@@ -117,10 +120,8 @@ function create_fragment(ctx) {
 				each_blocks[i].m(target, anchor);
 			}
 
-			insert_dev(target, t0, anchor);
-			insert_dev(target, p, anchor);
-			append_dev(p, t1);
-			append_dev(p, t2);
+			insert_experimental_dev(target, t0, anchor);
+			insert_experimental_dev(target, p, anchor);
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*things*/ 1) {

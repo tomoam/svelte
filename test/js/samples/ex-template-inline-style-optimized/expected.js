@@ -4,7 +4,7 @@ import {
 	detach,
 	first_child,
 	init,
-	insert,
+	insert_experimental,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -22,7 +22,7 @@ function create_fragment(ctx) {
 			set_style(div, "color", /*color*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert_experimental(target, div, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*color*/ 1) {

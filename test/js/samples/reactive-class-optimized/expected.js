@@ -3,17 +3,20 @@ import {
 	SvelteComponent,
 	component_subscribe,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
+	next_element_sibling,
+	next_sibling,
 	noop,
 	safe_not_equal,
-	space,
 	subscribe,
 	toggle_class
 } from "svelte/internal";
 
 import { reactiveStoreVal, unreactiveExport } from './store';
+const render = make_renderer(`<div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div>`);
 
 function create_fragment(ctx) {
 	let div0;
@@ -36,23 +39,23 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div0 = element("div");
-			t0 = space();
-			div1 = element("div");
-			t1 = space();
-			div2 = element("div");
-			t2 = space();
-			div3 = element("div");
-			t3 = space();
-			div4 = element("div");
-			t4 = space();
-			div5 = element("div");
-			t5 = space();
-			div6 = element("div");
-			t6 = space();
-			div7 = element("div");
-			t7 = space();
-			div8 = element("div");
+			div0 = first_child(render());
+			t0 = next_sibling(div0);
+			div1 = next_element_sibling(t0);
+			t1 = next_sibling(div1);
+			div2 = next_element_sibling(t1);
+			t2 = next_sibling(div2);
+			div3 = next_element_sibling(t2);
+			t3 = next_sibling(div3);
+			div4 = next_element_sibling(t3);
+			t4 = next_sibling(div4);
+			div5 = next_element_sibling(t4);
+			t5 = next_sibling(div5);
+			div6 = next_element_sibling(t5);
+			t6 = next_sibling(div6);
+			div7 = next_element_sibling(t6);
+			t7 = next_sibling(div7);
+			div8 = next_element_sibling(t7);
 			toggle_class(div0, "update1", reactiveModuleVar);
 			toggle_class(div1, "update2", /*reactiveConst*/ ctx[0].x);
 			toggle_class(div2, "update3", nonReactiveGlobal && /*reactiveConst*/ ctx[0].x);
@@ -64,23 +67,23 @@ function create_fragment(ctx) {
 			toggle_class(div8, "static4", unreactiveExport);
 		},
 		m(target, anchor) {
-			insert(target, div0, anchor);
-			insert(target, t0, anchor);
-			insert(target, div1, anchor);
-			insert(target, t1, anchor);
-			insert(target, div2, anchor);
-			insert(target, t2, anchor);
-			insert(target, div3, anchor);
-			insert(target, t3, anchor);
-			insert(target, div4, anchor);
-			insert(target, t4, anchor);
-			insert(target, div5, anchor);
-			insert(target, t5, anchor);
-			insert(target, div6, anchor);
-			insert(target, t6, anchor);
-			insert(target, div7, anchor);
-			insert(target, t7, anchor);
-			insert(target, div8, anchor);
+			insert_experimental(target, div0, anchor);
+			insert_experimental(target, t0, anchor);
+			insert_experimental(target, div1, anchor);
+			insert_experimental(target, t1, anchor);
+			insert_experimental(target, div2, anchor);
+			insert_experimental(target, t2, anchor);
+			insert_experimental(target, div3, anchor);
+			insert_experimental(target, t3, anchor);
+			insert_experimental(target, div4, anchor);
+			insert_experimental(target, t4, anchor);
+			insert_experimental(target, div5, anchor);
+			insert_experimental(target, t5, anchor);
+			insert_experimental(target, div6, anchor);
+			insert_experimental(target, t6, anchor);
+			insert_experimental(target, div7, anchor);
+			insert_experimental(target, t7, anchor);
+			insert_experimental(target, div8, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*reactiveModuleVar*/ 0) {

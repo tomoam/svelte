@@ -5,7 +5,7 @@ import {
 	first_child,
 	first_element_child,
 	init,
-	insert,
+	insert_experimental,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -23,7 +23,7 @@ function create_fragment(ctx) {
 			div = first_element_child(template.content);
 		},
 		m(target, anchor) {
-			insert(target, template, anchor);
+			insert_experimental(target, template, anchor);
 		},
 		p: noop,
 		i: noop,

@@ -4,15 +4,18 @@ import {
 	add_render_callback,
 	add_resize_listener,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
 	listen,
+	make_renderer,
 	noop,
 	raf,
 	run_all,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<video></video>`);
 
 function create_fragment(ctx) {
 	let video;
@@ -35,12 +38,12 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			video = element("video");
+			video = first_child(render());
 			if (/*videoHeight*/ ctx[1] === void 0 || /*videoWidth*/ ctx[2] === void 0) add_render_callback(() => /*video_resize_handler*/ ctx[5].call(video));
 			add_render_callback(() => /*video_elementresize_handler*/ ctx[6].call(video));
 		},
 		m(target, anchor) {
-			insert(target, video, anchor);
+			insert_experimental(target, video, anchor);
 			video_resize_listener = add_resize_listener(video, /*video_elementresize_handler*/ ctx[6].bind(video));
 
 			if (!mounted) {

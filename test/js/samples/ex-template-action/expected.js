@@ -5,7 +5,7 @@ import {
 	detach,
 	first_child,
 	init,
-	insert,
+	insert_experimental,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -24,7 +24,7 @@ function create_fragment(ctx) {
 			a = first_child(render());
 		},
 		m(target, anchor) {
-			insert(target, a, anchor);
+			insert_experimental(target, a, anchor);
 
 			if (!mounted) {
 				dispose = action_destroyer(link_action = link.call(null, a));

@@ -3,13 +3,17 @@ import {
 	SvelteComponent,
 	attr,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
+	next_element_sibling,
+	next_sibling,
 	noop,
-	safe_not_equal,
-	space
+	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<div></div> <div></div>`);
 
 function create_fragment(ctx) {
 	let div0;
@@ -19,16 +23,16 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div0 = element("div");
-			t = space();
-			div1 = element("div");
+			div0 = first_child(render());
+			t = next_sibling(div0);
+			div1 = next_element_sibling(t);
 			attr(div0, "style", /*style*/ ctx[0]);
 			attr(div1, "style", div1_style_value = "" + (/*key*/ ctx[1] + ": " + /*value*/ ctx[2]));
 		},
 		m(target, anchor) {
-			insert(target, div0, anchor);
-			insert(target, t, anchor);
-			insert(target, div1, anchor);
+			insert_experimental(target, div0, anchor);
+			insert_experimental(target, t, anchor);
+			insert_experimental(target, div1, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*style*/ 1) {

@@ -23,8 +23,7 @@ import { link } from '../../../utils/link';
 import { Identifier } from 'estree';
 import TemplateRenderer from '../TemplateRenderer';
 import { is_static_keyblock } from './shared/is_static_keyblock';
-import { namespaces } from '../../../utils/namespaces';
-// import is_dynamic_wrapper from './shared/is_dynamic_wrapper';
+import { is_needed_wrap_by_svg } from './shared/is_needed_wrap_by_svg';
 
 const wrappers = {
 	AwaitBlock,
@@ -71,6 +70,7 @@ export default class FragmentWrapper {
 		let window_wrapper;
 		let head_wrappers: Head[] = [];
 		let body_wrapper;
+		let debugtag_wrappers: { wrapper: DebugTag, anchor: Wrapper }[] = [];
 
 		let i = nodes.length;
 		while (i--) {
@@ -147,6 +147,12 @@ export default class FragmentWrapper {
 				}
 
 				const wrapper = new Wrapper(renderer, block, parent, child, strip_whitespace, last_child || next_sibling);
+
+				if (child.type === 'DebugTag') {
+					debugtag_wrappers.push({wrapper, anchor: last_child});
+					continue;
+				}
+
 				this.nodes.unshift(wrapper);
 
 				link(last_child, last_child = wrapper);
@@ -171,8 +177,24 @@ export default class FragmentWrapper {
 		}
 
 		if (this.nodes.length > 0 && !(parent instanceof Element) && !(parent instanceof Head)) {
-			const is_SVG = this.nodes.some(node => node instanceof Element && node.node.namespace === namespaces.svg);
-			create_template(this.nodes[0], this.nodes, renderer, is_SVG);
+			create_template(this.nodes[0], this.nodes, renderer);
+		}
+
+		if (debugtag_wrappers.length) {
+			debugtag_wrappers.forEach(dw => {
+				const { wrapper, anchor } = dw;
+				if (!anchor) {
+					this.nodes.push(wrapper);
+					return;
+				}
+
+				const anchor_index = this.nodes.indexOf(anchor);
+				if (anchor_index) {
+					this.nodes.splice(anchor_index, 0, wrapper);
+				} else {
+					this.nodes.unshift(wrapper);
+				}
+			})
 		}
 
 		const filter = (node: Wrapper) => {
@@ -227,26 +249,27 @@ export default class FragmentWrapper {
 	}
 }
 
-function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer, is_SVG?: boolean) {
+function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
 	node.template_index = renderer.component.get_unique_name('render').name;
 	// console.log("FragmentWrapper crete_template node.node.type", node.node.type);
 	// console.log("FragmentWrapper crete_template node.template_index", node.template_index);
+	const wrap_by_svg = nodes.some(n => is_needed_wrap_by_svg(n))
 	node.template = to_template_literal(
 			nodes.map(n => n.node as INode),
 			renderer.component.name,
 			renderer.component.locate,
 			renderer.options,
-			is_SVG
+			wrap_by_svg,
 		);
 }
 
-function to_template_literal(nodes: INode[], name, locate, options, is_SVG?: boolean) {
+function to_template_literal(nodes: INode[], name, locate, options, wrap_by_svg?: boolean) {
 
 	const templateRenderer = new TemplateRenderer({
 		name: name 
 	});
 
-	if(is_SVG) {
+	if (wrap_by_svg) {
 		templateRenderer.add_string('<svg>');
 	}
 
@@ -255,7 +278,7 @@ function to_template_literal(nodes: INode[], name, locate, options, is_SVG?: boo
 		locate: locate
 	}, options));
 	
-	if(is_SVG) {
+	if(wrap_by_svg) {
 		templateRenderer.add_string('</svg>');
 	}
 

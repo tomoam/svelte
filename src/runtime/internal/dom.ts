@@ -31,7 +31,7 @@ function upper_bound(low: number, high: number, key: (index: number) => number, 
 	return low;
 }
 
-export function init_hydrate(target: NodeEx) {
+function init_hydrate(target: NodeEx) {
 	if (target.hydrate_init) return;
 	target.hydrate_init = true;
 
@@ -165,34 +165,33 @@ function append_stylesheet(node: ShadowRoot | Document, style: HTMLStyleElement)
 }
 
 export function append_hydration(target: NodeEx, node: NodeEx) {
+	if (is_hydrating) {
+		init_hydrate(target);
+
+		if ((target.actual_end_child === undefined) || ((target.actual_end_child !== null) && (target.actual_end_child.parentElement !== target))) {
+			target.actual_end_child = target.firstChild;
+		}
+
+		// Skip nodes of undefined ordering
+		while ((target.actual_end_child !== null) && (target.actual_end_child.claim_order === undefined)) {
+			target.actual_end_child = target.actual_end_child.nextSibling;
+		}
+
+		if (node !== target.actual_end_child) {
+			// We only insert if the ordering of this node should be modified or the parent node is not target
+			if (node.claim_order !== undefined || node.parentNode !== target) {
+				target.insertBefore(node, target.actual_end_child);
+			}
+		} else {
+			target.actual_end_child = node.nextSibling;
+		}
+	} else if (node.parentNode !== target) {
+		target.appendChild(node);
+	}
+}
+
+export function append_experimental(target: Node, node: Node) {
 	target.appendChild(node);
-
-	// if (is_hydrating) {
-	// 	// console.log("append_hydration is_hydrating");
-	// 	init_hydrate(target);
-
-	// 	if ((target.actual_end_child === undefined) || ((target.actual_end_child !== null) && (target.actual_end_child.parentElement !== target))) {
-	// 		target.actual_end_child = target.firstChild;
-	// 	}
-
-	// 	// Skip nodes of undefined ordering
-	// 	while ((target.actual_end_child !== null) && (target.actual_end_child.claim_order === undefined)) {
-	// 		target.actual_end_child = target.actual_end_child.nextSibling;
-	// 	}
-
-	// 	if (node !== target.actual_end_child) {
-	// 		// We only insert if the ordering of this node should be modified or the parent node is not target
-	// 		if (node.claim_order !== undefined || node.parentNode !== target) {
-	// 			// console.log("append_hydration target.insertBefore");
-	// 			target.insertBefore(node, target.actual_end_child);
-	// 		}
-	// 	} else {
-	// 		target.actual_end_child = node.nextSibling;
-	// 	}
-	// } else if (node.parentNode !== target) {
-	// 	// console.log("append_hydration target.appendChild");
-	// 	target.appendChild(node);
-	// }
 }
 
 export function insert(target: Node, node: Node, anchor?: Node) {
@@ -200,10 +199,18 @@ export function insert(target: Node, node: Node, anchor?: Node) {
 }
 
 export function insert_hydration(target: NodeEx, node: NodeEx, anchor?: NodeEx) {
-	// console.log("insert_hydration:", target.nodeName, node.nodeName, anchor, is_hydrating)
-	// if (node.childNodes[0]) console.log("insert_hydration node.childNodes[0].nodeValue:", node.childNodes[0].nodeValue);
-	// if (is_hydrating && !anchor) {
-	// 	append_hydration(target, node);
+	if (is_hydrating && !anchor) {
+		append_experimental(target, node);
+	} else if (node.parentNode !== target || node.nextSibling != anchor) {
+		target.insertBefore(node, anchor || null);
+	}
+}
+
+export function insert_experimental(target: Node, node: Node, anchor?: Node) {
+	target.insertBefore(node, anchor || null);
+}
+
+export function insert_experimental_hydration(target: Node, node: Node, anchor?: Node) {
 	if (is_hydrating && !anchor && node.parentNode !== target) {
 		target.appendChild(node);
 	} else if (node.parentNode !== target || node.nextSibling != anchor) {
@@ -265,7 +272,7 @@ export function replace_blank(elm: ChildNode) {
 export function insert_blank_anchor(next_node: ChildNode, parent_node?: ChildNode) {
 	const target = parent_node || next_node.parentNode;
 	const anchor = empty();
-	insert_hydration(target, anchor, next_node);
+	insert_experimental_hydration(target, anchor, next_node);
 	return anchor;
 }
 
@@ -280,22 +287,12 @@ export function get_parent_from_nodes(nodes: ChildNodeArray) {
 }
 
 export function replace_or_appned_node(old_node: ChildNode, new_node: ChildNode, parent_node?: ChildNode) {
-	// console.log({old_node});
-	// console.log(old_node.previousSibling);
-	// console.log(old_node.nextSibling);
-	// console.log({new_node});
 	if (!new_node) return old_node;
 	if (old_node) {
 		old_node.replaceWith(new_node);
 	} else if (parent_node) {
 		parent_node.appendChild(new_node);
 	}
-	// console.log({old_node});
-	// console.log(old_node.previousSibling);
-	// console.log(old_node.nextSibling);
-	// console.log({new_node});
-	// console.log(new_node.previousSibling);
-	// console.log(new_node.nextSibling);
 	return new_node;
 }
 
@@ -315,10 +312,20 @@ export function next_element_sibling(node: Element | Text | Comment) {
 	return node.nextElementSibling;
 }
 
-export function make_renderer(html) {
+function create_template(html) {
 	const template = document.createElement('template');
 	template.innerHTML = html;
+	return template;
+}
+
+export function make_renderer(html) {
+	const template = create_template(html);
 	return () => template.content.cloneNode(true);
+}
+
+export function make_custom_renderer(html) {
+	const template = create_template(html);
+	return () => document.importNode(template.content, true);
 }
 
 export function space() {
@@ -525,9 +532,45 @@ function claim_node<R extends ChildNodeEx>(nodes: ChildNodeArray, predicate: (no
 	return resultNode;
 }
 
-function claim_template_node<R extends ChildNodeEx>(ssr_node: ChildNode, nodes: ChildNodeArray, predicate: (node: ChildNodeEx) => node is R, processNode: (node: ChildNodeEx) => ChildNodeEx | undefined, createNode: () => R) {
+export function claim_element(nodes: ChildNodeArray, name: string, attributes: {[key: string]: boolean}, svg) {
+	return claim_node<Element | SVGElement>(
+		nodes,
+		(node: ChildNode): node is Element | SVGElement => node.nodeName === name,
+		(node: Element) => {
+			const remove = [];
+			for (let j = 0; j < node.attributes.length; j++) {
+				const attribute = node.attributes[j];
+				if (!attributes[attribute.name]) {
+					remove.push(attribute.name);
+				}
+			}
+			remove.forEach(v => node.removeAttribute(v));
+			return undefined;
+		},
+		() => svg ? svg_element(name as keyof SVGElementTagNameMap) : element(name as keyof HTMLElementTagNameMap)
+	);
+}
 
-	// init_claim_info(nodes);
+export function claim_text(nodes: ChildNodeArray, data) {
+	return claim_node<Text>(
+		nodes,
+		(node: ChildNode): node is Text => node.nodeType === 3,
+		(node: Text) => {
+			const dataStr = '' + data;
+			if (node.data.startsWith(dataStr)) {
+				if (node.data.length !== dataStr.length) {
+					return node.splitText(dataStr.length);
+				}
+			} else {
+				node.data = dataStr;
+			}
+		},
+		() => text(data),
+		true	// Text nodes should not update last index since it is likely not worth it to eliminate an increasing subsequence of actual elements
+	);
+}
+
+function claim_node_experimental<R extends ChildNodeEx>(ssr_node: ChildNode, nodes: ChildNodeArray, predicate: (node: ChildNodeEx) => node is R, processNode: (node: ChildNodeEx) => ChildNodeEx | undefined, createNode: () => R) {
 
 	const resultNode = (() => {
 
@@ -564,27 +607,7 @@ function claim_template_node<R extends ChildNodeEx>(ssr_node: ChildNode, nodes: 
 	return resultNode;
 }
 
-export function claim_element(nodes: ChildNodeArray, name: string, attributes: {[key: string]: boolean}, svg) {
-	return claim_node<Element | SVGElement>(
-		nodes,
-		(node: ChildNode): node is Element | SVGElement => node.nodeName === name,
-		(node: Element) => {
-			const remove = [];
-			for (let j = 0; j < node.attributes.length; j++) {
-				const attribute = node.attributes[j];
-				if (!attributes[attribute.name]) {
-					remove.push(attribute.name);
-				}
-			}
-			remove.forEach(v => node.removeAttribute(v));
-			return undefined;
-		},
-		() => svg ? svg_element(name as keyof SVGElementTagNameMap) : element(name as keyof HTMLElementTagNameMap)
-	);
-}
-
-
-export function claim_template_element(template_node: Element, nodes: ChildNodeArray, target?: ChildNode) {
+export function claim_element_experimental(template_node: Element, nodes: ChildNodeArray, target?: ChildNode) {
 	let ssr_node = nodes.length ? nodes[0] : undefined;
 
 	if (ssr_node && ssr_node.nodeType !== 1) {
@@ -605,7 +628,7 @@ export function claim_template_element(template_node: Element, nodes: ChildNodeA
 	// 	})
 	// })
 
-	return claim_template_node<Element | SVGElement>(
+	return claim_node_experimental<Element | SVGElement>(
 		ssr_node,
 		nodes,
 		(node: ChildNode): node is Element | SVGElement => node.nodeName === template_node.nodeName,
@@ -613,14 +636,19 @@ export function claim_template_element(template_node: Element, nodes: ChildNodeA
 			const remove = [];
 			for (let j = 0; j < node.attributes.length; j++) {
 				const attribute = node.attributes[j];
+				// console.log("node.attributes:", j, attribute.name, attribute.value);
+				// console.log("template_node.attributes:", j, template_node[j] && template_node[j].name, template_node[j] && template_node[j].value);
 				const attribute_name = attribute.name;
 				const template_attribute = template_node.attributes[attribute_name];
 				if (!template_attribute) {
+					// console.log("remove attribute from node:", attribute_name, attribute.value);
 					remove.push(attribute_name);
 				} else {
 					if (attribute.value !== template_attribute.value) {
+						// console.log("set attribute to node:", attribute_name, template_attribute.value);
 						node.setAttribute(attribute_name, template_attribute.value);
 					}
+					// console.log("remove attribute from template:", attribute_name, template_attribute.value);
 					template_node.removeAttribute(attribute_name);
 				}
 			}
@@ -629,6 +657,7 @@ export function claim_template_element(template_node: Element, nodes: ChildNodeA
 				const attribute = template_node.attributes[j];
 				const attribute_name = attribute.name;
 				if (!node.attributes[attribute_name]) {
+					// console.log("set attribute to node:", attribute_name, attribute.value);
 					node.setAttribute(attribute_name, attribute.value);
 				}
 			}
@@ -640,33 +669,14 @@ export function claim_template_element(template_node: Element, nodes: ChildNodeA
 			// type ElementTemplate = Element & {ic: boolean};
 
 			// console.log("claim_template_element createNode")
-			if (target) insert_hydration(target, template_node);
+			if (target) insert_experimental_hydration(target, template_node);
 			// (template_node as ElementTemplate).ic = true;
 			return template_node;
 		}
 	);
 }
 
-export function claim_text(nodes: ChildNodeArray, data) {
-	return claim_node<Text>(
-		nodes,
-		(node: ChildNode): node is Text => node.nodeType === 3,
-		(node: Text) => {
-			const dataStr = '' + data;
-			if (node.data.startsWith(dataStr)) {
-				if (node.data.length !== dataStr.length) {
-					return node.splitText(dataStr.length);
-				}
-			} else {
-				node.data = dataStr;
-			}
-		},
-		() => text(data),
-		true	// Text nodes should not update last index since it is likely not worth it to eliminate an increasing subsequence of actual elements
-	);
-}
-
-export function claim_template_text(template_node: Text, nodes: ChildNodeArray, target?: ChildNode) {
+export function claim_text_experimental(template_node: Text, nodes: ChildNodeArray, target?: ChildNode) {
 	const ssr_node = nodes.length ? nodes[0] : undefined;
 
 	// console.log("claim_template_text start");
@@ -684,7 +694,7 @@ export function claim_template_text(template_node: Text, nodes: ChildNodeArray, 
 
 	let data;
 
-	return claim_template_node<Text>(
+	return claim_node_experimental<Text>(
 		ssr_node,
 		nodes,
 		(node: ChildNode): node is Text => {
@@ -710,7 +720,7 @@ export function claim_template_text(template_node: Text, nodes: ChildNodeArray, 
 				if (nodes.length > 0) nodes.splice(0, 1);
 			} else if (target) {
 				// console.log("claim_template_text insert_hydration");
-				insert_hydration(target, template_node);
+				insert_experimental_hydration(target, template_node);
 			}
 			return template_node;
 		},
@@ -749,6 +759,26 @@ export function claim_html_tag(nodes) {
 		nodes.claim_info.total_claimed += 1;
 	}
 	return new HtmlTagHydration(claimed_nodes);
+}
+
+export function claim_html_tag_experimental(nodes) {
+	// find html opening tag
+	const start_index = find_comment(nodes, 'HTML_TAG_START', 0);
+	const end_index = find_comment(nodes, 'HTML_TAG_END', start_index);
+	if (start_index === end_index) {
+		return new HtmlTagExperimentalHydration();
+	}
+
+	init_claim_info(nodes);
+	const html_tag_nodes = nodes.splice(start_index, end_index + 1);
+	detach(html_tag_nodes[0]);
+	detach(html_tag_nodes[html_tag_nodes.length - 1]);
+	const claimed_nodes = html_tag_nodes.slice(1, html_tag_nodes.length - 1);
+	for (const n of claimed_nodes) {
+		n.claim_order = nodes.claim_info.total_claimed;
+		nodes.claim_info.total_claimed += 1;
+	}
+	return new HtmlTagExperimentalHydration(claimed_nodes);
 }
 
 export function set_data(text, data) {
@@ -946,6 +976,17 @@ export class HtmlTagHydration extends HtmlTag {
 	i(anchor) {
 		for (let i = 0; i < this.n.length; i += 1) {
 			insert_hydration(this.t, this.n[i], anchor);
+		}
+	}
+}
+
+export class HtmlTagExperimental extends HtmlTag {}
+
+export class HtmlTagExperimentalHydration extends HtmlTagHydration {
+
+	i(anchor) {
+		for (let i = 0; i < this.n.length; i += 1) {
+			insert_experimental_hydration(this.t, this.n[i], anchor);
 		}
 	}
 }

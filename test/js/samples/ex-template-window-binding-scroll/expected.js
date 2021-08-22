@@ -5,7 +5,7 @@ import {
 	detach,
 	first_child,
 	init,
-	insert,
+	insert_experimental,
 	listen,
 	make_renderer,
 	next_sibling,
@@ -39,7 +39,7 @@ function create_fragment(ctx) {
 			t1 = replace_text(next_sibling(t0), /*y*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert_experimental(target, p, anchor);
 
 			if (!mounted) {
 				dispose = listen(window, "scroll", () => {

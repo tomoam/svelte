@@ -2,24 +2,27 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
-	empty,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
 	noop,
+	replace_blank,
 	safe_not_equal
 } from "svelte/internal";
 
+const render = make_renderer(`<p>foo!</p>`);
+
+// (5:0) {#if foo}
 function create_if_block(ctx) {
 	let p;
 
 	return {
 		c() {
-			p = element("p");
-			p.textContent = "foo!";
+			p = first_child(render());
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert_experimental(target, p, anchor);
 		},
 		d(detaching) {
 			if (detaching) detach(p);
@@ -27,18 +30,20 @@ function create_if_block(ctx) {
 	};
 }
 
+const render_1 = make_renderer(`<!>`);
+
 function create_fragment(ctx) {
 	let if_block_anchor;
 	let if_block = /*foo*/ ctx[0] && create_if_block(ctx);
 
 	return {
 		c() {
+			if_block_anchor = replace_blank(first_child(render_1()));
 			if (if_block) if_block.c();
-			if_block_anchor = empty();
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
+			insert_experimental(target, if_block_anchor, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (/*foo*/ ctx[0]) {
@@ -57,8 +62,8 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (if_block) if_block.d(detaching);
 			if (detaching) detach(if_block_anchor);
+			if (if_block) if_block.d(detaching);
 		}
 	};
 }

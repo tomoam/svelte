@@ -7,7 +7,7 @@ import {
 	first_child,
 	first_element_child,
 	init,
-	insert,
+	insert_experimental,
 	listen,
 	make_renderer,
 	next_element_sibling,
@@ -110,7 +110,7 @@ function create_if_block(ctx) {
 			: '');
 		},
 		m(target, anchor) {
-			insert(target, section, anchor);
+			insert_experimental(target, section, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(ul0, null);
@@ -193,7 +193,7 @@ function create_if_block_2(ctx) {
 			input.autofocus = true;
 		},
 		m(target, anchor) {
-			insert(target, input, anchor);
+			insert_experimental(target, input, anchor);
 			input.focus();
 
 			if (!mounted) {
@@ -272,7 +272,7 @@ function create_each_block(key_1, ctx) {
 			this.first = li;
 		},
 		m(target, anchor) {
-			insert(target, li, anchor);
+			insert_experimental(target, li, anchor);
 			input.checked = /*item*/ ctx[16].completed;
 			if (if_block) if_block.m(li, t4);
 
@@ -336,7 +336,7 @@ function create_if_block_1(ctx) {
 			button = first_child(render());
 		},
 		m(target, anchor) {
-			insert(target, button, anchor);
+			insert_experimental(target, button, anchor);
 
 			if (!mounted) {
 				dispose = listen(button, "click", /*clearCompleted*/ ctx[6]);
@@ -375,10 +375,10 @@ function create_fragment(ctx) {
 			input.autofocus = true;
 		},
 		m(target, anchor) {
-			insert(target, header, anchor);
-			insert(target, t2, anchor);
+			insert_experimental(target, header, anchor);
+			insert_experimental(target, t2, anchor);
 			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
+			insert_experimental(target, if_block_anchor, anchor);
 			input.focus();
 
 			if (!mounted) {

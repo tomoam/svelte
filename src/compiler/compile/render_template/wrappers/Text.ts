@@ -42,51 +42,17 @@ export default class TextWrapper extends Wrapper {
 		return true;
 	}
 
-	// get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
-	get_claim_template_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
+	get_claim_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
 		const nodes = parent_nodes || '[]';
-		return x`@claim_template_text(${template_node}, ${nodes}, ${target})`;
+		return x`@claim_text_experimental(${template_node}, ${nodes}, ${target})`;
 	}
 
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.skip) return;
 
-		// let render_statement;
-		// let claim_statement;
-		// // let claim_ssr_path;
-		// if (this.template_index) {
-		// 	render_statement = x`@first_child(${this.template_index}())`;
-		// 	// claim_statement = this.get_claim_template_statement(this.var, "nodes[0]", "#nodes");
-		// 	claim_statement = this.get_claim_template_statement(this.var, "#nodes", parent_node);
-		// } else {
-		// 	// if (is_dynamic_wrapper(this.prev)) {
-		// 	if (this.prev && !this.prev.is_dom_node()) {
-		// 		if (this.prev.template_index) {
-		// 		 	render_statement = x`@next_sibling(@first_child(${this.prev.template_index}()))`;
-		// 		} else if (this.prev.prev) {
-		// 			render_statement = x`@next_sibling(@next_sibling(${this.prev.prev.var}))`;
-		// 		} else if (this.prev.parent) {
-		// 			render_statement = x`@next_sibling(@first_child(${this.prev.parent.var}))`;
-		// 		}
-		// 		//} else {
-		// 		// 	render_statement = x`@next_sibling(@first_child(${this.prev.template_index}()))`;
-		// 		//	// claim_ssr_path = x`#nodes[0]`;
-		// 		//}
-		// 	} else if (this.prev) {
-		// 		render_statement = x`@next_sibling(${this.prev.var})`;
-		// 	} else {
-		// 		render_statement = x`@first_child(${parent_node})`;
-		// 	}
-
-		// 	const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || "#nodes";
-		// 	// claim_statement = this.get_claim_template_statement(this.var, claim_ssr_path || render_statement, trim_parent_nodes, parent_node);
-		// 	claim_statement = this.get_claim_template_statement(this.var, trim_parent_nodes, parent_node);
-		// }
-
 		const render_statement = get_node_path(this, parent_node);
-
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || "#nodes";
-		const claim_statement = this.get_claim_template_statement(this.var, trim_parent_nodes, parent_node);
+		const claim_statement = this.get_claim_statement(this.var, trim_parent_nodes, parent_node);
 	
 		block.add_element(
 			this.var,

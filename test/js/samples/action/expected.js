@@ -2,14 +2,16 @@
 import {
 	SvelteComponent,
 	action_destroyer,
-	attr,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<a href="#">Test</a>`);
 
 function create_fragment(ctx) {
 	let a;
@@ -19,12 +21,10 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			a = element("a");
-			a.textContent = "Test";
-			attr(a, "href", "#");
+			a = first_child(render());
 		},
 		m(target, anchor) {
-			insert(target, a, anchor);
+			insert_experimental(target, a, anchor);
 
 			if (!mounted) {
 				dispose = action_destroyer(link_action = link.call(null, a));

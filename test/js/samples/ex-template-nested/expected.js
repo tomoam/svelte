@@ -7,7 +7,7 @@ import {
 	first_child,
 	first_element_child,
 	init,
-	insert,
+	insert_experimental,
 	make_renderer,
 	mount_component,
 	next_element_sibling,
@@ -44,7 +44,7 @@ function create_fragment(ctx) {
 			div0 = next_element_sibling(t2);
 		},
 		m(target, anchor) {
-			insert(target, div1, anchor);
+			insert_experimental(target, div1, anchor);
 			mount_component(nested, div1, t2);
 			current = true;
 		},

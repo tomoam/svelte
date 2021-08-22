@@ -177,13 +177,12 @@ export default class Block {
 		}
 
 		if (parent_node) {
-			// this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
 			if (is_head(parent_node) && !no_detach) {
-				this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
+				this.chunks.mount.push(b`@append_experimental(${parent_node}, ${id});`);
 				this.chunks.destroy.push(b`@detach(${id});`);
 			} 
 		} else {
-			this.chunks.mount.push(b`@insert(#target, ${id}, #anchor);`);
+			this.chunks.mount.push(b`@insert_experimental(#target, ${id}, #anchor);`);
 			if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(${id});`);
 		}
 	}
@@ -265,10 +264,10 @@ export default class Block {
 		if (this.chunks.create.length === 0 && this.chunks.hydrate.length === 0) {
 			properties.create = noop;
 		} else {
-			if (this.renderer.options.hydratable) {
-				this.add_variable({ type: 'Identifier', name: '#cloned' });
-				this.chunks.create.push(b`#cloned = true`);
-			}
+			// if (this.renderer.options.hydratable) {
+			// 	this.add_variable({ type: 'Identifier', name: '#cloned' });
+			// 	this.chunks.create.push(b`#cloned = true`);
+			// }
 
 			const hydrate = this.chunks.hydrate.length > 0 && (
 				this.renderer.options.hydratable
@@ -287,25 +286,14 @@ export default class Block {
 				properties.claim = noop;
 			} else {
 				let prefix = [];
-				// prefix.push(b`
-				// 	console.log("this.l")
-				// 	#nodes.forEach((n1, i) => {
-				// 		console.log(i, n1.nodeName, n1.nodeValue, n1.firstChild, n1.nextSibling);
-				// 		if (n1) n1.childNodes.forEach((n2, j) => {
-				// 			console.log(i, j, n2.nodeName, n2.nodeValue, n2.firstChild, n2.nextSibling);
-				// 		})
-				// 	});
-				// 	console.log("cloned", #cloned);
-				// 	console.log("nodes.length", #nodes.length);
-				// `);
 				if (this.chunks.create.length > 0) {
-					prefix.push(b`if (!#cloned) this.c();`);
+					prefix.push(b`this.c();`);
 				}
 				if (!this.wrappers.some((n) => n.node.type === 'Head')) {
-					prefix.push(b`if (#nodes.length === 0) return;`);
+					prefix.push(b`if (!#nodes.length) return;`);
 				}
 
-				if (prefix.length > 0) {
+				if (this.renderer.options.hydratable && prefix.length > 0) {
 					this.chunks.claim.unshift(prefix);
 				}
 				properties.claim = x`function #claim(#nodes) {

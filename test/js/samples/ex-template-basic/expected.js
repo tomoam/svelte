@@ -4,7 +4,7 @@ import {
 	detach,
 	first_child,
 	init,
-	insert,
+	insert_experimental,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -20,7 +20,7 @@ function create_fragment(ctx) {
 			h1 = first_child(render());
 		},
 		m(target, anchor) {
-			insert(target, h1, anchor);
+			insert_experimental(target, h1, anchor);
 		},
 		p: noop,
 		i: noop,

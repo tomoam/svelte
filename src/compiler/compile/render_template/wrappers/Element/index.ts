@@ -4,11 +4,10 @@ import Wrapper from '../shared/Wrapper';
 import Block from '../../Block';
 import { is_void } from '../../../../utils/names';
 import FragmentWrapper from '../Fragment';
-// import { escape_html, string_literal } from '../../../utils/stringify';
 import { escape_html } from '../../../utils/stringify';
 import TextWrapper from '../Text';
 import fix_attribute_casing from './fix_attribute_casing';
-import { b, x, p } from 'code-red';
+import { b, x } from 'code-red';
 import { namespaces } from '../../../../utils/namespaces';
 import AttributeWrapper from './Attribute';
 import StyleAttributeWrapper from './StyleAttribute';
@@ -27,9 +26,7 @@ import Action from '../../../nodes/Action';
 import MustacheTagWrapper from '../MustacheTag';
 import RawMustacheTagWrapper from '../RawMustacheTag';
 import is_dynamic from '../shared/is_dynamic';
-// import EachBlockWrapper from '../EachBlock';
-// import InlineComponentWrapper from '../InlineComponent';
-// import IfBlockWrapper from '../IfBlock';
+import { is_needed_wrap_by_svg } from '../shared/is_needed_wrap_by_svg';
 
 interface BindingGroup {
 	events: string[];
@@ -238,6 +235,14 @@ export default class ElementWrapper extends Wrapper {
 
 		if (this.node.name === 'noscript') return;
 
+		// if (this.template_index && /-/.test(this.node.name)) {
+		// 	block.chunks.create.push(b`
+		// 		const ${this.template_index} = @make_renderer(
+		// 			${this.template}
+		// 		)
+		// 	`);
+		// }
+
 		const node = this.var;
 		const nodes = parent_nodes && block.get_unique_name(`${this.var.name}_nodes`); // if we're in unclaimable territory, i.e. <head>, parent_nodes is null
 		const children = x`@children(${this.node.name === 'template' ? x`${node}.content` : node})`;
@@ -251,14 +256,14 @@ export default class ElementWrapper extends Wrapper {
 		if (renderer.options.hydratable) {
 			let claim_statement;
 			if (this.template_index) {
-				claim_statement = this.get_claim_template_statement(node, parent_nodes || "#nodes", parent_node);
+				claim_statement = this.get_claim_statement(node, parent_nodes || "#nodes", parent_node);
 			} else if (is_head(parent_node)) {
-				claim_statement = this.get_claim_template_statement(node, parent_nodes || "#nodes", parent_node);
+				claim_statement = this.get_claim_statement(node, parent_nodes || "#nodes", parent_node);
 			} else if (parent_node) {
 				const trim_parent_nodes = this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes;
-				claim_statement = this.get_claim_template_statement(node, trim_parent_nodes, parent_node);
+				claim_statement = this.get_claim_statement(node, trim_parent_nodes, parent_node);
 			} else {
-				claim_statement = this.get_claim_template_statement(node, "#nodes", parent_node);
+				claim_statement = this.get_claim_statement(node, "#nodes", parent_node);
 			}
 
 			block.chunks.claim.push(b`
@@ -273,20 +278,18 @@ export default class ElementWrapper extends Wrapper {
 		}
 
 		if (parent_node) {
-			// if (this.node.namespace && this.node.namespace !== namespaces.svg) {
 			if (is_head(parent_node)) {
-				const append = b`@append(${parent_node}, ${node});`;
+				const append = b`@append_experimental(${parent_node}, ${node});`;
 				((append[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
 					start: this.renderer.locate(this.node.start),
 					end: this.renderer.locate(this.node.end)
 				};
 				block.chunks.mount.push(append);
-			}
-			if (is_head(parent_node)) {
+
 				block.chunks.destroy.push(b`@detach(${node});`);
 			}
 		} else {
-			const insert = b`@insert(#target, ${node}, #anchor);`;
+			const insert = b`@insert_experimental(#target, ${node}, #anchor);`;
 			((insert[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
 				start: this.renderer.locate(this.node.start),
 				end: this.renderer.locate(this.node.end)
@@ -388,7 +391,7 @@ export default class ElementWrapper extends Wrapper {
 		let render_statement;
 
 		if (this.template_index) {
-			const node_path = this.node.namespace === namespaces.svg ? x`@first_child(${this.template_index}())` : `${this.template_index}()`;
+			const node_path = is_needed_wrap_by_svg(this) ? x`@first_child(${this.template_index}())` : `${this.template_index}()`;
 			render_statement = x`@first_child(${node_path})`;
 		} else if (is_head(parent_node) && this.parent.template_index && (!this.prev || !this.prev.var)) {
 			render_statement =  x`@first_child(${this.parent.template_index}())`;
@@ -417,24 +420,9 @@ export default class ElementWrapper extends Wrapper {
 		// return x`@element("${name}")`;
 	}
 
-	get_claim_statement(nodes: Identifier) {
-		const attributes = this.attributes
-			.filter((attr) => !(attr instanceof SpreadAttributeWrapper) && !attr.property_name)
-			.map((attr) => p`${(attr as StyleAttributeWrapper | AttributeWrapper).name}: true`);
-
-		const name = this.node.namespace
-			? this.node.name
-			: this.node.name.toUpperCase();
-
-		const svg = this.node.namespace === namespaces.svg ? 1 : null;
-
-		return x`@claim_element(${nodes}, "${name}", { ${attributes} }, ${svg})`;
-	}
-
-	// get_claim_template_statement(template_node: Identifier | string, ssr_node: (ReturnType<typeof x>) | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
-	get_claim_template_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
+	get_claim_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
 		const nodes = parent_nodes || '[]';
-		return x`@claim_template_element(${template_node}, ${nodes}, ${target})`;
+		return x`@claim_element_experimental(${template_node}, ${nodes}, ${target})`;
 	}
 
 	add_directives_in_order (block: Block) {

@@ -303,11 +303,11 @@ export default function template(
 	if (has_create_fragment) {
 
 		renderer.fragment.nodes.forEach((node) => {
-		// block.wrappers.reverse().forEach((node) => {
+			// if (node.template && !/-/.test(node.node.name)) {
 			if (node.template) {
-				// console.log("render_template index in has_crete_fragment", node.template_index);
+				const make_renderer = /-/.test(node.node.name) ? '@make_custom_renderer' : '@make_renderer';
 				body.push(b`
-					const ${node.template_index} = @make_renderer(
+					const ${node.template_index} = ${make_renderer}(
 						${node.template}
 					)
 				`);
@@ -515,7 +515,7 @@ export default function template(
 
 					if (options) {
 						if (options.target) {
-							@insert(options.target, this, options.anchor);
+							@insert_experimental(options.target, this, options.anchor);
 						}
 
 						${(props.length > 0 || uses_props || uses_rest) && b`

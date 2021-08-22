@@ -5,17 +5,22 @@ import {
 	create_component,
 	destroy_component,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
 	mount_component,
+	next_element_sibling,
+	next_sibling,
+	replace_blank,
+	replace_text,
 	safe_not_equal,
 	set_data,
-	space,
-	text,
 	transition_in,
 	transition_out
 } from "svelte/internal";
+
+const render = make_renderer(`<!><!> <!><!> <!><!> <div></div> <!>`);
 
 function create_fragment(ctx) {
 	let t0_value = /*a*/ ctx[0].normal + "";
@@ -42,6 +47,7 @@ function create_fragment(ctx) {
 	let div_f_value;
 	let t9;
 	let component;
+	let component_anchor;
 	let current;
 
 	component = new /*Component*/ ctx[6]({
@@ -57,18 +63,19 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			t0 = text(t0_value);
-			t1 = text(t1_value);
-			t2 = space();
-			t3 = text(t3_value);
-			t4 = text(t4_value);
-			t5 = space();
-			t6 = text(t6_value);
-			t7 = text(t7_value);
-			t8 = space();
-			div = element("div");
-			t9 = space();
+			t0 = replace_text(first_child(render()), t0_value);
+			t1 = replace_text(next_sibling(t0), t1_value);
+			t2 = next_sibling(t1);
+			t3 = replace_text(next_sibling(t2), t3_value);
+			t4 = replace_text(next_sibling(t3), t4_value);
+			t5 = next_sibling(t4);
+			t6 = replace_text(next_sibling(t5), t6_value);
+			t7 = replace_text(next_sibling(t6), t7_value);
+			t8 = next_sibling(t7);
+			div = next_element_sibling(t8);
+			t9 = next_sibling(div);
 			create_component(component.$$.fragment);
+			component_anchor = replace_blank(next_sibling(t9));
 			attr(div, "a", div_a_value = /*a*/ ctx[0].normal);
 			attr(div, "b", div_b_value = /*b*/ ctx[1]?.optional);
 			attr(div, "c", div_c_value = /*c*/ ctx[2]['computed']);
@@ -77,18 +84,19 @@ function create_fragment(ctx) {
 			attr(div, "f", div_f_value = /*f*/ ctx[5]?.());
 		},
 		m(target, anchor) {
-			insert(target, t0, anchor);
-			insert(target, t1, anchor);
-			insert(target, t2, anchor);
-			insert(target, t3, anchor);
-			insert(target, t4, anchor);
-			insert(target, t5, anchor);
-			insert(target, t6, anchor);
-			insert(target, t7, anchor);
-			insert(target, t8, anchor);
-			insert(target, div, anchor);
-			insert(target, t9, anchor);
+			insert_experimental(target, t0, anchor);
+			insert_experimental(target, t1, anchor);
+			insert_experimental(target, t2, anchor);
+			insert_experimental(target, t3, anchor);
+			insert_experimental(target, t4, anchor);
+			insert_experimental(target, t5, anchor);
+			insert_experimental(target, t6, anchor);
+			insert_experimental(target, t7, anchor);
+			insert_experimental(target, t8, anchor);
+			insert_experimental(target, div, anchor);
+			insert_experimental(target, t9, anchor);
 			mount_component(component, target, anchor);
+			insert_experimental(target, component_anchor, anchor);
 			current = true;
 		},
 		p(ctx, [dirty]) {
@@ -153,6 +161,7 @@ function create_fragment(ctx) {
 			if (detaching) detach(t8);
 			if (detaching) detach(div);
 			if (detaching) detach(t9);
+			if (detaching) detach(component_anchor);
 			destroy_component(component, detaching);
 		}
 	};

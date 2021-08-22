@@ -3,13 +3,16 @@ import {
 	SvelteComponent,
 	action_destroyer,
 	detach,
-	element,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
 	is_function,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<button>foo</button>`);
 
 function create_fragment(ctx) {
 	let button;
@@ -19,11 +22,10 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			button = element("button");
-			button.textContent = "foo";
+			button = first_child(render());
 		},
 		m(target, anchor) {
-			insert(target, button, anchor);
+			insert_experimental(target, button, anchor);
 
 			if (!mounted) {
 				dispose = action_destroyer(foo_action = foo.call(null, button, /*foo_function*/ ctx[1]));

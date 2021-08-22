@@ -77,7 +77,11 @@ export default function(node: Element, renderer: Renderer, options: RenderOption
 			if (name === 'value' && node.name.toLowerCase() === 'textarea') {
 				// node_contents = get_attribute_value(attribute);
 			} else if (attribute.is_true) {
-				renderer.add_string(` ${attr_name}`);
+				if (/-/.test(node.name)) {
+					renderer.add_string(` ${attr_name}=true`);
+				} else {
+					renderer.add_string(` ${attr_name}`);
+				}
 			// } else if (
 			// 	boolean_attributes.has(name) &&
 			// 	attribute.chunks.length === 1 &&

@@ -7,7 +7,7 @@ import {
 	first_child,
 	first_element_child,
 	init,
-	insert,
+	insert_experimental,
 	make_renderer,
 	next_element_sibling,
 	next_sibling,
@@ -48,7 +48,7 @@ function create_each_block(ctx) {
 			attr(a, "href", a_href_value = "https://www.youtube.com/watch?v=" + /*id*/ ctx[1]);
 		},
 		m(target, anchor) {
-			insert(target, li, anchor);
+			insert_experimental(target, li, anchor);
 		},
 		p: noop,
 		d(detaching) {
@@ -88,9 +88,9 @@ function create_fragment(ctx) {
 			t3 = next_sibling(each_1_anchor);
 		},
 		m(target, anchor) {
-			insert(target, h1, anchor);
-			insert(target, t1, anchor);
-			insert(target, ul, anchor);
+			insert_experimental(target, h1, anchor);
+			insert_experimental(target, t1, anchor);
+			insert_experimental(target, ul, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(ul, t3);

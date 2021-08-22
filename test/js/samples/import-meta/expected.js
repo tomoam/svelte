@@ -2,13 +2,17 @@
 import {
 	SvelteComponent,
 	detach,
+	first_child,
 	init,
-	insert,
+	insert_experimental,
+	make_renderer,
+	next_sibling,
 	noop,
-	safe_not_equal,
-	space,
-	text
+	replace_text,
+	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<!> <!>`);
 
 function create_fragment(ctx) {
 	let t0;
@@ -18,14 +22,14 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			t0 = text(/*url*/ ctx[0]);
-			t1 = space();
-			t2 = text(t2_value);
+			t0 = replace_text(first_child(render()), /*url*/ ctx[0]);
+			t1 = next_sibling(t0);
+			t2 = replace_text(next_sibling(t1), t2_value);
 		},
 		m(target, anchor) {
-			insert(target, t0, anchor);
-			insert(target, t1, anchor);
-			insert(target, t2, anchor);
+			insert_experimental(target, t0, anchor);
+			insert_experimental(target, t1, anchor);
+			insert_experimental(target, t2, anchor);
 		},
 		p: noop,
 		i: noop,

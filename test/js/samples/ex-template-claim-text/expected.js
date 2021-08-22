@@ -7,7 +7,7 @@ import {
 	detach,
 	first_child,
 	init,
-	insert_hydration,
+	insert_experimental_hydration,
 	make_renderer,
 	mount_component,
 	replace_blank,
@@ -26,24 +26,22 @@ function create_default_slot(ctx) {
 	let component;
 	let component_anchor;
 	let current;
-	let cloned;
 	component = new Component({});
 
 	return {
 		c() {
 			create_component(component.$$.fragment);
 			component_anchor = replace_blank(first_child(render()));
-			cloned = true;
 		},
 		l(nodes) {
-			if (!cloned) this.c();
-			if (nodes.length === 0) return;
+			this.c();
+			if (!nodes.length) return;
 			claim_component(component.$$.fragment, trim_nodes(nodes));
 			component_anchor = component_anchor;
 		},
 		m(target, anchor) {
 			mount_component(component, target, anchor);
-			insert_hydration(target, component_anchor, anchor);
+			insert_experimental_hydration(target, component_anchor, anchor);
 			current = true;
 		},
 		i(local) {
@@ -68,7 +66,6 @@ function create_fragment(ctx) {
 	let layout;
 	let layout_anchor;
 	let current;
-	let cloned;
 
 	layout = new Layout({
 			props: {
@@ -81,17 +78,16 @@ function create_fragment(ctx) {
 		c() {
 			create_component(layout.$$.fragment);
 			layout_anchor = replace_blank(first_child(render_1()));
-			cloned = true;
 		},
 		l(nodes) {
-			if (!cloned) this.c();
-			if (nodes.length === 0) return;
+			this.c();
+			if (!nodes.length) return;
 			claim_component(layout.$$.fragment, trim_nodes(nodes));
 			layout_anchor = layout_anchor;
 		},
 		m(target, anchor) {
 			mount_component(layout, target, anchor);
-			insert_hydration(target, layout_anchor, anchor);
+			insert_experimental_hydration(target, layout_anchor, anchor);
 			current = true;
 		},
 		p(ctx, [dirty]) {

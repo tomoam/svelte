@@ -32,7 +32,8 @@ const valid_options = [
 	'loopGuardTimeout',
 	'preserveComments',
 	'preserveWhitespace',
-	'cssHash'
+	'cssHash',
+	'experimental'
 ];
 
 function validate_options(options: CompileOptions, warnings: Warning[]) {
