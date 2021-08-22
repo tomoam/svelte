@@ -4,8 +4,8 @@ export function test({ assert, input, js, config }) {
 	let start;
 	let actual;
 
-	const template = config.compile_options && config.compile_options.experimental && config.compile_options.experimental.template;
-	if (template) {
+	const experimental_template_mode = config.compile_options && config.compile_options.experimental_template_mode;
+	if (experimental_template_mode) {
 		start = js.locate('insert_experimental(target, h1');
 	} else {
 		start = js.locate('insert(target, h1');
@@ -23,7 +23,7 @@ export function test({ assert, input, js, config }) {
 		column: expected.column
 	});
 
-	if (template) {
+	if (experimental_template_mode) {
 		start = js.locate('insert_experimental(target, div');
 	} else {
 		start = js.locate('insert(target, h1');

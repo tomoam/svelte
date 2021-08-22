@@ -146,7 +146,7 @@ export interface CompileOptions {
 	preserveComments?: boolean;
 	preserveWhitespace?: boolean;
 
-	experimental?: Record<string, boolean>;
+	experimental_template_mode?: boolean;
 }
 
 export interface ParserOptions {

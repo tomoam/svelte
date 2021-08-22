@@ -3,7 +3,7 @@ import AwaitBlock from '../../nodes/AwaitBlock';
 import { x } from 'code-red';
 
 export default function(node: AwaitBlock, renderer: Renderer, options: RenderOptions) {
-	if (options.generate === 'template') {
+	if (options.experimental_template_mode === true) {
 		renderer.add_string('<!>');
 		return;
 	}

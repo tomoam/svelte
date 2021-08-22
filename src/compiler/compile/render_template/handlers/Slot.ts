@@ -7,7 +7,7 @@ import { get_slot_scope } from './shared/get_slot_scope';
 export default function(node: Slot, renderer: Renderer, options: RenderOptions & {
 	slot_scopes: Map<any, any>;
 }) {
-	if (options.generate && options.generate === 'template') {
+	if (options.experimental_template_mode === true) {
 		renderer.add_string('<!>');
 		return;
 	}

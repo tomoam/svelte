@@ -33,7 +33,7 @@ const valid_options = [
 	'preserveComments',
 	'preserveWhitespace',
 	'cssHash',
-	'experimental'
+	'experimental_template_mode'
 ];
 
 function validate_options(options: CompileOptions, warnings: Warning[]) {
@@ -84,7 +84,10 @@ function validate_options(options: CompileOptions, warnings: Warning[]) {
 }
 
 export default function compile(source: string, options: CompileOptions = {}) {
-	options = Object.assign({ generate: 'template', dev: false }, options);
+	options = Object.assign({ generate: 'dom', dev: false }, options);
+
+	const ex_template_mode = Boolean(process.env.SVELTE_EX_TEMPLATE_MODE);
+	options.experimental_template_mode = ex_template_mode;
 
 	const stats = new Stats();
 	const warnings = [];
@@ -110,7 +113,7 @@ export default function compile(source: string, options: CompileOptions = {}) {
 		? null
 		: options.generate === 'ssr'
 			? render_ssr(component, options)
-			: options.generate === 'dom'
+			: !options.experimental_template_mode
 				? render_dom(component, options)
 				: render_template(component, options);
 

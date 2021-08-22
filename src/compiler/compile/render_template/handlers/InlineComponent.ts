@@ -18,7 +18,7 @@ function get_prop_value(attribute) {
 
 export default function(node: InlineComponent, renderer: Renderer, options: RenderOptions) {
 
-	if (options.generate && options.generate === 'template') {
+	if (options.experimental_template_mode === true) {
 		renderer.add_string('<!>');
 		return;
 	}
