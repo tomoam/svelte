@@ -5,13 +5,17 @@ import { Identifier } from 'estree';
 
 export function get_node_path(node: Wrapper, parent_node: Identifier) {
 	if (node.template_index) {
-		return x`@first_child(${node.template_index}())`;
+		// return x`@first_child(${node.template_index}())`;
+		return x`${node.template_index}().firstChild`;
 	} else if (is_head(parent_node) && node.parent.template_index && (!node.prev || !node.prev.var)) {
-		return  x`@first_child(${node.parent.template_index}())`;
+		// return  x`@first_child(${node.parent.template_index}())`;
+		return  x`${node.parent.template_index}().firstChild`;
 	} else if (node.prev) {
 		const prev_var = node.prev.is_dom_node() ? node.prev.var : node.prev.anchor;
-		return x`@next_sibling(${prev_var})`;
+		// return x`@next_sibling(${prev_var})`;
+		return x`${prev_var}.nextSibling`;
 	} else {
-		return x`@first_child(${parent_node})`;
+		// return x`@first_child(${parent_node})`;
+		return x`${parent_node}.firstChild`;
 	}
 }

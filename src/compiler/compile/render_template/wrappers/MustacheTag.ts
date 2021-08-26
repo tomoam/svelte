@@ -4,9 +4,11 @@ import Tag from './shared/Tag';
 import Wrapper from './shared/Wrapper';
 import MustacheTag from '../../nodes/MustacheTag';
 import RawMustacheTag from '../../nodes/RawMustacheTag';
-import { x } from 'code-red';
+import { b, x } from 'code-red';
 import { Identifier } from 'estree';
-import { is_head } from './shared/is_head';
+// import { is_head } from './shared/is_head';
+import { get_node_path } from './shared/get_node_path';
+import { is_text } from '../shared/is_text';
 // import remove_whitespace_children from '../handlers/utils/remove_whitespace_children';
 // import { INode } from '../../nodes/interfaces';
 
@@ -30,19 +32,9 @@ export default class MustacheTagWrapper extends Tag {
 			value => x`@set_data(${this.var}, ${value})`
 		);
 
-		let node_path;
-		if (this.template_index) {
-			node_path = x`@first_child(${this.template_index}())`;
-		} else if (is_head(parent_node) && this.parent.template_index && (!this.prev || !this.prev.var)) {
-			node_path =  x`@first_child(${this.parent.template_index}())`;
-		} else if (this.prev) {
-			const prev_var = this.prev.is_dom_node ? this.prev.var : this.prev.anchor;
-			node_path = x`@next_sibling(${prev_var})`;
-		} else {
-			node_path = x`@first_child(${parent_node})`;
-		}
+		const node_path = get_node_path(this, parent_node);
 
-		const render_statement = x`@replace_text(${node_path}, ${init})`;
+		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next)) ? node_path : x`@replace_text(${node_path}, ${init})`;
 
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || '#nodes';
 		const claim_statement = this.get_claim_statement(this.var, trim_parent_nodes, parent_node);
@@ -53,5 +45,11 @@ export default class MustacheTagWrapper extends Tag {
 			claim_statement,
 			parent_node
 		);
+
+		if (!is_text(this.node.prev) && !is_text(this.node.next)) {
+			block.chunks.create.push(b`
+				${this.var}.data = ${init};	
+			`);
+		}
 	}
 }

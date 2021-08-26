@@ -1,8 +1,10 @@
 
+import MustacheTag from '../../nodes/MustacheTag';
+import { is_text } from '../shared/is_text';
 import Renderer, { RenderOptions } from '../TemplateRenderer';
 // import { x } from 'code-red';
 
-export default function(node, renderer: Renderer, _options: RenderOptions) {
+export default function(node: MustacheTag, renderer: Renderer, _options: RenderOptions) {
 	// const snippet = node.expression.node;
 
 	// renderer.add_expression(
@@ -19,6 +21,10 @@ export default function(node, renderer: Renderer, _options: RenderOptions) {
 
 		// renderer.add_expression(snippet);
 	} else {
-		renderer.add_string("<!>");
+		if (is_text(node.prev) || is_text(node.next)) {
+			renderer.add_string("<!>");
+		} else {
+			renderer.add_string(" ");
+		}
 	}
 }

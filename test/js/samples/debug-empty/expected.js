@@ -4,11 +4,9 @@ import {
 	add_location,
 	detach_dev,
 	dispatch_dev,
-	first_child,
 	init,
 	insert_experimental_dev,
 	make_renderer,
-	next_sibling,
 	noop,
 	replace_text,
 	safe_not_equal,
@@ -26,9 +24,9 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
-			h1 = first_child(render());
-			t0 = first_child(h1);
-			t1 = replace_text(next_sibling(t0), /*name*/ ctx[0]);
+			h1 = render().firstChild;
+			t0 = h1.firstChild;
+			t1 = replace_text(t0.nextSibling, /*name*/ ctx[0]);
 			debugger;
 			add_location(h1, file, 4, 0, 38);
 		},

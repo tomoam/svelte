@@ -391,15 +391,20 @@ export default class ElementWrapper extends Wrapper {
 		let render_statement;
 
 		if (this.template_index) {
-			const node_path = is_needed_wrap_by_svg(this) ? x`@first_child(${this.template_index}())` : `${this.template_index}()`;
-			render_statement = x`@first_child(${node_path})`;
+			// const node_path = is_needed_wrap_by_svg(this) ? x`@first_child(${this.template_index}())` : `${this.template_index}()`;
+			const node_path = is_needed_wrap_by_svg(this) ? x`${this.template_index}().firstChild` : `${this.template_index}()`;
+			// render_statement = x`@first_child(${node_path})`;
+			render_statement = x`${node_path}.firstChild`;
 		} else if (is_head(parent_node) && this.parent.template_index && (!this.prev || !this.prev.var)) {
-			render_statement =  x`@first_child(${this.parent.template_index}())`;
+			// render_statement =  x`@first_child(${this.parent.template_index}())`;
+			render_statement =  x`${this.parent.template_index}().firstChild`;
 		} else if (this.prev) {
 			const prev_var = this.prev.is_dom_node() ? this.prev.var : this.prev.anchor;
-			render_statement =  x`@next_element_sibling(${prev_var})`;
+			// render_statement =  x`@next_element_sibling(${prev_var})`;
+			render_statement =  x`${prev_var}.nextElementSibling`;
 		} else if (parent_node && !this.prev) {
-			render_statement =  x`@first_element_child(${parent_node})`;
+			// render_statement =  x`@first_element_child(${parent_node})`;
+			render_statement =  x`${parent_node}.firstElementChild`;
 		}
 
 		const { name, namespace } = this.node;

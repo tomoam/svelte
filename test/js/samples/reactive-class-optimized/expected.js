@@ -3,12 +3,9 @@ import {
 	SvelteComponent,
 	component_subscribe,
 	detach,
-	first_child,
 	init,
 	insert_experimental,
 	make_renderer,
-	next_element_sibling,
-	next_sibling,
 	noop,
 	safe_not_equal,
 	subscribe,
@@ -39,23 +36,23 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div0 = first_child(render());
-			t0 = next_sibling(div0);
-			div1 = next_element_sibling(t0);
-			t1 = next_sibling(div1);
-			div2 = next_element_sibling(t1);
-			t2 = next_sibling(div2);
-			div3 = next_element_sibling(t2);
-			t3 = next_sibling(div3);
-			div4 = next_element_sibling(t3);
-			t4 = next_sibling(div4);
-			div5 = next_element_sibling(t4);
-			t5 = next_sibling(div5);
-			div6 = next_element_sibling(t5);
-			t6 = next_sibling(div6);
-			div7 = next_element_sibling(t6);
-			t7 = next_sibling(div7);
-			div8 = next_element_sibling(t7);
+			div0 = render().firstChild;
+			t0 = div0.nextSibling;
+			div1 = t0.nextElementSibling;
+			t1 = div1.nextSibling;
+			div2 = t1.nextElementSibling;
+			t2 = div2.nextSibling;
+			div3 = t2.nextElementSibling;
+			t3 = div3.nextSibling;
+			div4 = t3.nextElementSibling;
+			t4 = div4.nextSibling;
+			div5 = t4.nextElementSibling;
+			t5 = div5.nextSibling;
+			div6 = t5.nextElementSibling;
+			t6 = div6.nextSibling;
+			div7 = t6.nextElementSibling;
+			t7 = div7.nextSibling;
+			div8 = t7.nextElementSibling;
 			toggle_class(div0, "update1", reactiveModuleVar);
 			toggle_class(div1, "update2", /*reactiveConst*/ ctx[0].x);
 			toggle_class(div2, "update3", nonReactiveGlobal && /*reactiveConst*/ ctx[0].x);

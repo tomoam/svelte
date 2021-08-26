@@ -4,12 +4,10 @@ import {
 	create_component,
 	destroy_component,
 	detach,
-	first_child,
 	init,
 	insert_experimental,
 	make_renderer,
 	mount_component,
-	next_sibling,
 	noop,
 	replace_blank,
 	safe_not_equal,
@@ -33,10 +31,10 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(imported.$$.fragment);
-			imported_anchor = replace_blank(first_child(render()));
-			t = next_sibling(imported_anchor);
+			imported_anchor = replace_blank(render().firstChild);
+			t = imported_anchor.nextSibling;
 			create_component(nonimported.$$.fragment);
-			nonimported_anchor = replace_blank(next_sibling(t));
+			nonimported_anchor = replace_blank(t.nextSibling);
 		},
 		m(target, anchor) {
 			mount_component(imported, target, anchor);

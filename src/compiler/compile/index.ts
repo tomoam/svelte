@@ -84,10 +84,16 @@ function validate_options(options: CompileOptions, warnings: Warning[]) {
 }
 
 export default function compile(source: string, options: CompileOptions = {}) {
-	options = Object.assign({ generate: 'dom', dev: false }, options);
-
 	const ex_template_mode = Boolean(process.env.SVELTE_EX_TEMPLATE_MODE);
-	options.experimental_template_mode = ex_template_mode;
+
+	options = Object.assign(
+		{
+			generate: 'dom',
+			dev: false,
+			experimental_template_mode: ex_template_mode,
+		},
+		options
+	);
 
 	const stats = new Stats();
 	const warnings = [];

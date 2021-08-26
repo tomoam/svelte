@@ -2,13 +2,10 @@
 import {
 	SvelteComponent,
 	detach,
-	first_child,
-	first_element_child,
 	init,
 	insert_experimental,
 	listen,
 	make_renderer,
-	next_element_sibling,
 	noop,
 	run_all,
 	safe_not_equal,
@@ -26,9 +23,9 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			form = first_child(render());
-			input = first_element_child(form);
-			button = next_element_sibling(input);
+			form = render().firstChild;
+			input = form.firstElementChild;
+			button = input.nextElementSibling;
 			input.required = true;
 		},
 		m(target, anchor) {

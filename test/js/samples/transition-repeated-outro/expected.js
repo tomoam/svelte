@@ -4,8 +4,6 @@ import {
 	check_outros,
 	create_out_transition,
 	detach,
-	first_child,
-	first_element_child,
 	group_outros,
 	init,
 	insert_experimental,
@@ -28,8 +26,8 @@ function create_if_block(ctx) {
 
 	return {
 		c() {
-			div = first_child(render());
-			p = first_element_child(div);
+			div = render().firstChild;
+			p = div.firstElementChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, div, anchor);
@@ -60,7 +58,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			if_block_anchor = replace_blank(first_child(render_1()));
+			if_block_anchor = replace_blank(render_1().firstChild);
 			if (if_block) if_block.c();
 		},
 		m(target, anchor) {

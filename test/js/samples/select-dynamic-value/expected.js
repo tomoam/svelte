@@ -2,12 +2,9 @@
 import {
 	SvelteComponent,
 	detach,
-	first_child,
-	first_element_child,
 	init,
 	insert_experimental,
 	make_renderer,
-	next_element_sibling,
 	noop,
 	safe_not_equal,
 	select_option
@@ -22,9 +19,9 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			select = first_child(render());
-			option0 = first_element_child(select);
-			option1 = next_element_sibling(option0);
+			select = render().firstChild;
+			option0 = select.firstElementChild;
+			option1 = option0.nextElementSibling;
 			option0.__value = "1";
 			option0.value = option0.__value;
 			option1.__value = "2";

@@ -3,10 +3,8 @@ import {
 	SvelteComponent,
 	append_experimental,
 	detach,
-	first_child,
 	init,
 	make_renderer,
-	next_element_sibling,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
@@ -19,8 +17,8 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			meta0 = first_child(render());
-			meta1 = next_element_sibling(meta0);
+			meta0 = render().firstChild;
+			meta1 = meta0.nextElementSibling;
 		},
 		m(target, anchor) {
 			append_experimental(document.head, meta0);

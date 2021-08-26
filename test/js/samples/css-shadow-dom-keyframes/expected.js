@@ -3,7 +3,6 @@ import {
 	SvelteElement,
 	attribute_to_object,
 	detach,
-	first_child,
 	init,
 	insert_experimental,
 	make_renderer,
@@ -18,7 +17,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = first_child(render());
+			div = render().firstChild;
 			this.c = noop;
 		},
 		m(target, anchor) {

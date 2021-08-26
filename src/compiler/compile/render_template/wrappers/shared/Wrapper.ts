@@ -63,8 +63,9 @@ export default class Wrapper {
 		// children need to be created first
 		const needs_anchor = is_head(parent_node) || (this.next ? !this.next.is_dom_node() : !parent_node || !this.parent.is_dom_node());
 		this.anchor = block.get_unique_name(anchor_name || `${this.var.name}_anchor`);
-		const node_path = get_node_path(this, parent_node);
-		const render_statement = x`@replace_blank(${node_path})`;
+		// const node_path = get_node_path(this, parent_node);
+		// const render_statement = x`@replace_blank(${node_path})`;
+		const render_statement = get_node_path(this, parent_node);
 
 		if (needs_anchor) {
 			block.add_element(

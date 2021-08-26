@@ -2,8 +2,6 @@
 import {
 	SvelteComponent,
 	detach,
-	first_child,
-	first_element_child,
 	init,
 	insert_experimental,
 	make_renderer,
@@ -19,8 +17,8 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			svg = first_child(render());
-			title = first_element_child(svg);
+			svg = render().firstChild;
+			title = svg.firstElementChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, svg, anchor);

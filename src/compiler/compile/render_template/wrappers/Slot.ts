@@ -141,8 +141,9 @@ export default class SlotWrapper extends Wrapper {
 		);
 
 		this.anchor = block.get_unique_name(`${this.var.name}_anchor`);
-		const node_path = get_node_path(this, parent_node);
-		const render_statement = x`@replace_blank(${node_path})`;
+		// const node_path = get_node_path(this, parent_node);
+		// const render_statement = x`@replace_blank(${node_path})`;
+		const render_statement = get_node_path(this, parent_node);
 		block.add_variable(this.anchor);
 		block.chunks.create.push(b`${this.anchor} = ${render_statement};`);
 

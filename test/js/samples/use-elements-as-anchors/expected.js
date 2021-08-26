@@ -2,12 +2,9 @@
 import {
 	SvelteComponent,
 	detach,
-	first_child,
 	init,
 	insert_experimental,
 	make_renderer,
-	next_element_sibling,
-	next_sibling,
 	noop,
 	replace_blank,
 	safe_not_equal
@@ -21,7 +18,7 @@ function create_if_block_4(ctx) {
 
 	return {
 		c() {
-			p = first_child(render_4());
+			p = render_4().firstChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, p, anchor);
@@ -40,7 +37,7 @@ function create_if_block_3(ctx) {
 
 	return {
 		c() {
-			p = first_child(render_3());
+			p = render_3().firstChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, p, anchor);
@@ -59,7 +56,7 @@ function create_if_block_2(ctx) {
 
 	return {
 		c() {
-			p = first_child(render_2());
+			p = render_2().firstChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, p, anchor);
@@ -78,7 +75,7 @@ function create_if_block_1(ctx) {
 
 	return {
 		c() {
-			p = first_child(render_1());
+			p = render_1().firstChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, p, anchor);
@@ -97,7 +94,7 @@ function create_if_block(ctx) {
 
 	return {
 		c() {
-			p = first_child(render());
+			p = render().firstChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, p, anchor);
@@ -133,24 +130,24 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = first_child(render_5());
-			if_block0_anchor = replace_blank(first_child(div));
+			div = render_5().firstChild;
+			if_block0_anchor = replace_blank(div.firstChild);
 			if (if_block0) if_block0.c();
-			t0 = next_sibling(if_block0_anchor);
-			p0 = next_element_sibling(t0);
-			t2 = next_sibling(p0);
-			if_block1_anchor = replace_blank(next_sibling(t2));
+			t0 = if_block0_anchor.nextSibling;
+			p0 = t0.nextElementSibling;
+			t2 = p0.nextSibling;
+			if_block1_anchor = replace_blank(t2.nextSibling);
 			if (if_block1) if_block1.c();
-			t3 = next_sibling(if_block1_anchor);
-			if_block2_anchor = replace_blank(next_sibling(t3));
+			t3 = if_block1_anchor.nextSibling;
+			if_block2_anchor = replace_blank(t3.nextSibling);
 			if (if_block2) if_block2.c();
-			t4 = next_sibling(if_block2_anchor);
-			p1 = next_element_sibling(t4);
-			t6 = next_sibling(p1);
-			if_block3_anchor = replace_blank(next_sibling(t6));
+			t4 = if_block2_anchor.nextSibling;
+			p1 = t4.nextElementSibling;
+			t6 = p1.nextSibling;
+			if_block3_anchor = replace_blank(t6.nextSibling);
 			if (if_block3) if_block3.c();
-			t7 = next_sibling(div);
-			if_block4_anchor = replace_blank(next_sibling(t7));
+			t7 = div.nextSibling;
+			if_block4_anchor = replace_blank(t7.nextSibling);
 			if (if_block4) if_block4.c();
 		},
 		m(target, anchor) {

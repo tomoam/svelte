@@ -5,12 +5,9 @@ import {
 	destroy_each,
 	detach_dev,
 	dispatch_dev,
-	first_child,
 	init,
 	insert_experimental_dev,
 	make_renderer,
-	next_element_sibling,
-	next_sibling,
 	noop,
 	replace_blank,
 	replace_text,
@@ -38,8 +35,8 @@ function create_each_block(ctx) {
 
 	const block = {
 		c: function create() {
-			span = first_child(render());
-			t = replace_text(first_child(span), t_value);
+			span = render().firstChild;
+			t = replace_text(span.firstChild, t_value);
 
 			{
 				const foo = /*foo*/ ctx[1];
@@ -105,11 +102,11 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = replace_blank(first_child(render_1()));
-			t0 = next_sibling(each_1_anchor);
-			p = next_element_sibling(t0);
-			t1 = first_child(p);
-			t2 = replace_text(next_sibling(t1), /*foo*/ ctx[1]);
+			each_1_anchor = replace_blank(render_1().firstChild);
+			t0 = each_1_anchor.nextSibling;
+			p = t0.nextElementSibling;
+			t1 = p.firstChild;
+			t2 = replace_text(t1.nextSibling, /*foo*/ ctx[1]);
 			add_location(p, file, 12, 0, 182);
 		},
 		l: function claim(nodes) {

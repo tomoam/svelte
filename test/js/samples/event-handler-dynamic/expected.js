@@ -2,15 +2,11 @@
 import {
 	SvelteComponent,
 	detach,
-	first_child,
-	first_element_child,
 	init,
 	insert_experimental,
 	is_function,
 	listen,
 	make_renderer,
-	next_element_sibling,
-	next_sibling,
 	noop,
 	replace_text,
 	run_all,
@@ -34,14 +30,14 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			p0 = first_child(render());
-			button0 = first_element_child(p0);
-			button1 = next_element_sibling(button0);
-			t3 = next_sibling(p0);
-			p1 = next_element_sibling(t3);
-			t4 = replace_text(first_child(p1), /*number*/ ctx[1]);
-			t5 = next_sibling(p1);
-			button2 = next_element_sibling(t5);
+			p0 = render().firstChild;
+			button0 = p0.firstElementChild;
+			button1 = button0.nextElementSibling;
+			t3 = p0.nextSibling;
+			p1 = t3.nextElementSibling;
+			t4 = replace_text(p1.firstChild, /*number*/ ctx[1]);
+			t5 = p1.nextSibling;
+			button2 = t5.nextElementSibling;
 		},
 		m(target, anchor) {
 			insert_experimental(target, p0, anchor);
