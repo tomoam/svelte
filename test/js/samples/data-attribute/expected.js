@@ -21,7 +21,7 @@ function create_fragment(ctx) {
 		c() {
 			div0 = render().firstChild;
 			t = div0.nextSibling;
-			div1 = t.nextElementSibling;
+			div1 = t.nextSibling;
 			attr(div1, "data-foo", /*bar*/ ctx[0]);
 		},
 		m(target, anchor) {

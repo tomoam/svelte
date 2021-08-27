@@ -26,7 +26,7 @@ function create_fragment(ctx) {
 		c() {
 			input = render().firstChild;
 			t0 = input.nextSibling;
-			h1 = t0.nextElementSibling;
+			h1 = t0.nextSibling;
 			t1 = replace_text(h1.firstChild, /*name*/ ctx[0]);
 			input.value = /*name*/ ctx[0];
 		},

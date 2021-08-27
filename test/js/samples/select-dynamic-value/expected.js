@@ -20,8 +20,8 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			select = render().firstChild;
-			option0 = select.firstElementChild;
-			option1 = option0.nextElementSibling;
+			option0 = select.firstChild;
+			option1 = option0.nextSibling;
 			option0.__value = "1";
 			option0.value = option0.__value;
 			option1.__value = "2";

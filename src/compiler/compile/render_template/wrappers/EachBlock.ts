@@ -195,10 +195,6 @@ export default class EachBlockWrapper extends Wrapper {
 		const { renderer } = this;
 		const { component } = renderer;
 
-		// const needs_anchor = this.next
-		// 	? !this.next.is_dom_node() :
-		// 	!parent_node || !this.parent.is_dom_node();
-
 		const snippet = this.node.expression.manipulate(block);
 
 		block.chunks.init.push(b`let ${this.vars.each_block_value} = ${snippet};`);
@@ -206,21 +202,8 @@ export default class EachBlockWrapper extends Wrapper {
 			block.chunks.init.push(b`@validate_each_argument(${this.vars.each_block_value});`);
 		}
 
-		// this.anchor = block.get_unique_name(`${this.var.name}_anchor`);
-		// const node_path = get_node_path(this, parent_node);
-
-		// block.add_variable(this.anchor);
-		// block.chunks.create.push(b`${this.anchor} = @replace_blank(${node_path});`);
-	
-		// const initial_anchor_node: Identifier = { type: 'Identifier', name: parent_node ? (this.next && this.next.is_dom_node()) ? this.next.var.name : 'null' : '#anchor' };
-		// const initial_anchor_node: Identifier = needs_anchor ? this.anchor : { type: 'Identifier', name: parent_node ? 'null' : '#anchor' };
 		const initial_anchor_node: Identifier = get_initial_anchor_node(this, parent_node);
 		const initial_mount_node: Identifier = parent_node || { type: 'Identifier', name: '#target' };
-		// const update_anchor_node = needs_anchor
-		// 	? block.get_unique_name(`${this.var.name}_anchor`)
-		// 	: (this.next && this.next.var) || { type: 'Identifier', name: 'null' };
-		// const update_anchor_node: Identifier = needs_anchor ? this.anchor : this.next ? this.next.var : { type: 'Identifier', name: 'null' };
-		// const update_mount_node: Identifier = this.get_update_mount_node((update_anchor_node as Identifier));
 
 		const args = {
 			block,
@@ -229,9 +212,6 @@ export default class EachBlockWrapper extends Wrapper {
 			snippet,
 			initial_anchor_node,
 			initial_mount_node,
-			// update_anchor_node,
-			// update_mount_node,
-			// needs_anchor
 		};
 
 		const all_dependencies = new Set(this.block.dependencies); // TODO should be dynamic deps only

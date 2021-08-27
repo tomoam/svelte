@@ -6,11 +6,10 @@ import {
 	insert_experimental,
 	make_renderer,
 	noop,
-	replace_text,
 	safe_not_equal
 } from "svelte/internal";
 
-const render = make_renderer(`<b><!></b>`);
+const render = make_renderer(`<b> </b>`);
 
 function create_fragment(ctx) {
 	let b;
@@ -20,7 +19,8 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			b = render().firstChild;
-			t = replace_text(b.firstChild, t_value);
+			t = b.firstChild;
+			t.data = t_value;
 		},
 		m(target, anchor) {
 			insert_experimental(target, b, anchor);

@@ -7,13 +7,12 @@ import {
 	listen,
 	make_renderer,
 	noop,
-	replace_text,
 	safe_not_equal,
 	set_data,
 	set_input_value
 } from "svelte/internal";
 
-const render = make_renderer(`<p><!></p> <input>`);
+const render = make_renderer(`<p> </p> <input>`);
 
 function create_fragment(ctx) {
 	let p;
@@ -26,9 +25,10 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			p = render().firstChild;
-			t0 = replace_text(p.firstChild, /*foo*/ ctx[0]);
+			t0 = p.firstChild;
+			t0.data = /*foo*/ ctx[0];
 			t1 = p.nextSibling;
-			input = t1.nextElementSibling;
+			input = t1.nextSibling;
 		},
 		m(target, anchor) {
 			insert_experimental(target, p, anchor);

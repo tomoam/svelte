@@ -18,7 +18,7 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			meta0 = render().firstChild;
-			meta1 = meta0.nextElementSibling;
+			meta1 = meta0.nextSibling;
 		},
 		m(target, anchor) {
 			append_experimental(document.head, meta0);

@@ -9,7 +9,6 @@ import {
 	make_renderer,
 	mount_component,
 	noop,
-	replace_blank,
 	safe_not_equal,
 	transition_in,
 	transition_out
@@ -31,10 +30,10 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(imported.$$.fragment);
-			imported_anchor = replace_blank(render().firstChild);
+			imported_anchor = render().firstChild;
 			t = imported_anchor.nextSibling;
 			create_component(nonimported.$$.fragment);
-			nonimported_anchor = replace_blank(t.nextSibling);
+			nonimported_anchor = t.nextSibling;
 		},
 		m(target, anchor) {
 			mount_component(imported, target, anchor);

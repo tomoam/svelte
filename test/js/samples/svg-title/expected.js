@@ -13,12 +13,10 @@ const render = make_renderer(`<svg><title>a title</title></svg>`);
 
 function create_fragment(ctx) {
 	let svg;
-	let title;
 
 	return {
 		c() {
 			svg = render().firstChild;
-			title = svg.firstElementChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, svg, anchor);

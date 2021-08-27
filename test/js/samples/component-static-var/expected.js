@@ -9,7 +9,6 @@ import {
 	listen,
 	make_renderer,
 	mount_component,
-	replace_blank,
 	safe_not_equal,
 	set_input_value,
 	transition_in,
@@ -37,12 +36,12 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(foo.$$.fragment);
-			foo_anchor = replace_blank(render().firstChild);
+			foo_anchor = render().firstChild;
 			t0 = foo_anchor.nextSibling;
 			create_component(bar.$$.fragment);
-			bar_anchor = replace_blank(t0.nextSibling);
+			bar_anchor = t0.nextSibling;
 			t1 = bar_anchor.nextSibling;
-			input = t1.nextElementSibling;
+			input = t1.nextSibling;
 		},
 		m(target, anchor) {
 			mount_component(foo, target, anchor);

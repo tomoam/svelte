@@ -26,7 +26,7 @@ function create_fragment(ctx) {
 		c() {
 			img0 = render().firstChild;
 			t = img0.nextSibling;
-			img1 = t.nextElementSibling;
+			img1 = t.nextSibling;
 			this.h();
 		},
 		l(nodes) {

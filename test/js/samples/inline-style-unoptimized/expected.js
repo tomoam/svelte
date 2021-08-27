@@ -22,7 +22,7 @@ function create_fragment(ctx) {
 		c() {
 			div0 = render().firstChild;
 			t = div0.nextSibling;
-			div1 = t.nextElementSibling;
+			div1 = t.nextSibling;
 			attr(div0, "style", /*style*/ ctx[0]);
 			attr(div1, "style", div1_style_value = "" + (/*key*/ ctx[1] + ": " + /*value*/ ctx[2]));
 		},

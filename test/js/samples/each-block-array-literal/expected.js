@@ -7,8 +7,6 @@ import {
 	insert_experimental,
 	make_renderer,
 	noop,
-	replace_blank,
-	replace_text,
 	safe_not_equal,
 	set_data
 } from "svelte/internal";
@@ -19,7 +17,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-const render = make_renderer(`<span><!></span>`);
+const render = make_renderer(`<span> </span>`);
 
 // (9:0) {#each [a, b, c, d, e] as num}
 function create_each_block(ctx) {
@@ -30,7 +28,8 @@ function create_each_block(ctx) {
 	return {
 		c() {
 			span = render().firstChild;
-			t = replace_text(span.firstChild, t_value);
+			t = span.firstChild;
+			t.data = t_value;
 		},
 		m(target, anchor) {
 			insert_experimental(target, span, anchor);
@@ -61,7 +60,7 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = replace_blank(render_1().firstChild);
+			each_1_anchor = render_1().firstChild;
 		},
 		m(target, anchor) {
 			for (let i = 0; i < 5; i += 1) {

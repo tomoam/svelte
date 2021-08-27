@@ -24,7 +24,7 @@ function create_fragment(ctx) {
 		c() {
 			input0 = render().firstChild;
 			t = input0.nextSibling;
-			input1 = t.nextElementSibling;
+			input1 = t.nextSibling;
 		},
 		m(target, anchor) {
 			insert_experimental(target, input0, anchor);

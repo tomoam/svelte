@@ -23,6 +23,8 @@ export default class Wrapper {
 
 	anchor: Identifier;
 
+	is_required_variable: boolean;
+
 	constructor(
 		renderer: Renderer,
 		block: Block,
@@ -45,6 +47,8 @@ export default class Wrapper {
 		this.can_use_innerhtml = !renderer.options.hydratable;
 		this.is_static_content = !renderer.options.hydratable;
 
+		this.is_required_variable = !parent;
+
 		block.wrappers.push(this);
 	}
 
@@ -58,13 +62,16 @@ export default class Wrapper {
 		if (this.parent) this.parent.not_static_content();
 	}
 
+	require_variable() {
+		this.is_required_variable = true;
+		if (this.parent) this.parent.require_variable();
+	}
+
 	get_or_create_anchor(block: Block, parent_node: Identifier, parent_nodes: Identifier, anchor_name?: string): Identifier {
 		// TODO use this in EachBlock and IfBlock — tricky because
 		// children need to be created first
 		const needs_anchor = is_head(parent_node) || (this.next ? !this.next.is_dom_node() : !parent_node || !this.parent.is_dom_node());
 		this.anchor = block.get_unique_name(anchor_name || `${this.var.name}_anchor`);
-		// const node_path = get_node_path(this, parent_node);
-		// const render_statement = x`@replace_blank(${node_path})`;
 		const render_statement = get_node_path(this, parent_node);
 
 		if (needs_anchor) {

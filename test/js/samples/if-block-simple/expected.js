@@ -6,7 +6,6 @@ import {
 	insert_experimental,
 	make_renderer,
 	noop,
-	replace_blank,
 	safe_not_equal
 } from "svelte/internal";
 
@@ -37,7 +36,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			if_block_anchor = replace_blank(render_1().firstChild);
+			if_block_anchor = render_1().firstChild;
 			if (if_block) if_block.c();
 		},
 		m(target, anchor) {

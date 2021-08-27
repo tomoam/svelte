@@ -21,6 +21,7 @@ export class BaseAttributeWrapper {
 		if (node.dependencies.size > 0) {
 			parent.cannot_use_innerhtml();
 			parent.not_static_content();
+			parent.require_variable();
 
 			block.add_dependencies(node.dependencies);
 		}
@@ -86,7 +87,7 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 			this.is_select_value_attribute = this.name === 'value' && this.parent.node.name === 'select';
 			this.is_input_value = this.name === 'value' && this.parent.node.name === 'input';
 		}
-		
+
 		this.is_src = this.name === 'src'; // TODO retire this exception in favour of https://github.com/sveltejs/svelte/issues/3750
 		this.should_cache = should_cache(this);
 	}

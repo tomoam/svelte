@@ -16,9 +16,11 @@ const render = make_renderer(`<div><p>Hello world</p> <p>Hello <!></p> <p>Hello 
 function create_fragment(ctx) {
 	let div0;
 	let p0;
+	let t1;
 	let p1;
 	let t2;
 	let t3;
+	let t4;
 	let p2;
 	let t5;
 	let t6;
@@ -31,16 +33,18 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			div0 = render().firstChild;
-			p0 = div0.firstElementChild;
-			p1 = p0.nextElementSibling;
+			p0 = div0.firstChild;
+			t1 = p0.nextSibling;
+			p1 = t1.nextSibling;
 			t2 = p1.firstChild;
 			t3 = replace_text(t2.nextSibling, world1);
-			p2 = p1.nextElementSibling;
+			t4 = p1.nextSibling;
+			p2 = t4.nextSibling;
 			t5 = p2.firstChild;
 			t6 = replace_text(t5.nextSibling, world2);
 			t7 = div0.nextSibling;
-			div1 = t7.nextElementSibling;
-			p3 = div1.firstElementChild;
+			div1 = t7.nextSibling;
+			p3 = div1.firstChild;
 			t8 = p3.firstChild;
 			t9 = replace_text(t8.nextSibling, /*world3*/ ctx[0]);
 		},

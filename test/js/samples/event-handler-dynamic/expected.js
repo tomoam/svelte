@@ -8,17 +8,17 @@ import {
 	listen,
 	make_renderer,
 	noop,
-	replace_text,
 	run_all,
 	safe_not_equal,
 	set_data
 } from "svelte/internal";
 
-const render = make_renderer(`<p><button>set handler 1</button> <button>set handler 2</button></p> <p><!></p> <button>click</button>`);
+const render = make_renderer(`<p><button>set handler 1</button> <button>set handler 2</button></p> <p> </p> <button>click</button>`);
 
 function create_fragment(ctx) {
 	let p0;
 	let button0;
+	let t1;
 	let button1;
 	let t3;
 	let p1;
@@ -31,13 +31,15 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			p0 = render().firstChild;
-			button0 = p0.firstElementChild;
-			button1 = button0.nextElementSibling;
+			button0 = p0.firstChild;
+			t1 = button0.nextSibling;
+			button1 = t1.nextSibling;
 			t3 = p0.nextSibling;
-			p1 = t3.nextElementSibling;
-			t4 = replace_text(p1.firstChild, /*number*/ ctx[1]);
+			p1 = t3.nextSibling;
+			t4 = p1.firstChild;
+			t4.data = /*number*/ ctx[1];
 			t5 = p1.nextSibling;
-			button2 = t5.nextElementSibling;
+			button2 = t5.nextSibling;
 		},
 		m(target, anchor) {
 			insert_experimental(target, p0, anchor);

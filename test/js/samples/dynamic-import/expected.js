@@ -9,7 +9,6 @@ import {
 	make_renderer,
 	mount_component,
 	noop,
-	replace_blank,
 	safe_not_equal,
 	transition_in,
 	transition_out
@@ -27,7 +26,7 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(lazyload.$$.fragment);
-			lazyload_anchor = replace_blank(render().firstChild);
+			lazyload_anchor = render().firstChild;
 		},
 		m(target, anchor) {
 			mount_component(lazyload, target, anchor);

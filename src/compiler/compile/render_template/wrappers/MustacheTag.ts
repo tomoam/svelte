@@ -6,19 +6,15 @@ import MustacheTag from '../../nodes/MustacheTag';
 import RawMustacheTag from '../../nodes/RawMustacheTag';
 import { b, x } from 'code-red';
 import { Identifier } from 'estree';
-// import { is_head } from './shared/is_head';
 import { get_node_path } from './shared/get_node_path';
 import { is_text } from '../shared/is_text';
-// import remove_whitespace_children from '../handlers/utils/remove_whitespace_children';
-// import { INode } from '../../nodes/interfaces';
 
 export default class MustacheTagWrapper extends Tag {
 	var: Identifier = { type: 'Identifier', name: 't' };
-	// block: Block;
 
 	constructor(renderer: Renderer, block: Block, parent: Wrapper, node: MustacheTag | RawMustacheTag) {
 		super(renderer, block, parent, node);
-		// this.block = block;
+		this.require_variable();
 	}
 
 	get_claim_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
@@ -33,7 +29,6 @@ export default class MustacheTagWrapper extends Tag {
 		);
 
 		const node_path = get_node_path(this, parent_node);
-
 		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next)) ? node_path : x`@replace_text(${node_path}, ${init})`;
 
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || '#nodes';

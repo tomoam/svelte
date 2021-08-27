@@ -9,8 +9,6 @@ import {
 	insert_experimental,
 	make_renderer,
 	noop,
-	replace_blank,
-	replace_text,
 	safe_not_equal,
 	set_data,
 	update_keyed_each
@@ -22,7 +20,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-const render = make_renderer(`<div><!></div>`);
+const render = make_renderer(`<div> </div>`);
 
 // (19:0) {#each things as thing (thing.id)}
 function create_each_block(key_1, ctx) {
@@ -37,7 +35,8 @@ function create_each_block(key_1, ctx) {
 		first: null,
 		c() {
 			div = render().firstChild;
-			t = replace_text(div.firstChild, t_value);
+			t = div.firstChild;
+			t.data = t_value;
 			this.first = div;
 		},
 		m(target, anchor) {
@@ -85,7 +84,7 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = replace_blank(render_1().firstChild);
+			each_1_anchor = render_1().firstChild;
 		},
 		m(target, anchor) {
 			for (let i = 0; i < each_blocks.length; i += 1) {

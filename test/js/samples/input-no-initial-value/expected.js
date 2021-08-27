@@ -17,15 +17,13 @@ const render = make_renderer(`<form><input type="text" required> <button>Store</
 function create_fragment(ctx) {
 	let form;
 	let input;
-	let button;
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
 			form = render().firstChild;
-			input = form.firstElementChild;
-			button = input.nextElementSibling;
+			input = form.firstChild;
 			input.required = true;
 		},
 		m(target, anchor) {

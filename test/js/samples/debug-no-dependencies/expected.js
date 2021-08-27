@@ -8,7 +8,6 @@ import {
 	insert_experimental_dev,
 	make_renderer,
 	noop,
-	replace_blank,
 	replace_text,
 	safe_not_equal,
 	validate_each_argument,
@@ -79,7 +78,7 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = replace_blank(render_1().firstChild);
+			each_1_anchor = render_1().firstChild;
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");

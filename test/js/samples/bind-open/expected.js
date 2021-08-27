@@ -14,14 +14,12 @@ const render = make_renderer(`<details><summary>summary</summary>content</detail
 
 function create_fragment(ctx) {
 	let details;
-	let summary;
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
 			details = render().firstChild;
-			summary = details.firstElementChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, details, anchor);

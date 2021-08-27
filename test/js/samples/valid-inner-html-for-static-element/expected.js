@@ -21,7 +21,7 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			div = render().firstChild;
-			img = div.firstElementChild;
+			img = div.firstChild;
 			if (!src_url_equal(img.src, img_src_value = "http://mdn.mozillademos.org/files/12676/star.svg")) attr(img, "src", img_src_value);
 		},
 		m(target, anchor) {

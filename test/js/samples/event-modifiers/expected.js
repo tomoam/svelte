@@ -18,8 +18,11 @@ const render = make_renderer(`<div><div>touch me</div> <button>click me</button>
 function create_fragment(ctx) {
 	let div1;
 	let div0;
+	let t1;
 	let button0;
+	let t3;
 	let button1;
+	let t5;
 	let button2;
 	let mounted;
 	let dispose;
@@ -27,10 +30,13 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			div1 = render().firstChild;
-			div0 = div1.firstElementChild;
-			button0 = div0.nextElementSibling;
-			button1 = button0.nextElementSibling;
-			button2 = button1.nextElementSibling;
+			div0 = div1.firstChild;
+			t1 = div0.nextSibling;
+			button0 = t1.nextSibling;
+			t3 = button0.nextSibling;
+			button1 = t3.nextSibling;
+			t5 = button1.nextSibling;
+			button2 = t5.nextSibling;
 		},
 		m(target, anchor) {
 			insert_experimental(target, div1, anchor);

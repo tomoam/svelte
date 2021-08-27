@@ -8,7 +8,6 @@ import {
 	insert_experimental,
 	make_renderer,
 	noop,
-	replace_blank,
 	replace_text,
 	safe_not_equal,
 	set_data
@@ -21,13 +20,14 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-const render = make_renderer(`<div class="comment"><strong><!></strong> <span class="meta"><!> wrote <!> ago:</span> <!></div>`);
+const render = make_renderer(`<div class="comment"><strong> </strong> <span class="meta"><!> wrote <!> ago:</span> <!></div>`);
 
 // (8:0) {#each comments as comment, i}
 function create_each_block(ctx) {
 	let div;
 	let strong;
 	let t0;
+	let t1;
 	let span;
 	let t2_value = /*comment*/ ctx[4].author + "";
 	let t2;
@@ -42,15 +42,17 @@ function create_each_block(ctx) {
 	return {
 		c() {
 			div = render().firstChild;
-			strong = div.firstElementChild;
-			t0 = replace_text(strong.firstChild, /*i*/ ctx[6]);
-			span = strong.nextElementSibling;
+			strong = div.firstChild;
+			t0 = strong.firstChild;
+			t0.data = /*i*/ ctx[6];
+			t1 = strong.nextSibling;
+			span = t1.nextSibling;
 			t2 = replace_text(span.firstChild, t2_value);
 			t3 = t2.nextSibling;
 			t4 = replace_text(t3.nextSibling, t4_value);
 			t6 = span.nextSibling;
 			html_tag = new HtmlTagExperimental();
-			html_anchor = replace_blank(t6.nextSibling);
+			html_anchor = t6.nextSibling;
 			html_tag.a = null;
 		},
 		m(target, anchor) {
@@ -68,7 +70,7 @@ function create_each_block(ctx) {
 	};
 }
 
-const render_1 = make_renderer(`<!> <p><!></p>`);
+const render_1 = make_renderer(`<!> <p> </p>`);
 
 function create_fragment(ctx) {
 	let each_1_anchor;
@@ -88,10 +90,11 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = replace_blank(render_1().firstChild);
+			each_1_anchor = render_1().firstChild;
 			t0 = each_1_anchor.nextSibling;
-			p = t0.nextElementSibling;
-			t1 = replace_text(p.firstChild, /*foo*/ ctx[3]);
+			p = t0.nextSibling;
+			t1 = p.firstChild;
+			t1.data = /*foo*/ ctx[3];
 		},
 		m(target, anchor) {
 			for (let i = 0; i < each_blocks.length; i += 1) {

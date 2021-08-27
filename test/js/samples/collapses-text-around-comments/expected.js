@@ -7,7 +7,6 @@ import {
 	insert_experimental,
 	make_renderer,
 	noop,
-	replace_text,
 	safe_not_equal,
 	set_data
 } from "svelte/internal";
@@ -16,7 +15,7 @@ function add_css(target) {
 	append_styles(target, "svelte-1a7i8ec", "p.svelte-1a7i8ec{color:red}");
 }
 
-const render = make_renderer(`<p class="svelte-1a7i8ec"><!></p>`);
+const render = make_renderer(`<p class="svelte-1a7i8ec"> </p>`);
 
 function create_fragment(ctx) {
 	let p;
@@ -25,7 +24,8 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			p = render().firstChild;
-			t = replace_text(p.firstChild, /*foo*/ ctx[0]);
+			t = p.firstChild;
+			t.data = /*foo*/ ctx[0];
 		},
 		m(target, anchor) {
 			insert_experimental(target, p, anchor);

@@ -9,7 +9,6 @@ import {
 	insert_experimental,
 	make_renderer,
 	mount_component,
-	replace_blank,
 	replace_text,
 	safe_not_equal,
 	set_data,
@@ -69,10 +68,10 @@ function create_fragment(ctx) {
 			t6 = replace_text(t5.nextSibling, t6_value);
 			t7 = replace_text(t6.nextSibling, t7_value);
 			t8 = t7.nextSibling;
-			div = t8.nextElementSibling;
+			div = t8.nextSibling;
 			t9 = div.nextSibling;
 			create_component(component.$$.fragment);
-			component_anchor = replace_blank(t9.nextSibling);
+			component_anchor = t9.nextSibling;
 			attr(div, "a", div_a_value = /*a*/ ctx[0].normal);
 			attr(div, "b", div_b_value = /*b*/ ctx[1]?.optional);
 			attr(div, "c", div_c_value = /*c*/ ctx[2]['computed']);

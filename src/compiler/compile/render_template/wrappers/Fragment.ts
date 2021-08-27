@@ -24,6 +24,7 @@ import { Identifier } from 'estree';
 import TemplateRenderer from '../TemplateRenderer';
 import { is_static_keyblock } from './shared/is_static_keyblock';
 import { is_needed_wrap_by_svg } from './shared/is_needed_wrap_by_svg';
+import { is_head } from './shared/is_head';
 
 const wrappers = {
 	AwaitBlock,
@@ -198,19 +199,18 @@ export default class FragmentWrapper {
 		}
 
 		const filter = (node: Wrapper) => {
-			if (node instanceof Text) {
-				if (!node.parent ||
-					!node.parent.is_dom_node() ||
-					(node.next && !node.next.is_dom_node()) ||
-					(node.prev && !node.prev.is_dom_node()) ||
-					node.next instanceof MustacheTag ||
-					(node.prev instanceof MustacheTag && renderer.options.hydratable)
-				) {
-					return true;
-				}
-				return false;
+			if (!node.parent ||
+				is_head(node.parent.var) ||
+				!node.parent.is_dom_node() ||
+				!node.is_static_content ||
+				node.is_required_variable ||
+				(node.prev && !node.prev.is_dom_node()) ||
+				needs_variable(node)
+			) {
+				return true;
 			}
-			return true;
+
+			return false;
 		};
 
 		this.nodes.filter((n) => !filter(n)).forEach((node) => {
@@ -251,8 +251,6 @@ export default class FragmentWrapper {
 
 function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
 	node.template_index = renderer.component.get_unique_name('render').name;
-	// console.log("FragmentWrapper crete_template node.node.type", node.node.type);
-	// console.log("FragmentWrapper crete_template node.template_index", node.template_index);
 	const wrap_by_svg = nodes.some(n => is_needed_wrap_by_svg(n))
 	node.template = to_template_literal(
 			nodes.map(n => n.node as INode),
@@ -286,4 +284,15 @@ function to_template_literal(nodes: INode[], name, locate, options, wrap_by_svg?
 	const templateLiteral = templateRenderer.pop();
 
 	return templateLiteral;
+}
+
+export function needs_variable(node: Wrapper) {
+
+	while (node.next) {
+		if (!node.next.is_static_content || node.next.is_required_variable) {
+			return true;
+		}
+		return needs_variable(node.next);
+	}
+	return false;
 }

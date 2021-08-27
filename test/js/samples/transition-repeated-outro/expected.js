@@ -8,7 +8,6 @@ import {
 	init,
 	insert_experimental,
 	make_renderer,
-	replace_blank,
 	safe_not_equal,
 	transition_in,
 	transition_out
@@ -20,14 +19,12 @@ const render = make_renderer(`<div><p>wheeee</p></div>`);
 // (7:0) {#if num < 5}
 function create_if_block(ctx) {
 	let div;
-	let p;
 	let div_outro;
 	let current;
 
 	return {
 		c() {
 			div = render().firstChild;
-			p = div.firstElementChild;
 		},
 		m(target, anchor) {
 			insert_experimental(target, div, anchor);
@@ -58,7 +55,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			if_block_anchor = replace_blank(render_1().firstChild);
+			if_block_anchor = render_1().firstChild;
 			if (if_block) if_block.c();
 		},
 		m(target, anchor) {

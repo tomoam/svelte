@@ -9,7 +9,6 @@ import {
 	insert_experimental_dev,
 	make_renderer,
 	noop,
-	replace_blank,
 	replace_text,
 	safe_not_equal,
 	set_data_dev,
@@ -25,7 +24,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-const render = make_renderer(`<span><!></span>`);
+const render = make_renderer(`<span> </span>`);
 
 // (8:0) {#each things as thing}
 function create_each_block(ctx) {
@@ -36,7 +35,8 @@ function create_each_block(ctx) {
 	const block = {
 		c: function create() {
 			span = render().firstChild;
-			t = replace_text(span.firstChild, t_value);
+			t = span.firstChild;
+			t.data = t_value;
 
 			{
 				const foo = /*foo*/ ctx[1];
@@ -102,9 +102,9 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = replace_blank(render_1().firstChild);
+			each_1_anchor = render_1().firstChild;
 			t0 = each_1_anchor.nextSibling;
-			p = t0.nextElementSibling;
+			p = t0.nextSibling;
 			t1 = p.firstChild;
 			t2 = replace_text(t1.nextSibling, /*foo*/ ctx[1]);
 			add_location(p, file, 12, 0, 182);

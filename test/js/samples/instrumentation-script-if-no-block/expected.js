@@ -27,7 +27,7 @@ function create_fragment(ctx) {
 		c() {
 			button = render().firstChild;
 			t1 = button.nextSibling;
-			p = t1.nextElementSibling;
+			p = t1.nextSibling;
 			t2 = p.firstChild;
 			t3 = replace_text(t2.nextSibling, /*x*/ ctx[0]);
 		},

@@ -10,7 +10,6 @@ import {
 	mount_component,
 	noop,
 	not_equal,
-	replace_blank,
 	transition_in,
 	transition_out
 } from "svelte/internal";
@@ -26,7 +25,7 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(nested.$$.fragment);
-			nested_anchor = replace_blank(render().firstChild);
+			nested_anchor = render().firstChild;
 		},
 		m(target, anchor) {
 			mount_component(nested, target, anchor);
