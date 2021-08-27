@@ -1,6 +1,6 @@
 import { b, x } from 'code-red';
 import Binding from '../../../nodes/Binding';
-import ElementWrapper from '.';
+import ElementWrapper from '../Element';
 import InlineComponentWrapper from '../InlineComponent';
 import get_object from '../../../utils/get_object';
 import replace_object from '../../../utils/replace_object';
