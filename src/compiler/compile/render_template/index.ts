@@ -60,23 +60,12 @@ export default function template(
 	// TODO the deconflicted names of blocks are reversed... should set them here
 	const blocks = renderer.blocks.slice().reverse();
 
-	// body.push(...blocks.map(block => {
-	// 	// TODO this is a horrible mess — renderer.blocks
-	// 	// contains a mixture of Blocks and Nodes
-	// 	if ((block as Block).render) return (block as Block).render();
-	// 	return block;
-	// }));
-
-	blocks.forEach(blk => {
-		if ((blk as Block).render) {
-			const blk_bodies = (blk as Block).render();
-			blk_bodies.forEach(blk_body => {
-				body.push(blk_body);
-			});
-		} else {
-			body.push(blk);
-		}
-	});
+	body.push(...blocks.map(block => {
+		// TODO this is a horrible mess — renderer.blocks
+		// contains a mixture of Blocks and Nodes
+		if ((block as Block).render) return (block as Block).render();
+		return block;
+	}));
 
 	if (options.dev && !options.hydratable) {
 		block.chunks.claim.push(
@@ -512,7 +501,7 @@ export default function template(
 
 					if (options) {
 						if (options.target) {
-							@insert_experimental(options.target, this, options.anchor);
+							@insert(options.target, this, options.anchor);
 						}
 
 						${(props.length > 0 || uses_props || uses_rest) && b`

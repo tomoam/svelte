@@ -274,7 +274,7 @@ export default class ElementWrapper extends Wrapper {
 
 		if (parent_node) {
 			if (is_head(parent_node)) {
-				const append = b`@append_experimental(${parent_node}, ${node});`;
+				const append = b`@append(${parent_node}, ${node});`;
 				((append[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
 					start: this.renderer.locate(this.node.start),
 					end: this.renderer.locate(this.node.end)
@@ -284,7 +284,7 @@ export default class ElementWrapper extends Wrapper {
 				block.chunks.destroy.push(b`@detach(${node});`);
 			}
 		} else {
-			const insert = b`@insert_experimental(#target, ${node}, #anchor);`;
+			const insert = b`@insert(#target, ${node}, #anchor);`;
 			((insert[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
 				start: this.renderer.locate(this.node.start),
 				end: this.renderer.locate(this.node.end)
@@ -361,7 +361,7 @@ export default class ElementWrapper extends Wrapper {
 
 	get_claim_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
 		const nodes = parent_nodes || '[]';
-		return x`@claim_element_experimental(${template_node}, ${nodes}, ${target})`;
+		return x`@claim_element(${template_node}, ${nodes}, ${target})`;
 	}
 
 	add_directives_in_order (block: Block) {

@@ -43,7 +43,7 @@ export default class TextWrapper extends Wrapper {
 
 	get_claim_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
 		const nodes = parent_nodes || '[]';
-		return x`@claim_text_experimental(${template_node}, ${nodes}, ${target})`;
+		return x`@claim_text(${template_node}, ${nodes}, ${target})`;
 	}
 
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {

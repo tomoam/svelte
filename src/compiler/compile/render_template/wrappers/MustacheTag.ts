@@ -27,7 +27,7 @@ export default class MustacheTagWrapper extends Tag {
 		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next)) ? node_path : x`@replace_text(${node_path}, ${init})`;
 
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || '#nodes';
-		const claim_statement = x`@claim_text_experimental(${this.var}, ${trim_parent_nodes}, ${parent_node})`;
+		const claim_statement = x`@claim_text(${this.var}, ${trim_parent_nodes}, ${parent_node})`;
 
 		block.add_element(
 			this.var,

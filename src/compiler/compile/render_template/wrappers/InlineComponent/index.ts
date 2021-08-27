@@ -542,9 +542,6 @@ export default class InlineComponentWrapper extends Wrapper {
 						var ${nodes} = @children(${css_custom_properties_wrapper});
 					`);
 				}
-				// block.chunks.claim.push(
-				// 	b`@claim_component(${name}.$$.fragment, ${nodes});`
-				// );
 				block.chunks.claim.push(
 					b`@claim_component(${name}.$$.fragment, @trim_nodes(${parent_nodes ? parent_nodes : nodes}));`
 				);
@@ -552,12 +549,12 @@ export default class InlineComponentWrapper extends Wrapper {
 
 			if (has_css_custom_properties) {
 				if (parent_node) {
-					block.chunks.mount.push(b`@append_experimental(${parent_node}, ${css_custom_properties_wrapper})`);
+					block.chunks.mount.push(b`@append(${parent_node}, ${css_custom_properties_wrapper})`);
 					if (is_head(parent_node)) {
 						block.chunks.destroy.push(b`@detach(${css_custom_properties_wrapper});`);
 					}
 				} else {
-					block.chunks.mount.push(b`@insert_experimental(#target, ${css_custom_properties_wrapper}, #anchor);`);
+					block.chunks.mount.push(b`@insert(#target, ${css_custom_properties_wrapper}, #anchor);`);
 					// TODO we eventually need to consider what happens to elements
 					// that belong to the same outgroup as an outroing element...
 					block.chunks.destroy.push(b`if (detaching) @detach(${css_custom_properties_wrapper});`);

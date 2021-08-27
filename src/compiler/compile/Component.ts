@@ -272,6 +272,14 @@ export default class Component {
 							} else {
 								let name = node.name.slice(1);
 
+								if (compile_options.experimental_template_mode) {
+									if (internal_exports.has(`${name}_experimental`)) {
+										name += '_experimental';
+									} else if (internal_exports.has(`${name}Experimental`)) {
+										name += 'Experimental';
+									}
+								}
+
 								if (compile_options.hydratable) {
 									if (internal_exports.has(`${name}_hydration`)) {
 										name += '_hydration';
