@@ -17,11 +17,6 @@ export default class MustacheTagWrapper extends Tag {
 		this.mark_as_on_traverse_path();
 	}
 
-	get_claim_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
-		const nodes = parent_nodes || '[]';
-		return x`@claim_text_experimental(${template_node}, ${nodes}, ${target})`;
-	}
-
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		const { init } = this.rename_this_method(
 			block,
@@ -32,7 +27,7 @@ export default class MustacheTagWrapper extends Tag {
 		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next)) ? node_path : x`@replace_text(${node_path}, ${init})`;
 
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || '#nodes';
-		const claim_statement = this.get_claim_statement(this.var, trim_parent_nodes, parent_node);
+		const claim_statement = x`@claim_text_experimental(${this.var}, ${trim_parent_nodes}, ${parent_node})`;
 
 		block.add_element(
 			this.var,

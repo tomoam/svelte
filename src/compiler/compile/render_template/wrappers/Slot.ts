@@ -11,7 +11,6 @@ import { is_reserved_keyword } from '../../utils/reserved_keywords';
 import is_dynamic from './shared/is_dynamic';
 import { Identifier, ObjectExpression } from 'estree';
 import create_debugging_comment from './shared/create_debugging_comment';
-import { get_initial_anchor_node } from './shared/get_initial_anchor_node';
 import { get_node_path } from './shared/get_node_path';
 
 export default class SlotWrapper extends Wrapper {
@@ -141,9 +140,8 @@ export default class SlotWrapper extends Wrapper {
 		);
 
 		this.anchor = block.get_unique_name(`${this.var.name}_anchor`);
-		// const node_path = get_node_path(this, parent_node);
-		// const render_statement = x`@replace_blank(${node_path})`;
 		const render_statement = get_node_path(this, parent_node);
+
 		block.add_variable(this.anchor);
 		block.chunks.create.push(b`${this.anchor} = ${render_statement};`);
 
@@ -155,7 +153,7 @@ export default class SlotWrapper extends Wrapper {
 
 		block.chunks.mount.push(b`
 			if (${slot_or_fallback}) {
-				${slot_or_fallback}.m(${parent_node || '#target'}, ${get_initial_anchor_node(this, parent_node)});
+				${slot_or_fallback}.m(${parent_node || '#target'}, ${this.get_initial_anchor_node(parent_node)});
 			}
 		`);
 

@@ -20,7 +20,6 @@ import { string_to_member_expression } from '../../../utils/string_to_member_exp
 import SlotTemplate from '../../../nodes/SlotTemplate';
 import { is_head } from '../shared/is_head';
 import compiler_warnings from '../../../compiler_warnings';
-import { get_initial_anchor_node } from '../shared/get_initial_anchor_node';
 
 type SlotDefinition = { block: Block; scope: TemplateScope; get_context?: Node; get_changes?: Node };
 
@@ -440,7 +439,7 @@ export default class InlineComponentWrapper extends Wrapper {
 				);
 			}
 
-			const initial_anchor_node = get_initial_anchor_node(this, parent_node);
+			const initial_anchor_node = this.get_initial_anchor_node(parent_node);
 			block.chunks.mount.push(b`
 				if (${name}) {
 					@mount_component(${name}, ${parent_node || '#target'}, ${initial_anchor_node});
@@ -566,7 +565,7 @@ export default class InlineComponentWrapper extends Wrapper {
 				block.chunks.mount.push(b`@mount_component(${name}, ${css_custom_properties_wrapper}, null);`);
 			} else {
 				block.chunks.mount.push(
-					b`@mount_component(${name}, ${parent_node || '#target'}, ${get_initial_anchor_node(this, parent_node)});`
+					b`@mount_component(${name}, ${parent_node || '#target'}, ${this.get_initial_anchor_node(parent_node)});`
 				);
 			}
 

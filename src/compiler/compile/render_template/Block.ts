@@ -264,11 +264,6 @@ export default class Block {
 		if (this.chunks.create.length === 0 && this.chunks.hydrate.length === 0) {
 			properties.create = noop;
 		} else {
-			// if (this.renderer.options.hydratable) {
-			// 	this.add_variable({ type: 'Identifier', name: '#cloned' });
-			// 	this.chunks.create.push(b`#cloned = true`);
-			// }
-
 			const hydrate = this.chunks.hydrate.length > 0 && (
 				this.renderer.options.hydratable
 					? b`this.h();`
@@ -460,9 +455,9 @@ export default class Block {
 
 		this.wrappers.forEach((node) => {
 			if (node.template) {
-				// console.log('block render node.template_index', node.template_index);
+				const make_renderer = /-/.test(node.node.name) ? '@make_custom_renderer' : '@make_renderer';
 				body.push(b`
-					const ${node.template_name} = @make_renderer(
+					const ${node.template_name} = ${make_renderer}(
 						${node.template}
 					)
 				`);
@@ -480,12 +475,6 @@ export default class Block {
 			: fn);
 
 		return body;
-
-		// return this.comment
-		// 	? b`
-		// 		// ${this.comment}
-		// 		${fn}`
-		// 	: fn;
 	}
 
 	render_listeners(chunk: string = '') {

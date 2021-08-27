@@ -5,7 +5,6 @@ import Wrapper from './shared/Wrapper';
 import { x } from 'code-red';
 import { Identifier } from 'estree';
 import { get_node_path } from './shared/get_node_path';
-// import is_dynamic_wrapper from './shared/is_dynamic_wrapper';
 
 export default class TextWrapper extends Wrapper {
 	node: Text;

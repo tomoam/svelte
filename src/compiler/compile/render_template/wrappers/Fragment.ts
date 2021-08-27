@@ -23,7 +23,7 @@ import { link } from '../../../utils/link';
 import { Identifier } from 'estree';
 import TemplateRenderer from '../../render_ssr/Renderer';
 import { is_static_keyblock } from './shared/is_static_keyblock';
-import { is_needed_wrap_by_svg } from './shared/is_needed_wrap_by_svg';
+import { needs_svg_wrapper } from './shared/needs_svg_wrapper';
 
 const wrappers = {
 	AwaitBlock,
@@ -242,7 +242,7 @@ export default class FragmentWrapper {
 
 function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
 	node.template_name = renderer.component.get_unique_name('render').name;
-	const wrap_by_svg = nodes.some(n => is_needed_wrap_by_svg(n))
+	const wrap_by_svg = nodes.some(n => needs_svg_wrapper(n))
 	node.template = to_template_literal(
 			nodes.map(n => n.node as INode),
 			renderer.component.name,

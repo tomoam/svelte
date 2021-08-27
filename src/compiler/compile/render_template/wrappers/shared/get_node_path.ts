@@ -2,11 +2,11 @@ import { x } from "code-red";
 import { is_head } from "./is_head";
 import Wrapper from "./Wrapper";
 import { Identifier } from 'estree';
-import { is_needed_wrap_by_svg } from "./is_needed_wrap_by_svg";
+import { needs_svg_wrapper } from './needs_svg_wrapper';
 
 export function get_node_path(node: Wrapper, parent_node: Identifier) {
 	if (node.template_name) {
-		const node_path = is_needed_wrap_by_svg(node) ? x`${node.template_name}().firstChild` : `${node.template_name}()`;
+		const node_path = needs_svg_wrapper(node) ? x`${node.template_name}().firstChild` : `${node.template_name}()`;
 		return x`${node_path}.firstChild`;
 	} else if (is_head(parent_node) && node.parent.template_name && (!node.prev || !node.prev.var)) {
 		return  x`${node.parent.template_name}().firstChild`;

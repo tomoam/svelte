@@ -10,7 +10,6 @@ import { b, x } from 'code-red';
 import { walk } from 'estree-walker';
 import { is_head } from './shared/is_head';
 import { Identifier, Node } from 'estree';
-import { get_initial_anchor_node } from './shared/get_initial_anchor_node';
 
 function is_else_if(node: ElseBlock) {
 	return (
@@ -177,17 +176,6 @@ export default class IfBlockWrapper extends Wrapper {
 	) {
 		const name = this.var;
 
-		// const needs_anchor = this.next ? !this.next.is_dom_node() : !parent_node || !this.parent.is_dom_node();
-
-		// this.anchor = block.get_unique_name(`${this.var.name}_anchor`);
-		// const node_path = get_node_path(this, parent_node);
-
-		// block.add_variable(this.anchor);
-		// block.chunks.create.push(b`${this.anchor} = @replace_blank(${node_path});`);
-
-		// const initial_anchor_node: Identifier = needs_anchor ? this.anchor : { type: 'Identifier', name: parent_node ? 'null' : '#anchor' };
-		// const update_anchor_node: Identifier = needs_anchor ? this.anchor : this.next ? this.next.var : { type: 'Identifier', name: 'null' };
-
 		const has_else = !(this.branches[this.branches.length - 1].condition);
 		const if_exists_condition = has_else ? null : name;
 
@@ -196,7 +184,6 @@ export default class IfBlockWrapper extends Wrapper {
 		const has_outros = this.branches[0].block.has_outro_method;
 		const has_transitions = has_intros || has_outros;
 
-		// const vars = { name, needs_anchor, initial_anchor_node, update_anchor_node, if_exists_condition, has_else, has_transitions };
 		const vars = { name, if_exists_condition, has_else, has_transitions };
 
 		const detaching = parent_node && !is_head(parent_node) ? null : 'detaching';
@@ -243,19 +230,6 @@ export default class IfBlockWrapper extends Wrapper {
 			block.chunks.intro.push(b`@transition_in(${name});`);
 		}
 
-		// if (needs_anchor) {
-		// 	block.add_element(
-		// 		anchor as Identifier,
-		// 		x`@empty()`,
-		// 		parent_nodes && x`@empty()`,
-		// 		parent_node
-		// 	);
-		// }
-
-		// if (needs_anchor) {
-		// 	block.chunks.destroy.push(b`if (${detaching}) @detach(${this.anchor});`);
-		// }
-
 		this.branches.forEach(branch => {
 			branch.fragment.render(branch.block, null, x`#nodes` as unknown as Identifier);
 		});
@@ -266,7 +240,6 @@ export default class IfBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		parent_nodes: Identifier,
 		dynamic,
-		// { name, needs_anchor, initial_anchor_node, update_anchor_node, has_else, if_exists_condition, has_transitions },
 		{ name, has_else, if_exists_condition, has_transitions },
 		detaching
 	) {
@@ -309,11 +282,11 @@ export default class IfBlockWrapper extends Wrapper {
 
 		if (if_exists_condition) {
 			block.chunks.mount.push(
-				b`if (${if_exists_condition}) ${name}.m(${initial_mount_node}, ${get_initial_anchor_node(this, parent_node)});`
+				b`if (${if_exists_condition}) ${name}.m(${initial_mount_node}, ${this.get_initial_anchor_node(parent_node)});`
 			);
 		} else {
 			block.chunks.mount.push(
-				b`${name}.m(${initial_mount_node}, ${get_initial_anchor_node(this, parent_node)});`
+				b`${name}.m(${initial_mount_node}, ${this.get_initial_anchor_node(parent_node)});`
 			);
 		}
 
@@ -375,7 +348,6 @@ export default class IfBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		parent_nodes: Identifier,
 		dynamic,
-		// { name, needs_anchor, initial_anchor_node, update_anchor_node, has_else, has_transitions, if_exists_condition },
 		{ name, has_else, has_transitions, if_exists_condition },
 		detaching
 	) {
@@ -441,7 +413,7 @@ export default class IfBlockWrapper extends Wrapper {
 
 		block.chunks.mount.push(
 			if_current_block_type_index(
-				b`${if_blocks}[${current_block_type_index}].m(${initial_mount_node}, ${get_initial_anchor_node(this, parent_node)});`
+				b`${if_blocks}[${current_block_type_index}].m(${initial_mount_node}, ${this.get_initial_anchor_node(parent_node)});`
 			)
 		);
 
@@ -526,7 +498,6 @@ export default class IfBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		parent_nodes: Identifier,
 		dynamic,
-		// { name, needs_anchor, initial_anchor_node, update_anchor_node, if_exists_condition, has_transitions },
 		{ name, if_exists_condition, has_transitions },
 		detaching
 	) {
@@ -541,7 +512,7 @@ export default class IfBlockWrapper extends Wrapper {
 		const initial_mount_node = parent_node || '#target';
 
 		block.chunks.mount.push(
-			b`if (${name}) ${name}.m(${initial_mount_node}, ${get_initial_anchor_node(this, parent_node)});`
+			b`if (${name}) ${name}.m(${initial_mount_node}, ${this.get_initial_anchor_node(parent_node)});`
 		);
 
 		const update_anchor_node = this.get_or_create_anchor(block, parent_node, parent_nodes);

@@ -90,6 +90,10 @@ export default class Wrapper {
 		return needs_anchor ? this.anchor : this.next ? this.next.var : { type: 'Identifier', name: 'null' };
 	}
 
+	get_initial_anchor_node(parent_node: Identifier): Identifier {
+		return !parent_node ? { type: 'Identifier', name: '#anchor' } : !is_head(parent_node) && this.next && this.next.is_dom_node() ? this.next.var : { type: 'Identifier', name: 'null' }; 
+	}
+
 	get_update_mount_node(anchor: Identifier): Identifier {
 		return ((this.parent && this.parent.is_dom_node())
 			? this.parent.var

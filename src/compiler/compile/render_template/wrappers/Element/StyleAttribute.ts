@@ -2,7 +2,7 @@ import { b, x } from 'code-red';
 import Attribute from '../../../nodes/Attribute';
 import Block from '../../Block';
 import AttributeWrapper from './Attribute';
-import ElementWrapper from '.';
+import ElementWrapper from '../Element';
 import { string_literal } from '../../../utils/stringify';
 import add_to_set from '../../../utils/add_to_set';
 import Expression from '../../../nodes/shared/Expression';

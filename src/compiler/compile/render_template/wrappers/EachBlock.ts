@@ -8,7 +8,6 @@ import { b, x } from 'code-red';
 import ElseBlock from '../../nodes/ElseBlock';
 import { Identifier, Node } from 'estree';
 import get_object from '../../utils/get_object';
-import { get_initial_anchor_node } from './shared/get_initial_anchor_node';
 
 export class ElseBlockWrapper extends Wrapper {
 	node: ElseBlock;
@@ -202,7 +201,7 @@ export default class EachBlockWrapper extends Wrapper {
 			block.chunks.init.push(b`@validate_each_argument(${this.vars.each_block_value});`);
 		}
 
-		const initial_anchor_node: Identifier = get_initial_anchor_node(this, parent_node);
+		const initial_anchor_node: Identifier = this.get_initial_anchor_node(parent_node);
 		const initial_mount_node: Identifier = parent_node || { type: 'Identifier', name: '#target' };
 
 		const args = {
@@ -231,12 +230,6 @@ export default class EachBlockWrapper extends Wrapper {
 			this.render_unkeyed(args);
 		}
 
-		// if (!parent_node || is_head(parent_node) ) {
-		// 	if (needs_anchor) {
-		// 		block.chunks.destroy.push(b`if (detaching) @detach(${this.anchor});`);
-		// 	}
-		// }
-
 		if (this.block.has_intro_method || this.block.has_outro_method) {
 			block.chunks.intro.push(b`
 				for (let #i = 0; #i < ${this.vars.data_length}; #i += 1) {
@@ -245,14 +238,6 @@ export default class EachBlockWrapper extends Wrapper {
 			`);
 		}
 
-		// if (needs_anchor) {
-		// 	block.add_element(
-		// 		update_anchor_node as Identifier,
-		// 		x`@empty()`,
-		// 		parent_nodes && x`@empty()`,
-		// 		parent_node
-		// 	);
-		// }
 
 		if (this.else) {
 			const each_block_else = component.get_unique_name(`${this.var.name}_else`);
@@ -366,10 +351,7 @@ export default class EachBlockWrapper extends Wrapper {
 		parent_nodes,
 		snippet,
 		initial_anchor_node,
-		initial_mount_node,
-		// update_anchor_node,
-		// update_mount_node,
-		// needs_anchor,
+		initial_mount_node
 	}: {
 		block: Block;
 		parent_node: Identifier;
@@ -377,9 +359,6 @@ export default class EachBlockWrapper extends Wrapper {
 		snippet: Node;
 		initial_anchor_node: Identifier;
 		initial_mount_node: Identifier;
-		// update_anchor_node: Identifier;
-		// update_mount_node: Identifier;
-		// needs_anchor: boolean;
 	}) {
 		const {
 			create_each_block,
@@ -487,10 +466,7 @@ export default class EachBlockWrapper extends Wrapper {
 		parent_nodes,
 		snippet,
 		initial_anchor_node,
-		initial_mount_node,
-		// update_anchor_node,
-		// update_mount_node,
-		// needs_anchor,
+		initial_mount_node
 	}: {
 		block: Block;
 		parent_node: Identifier;
@@ -498,9 +474,6 @@ export default class EachBlockWrapper extends Wrapper {
 		snippet: Node;
 		initial_anchor_node: Identifier;
 		initial_mount_node: Identifier;
-		// update_anchor_node: Identifier;
-		// update_mount_node: Identifier;
-		// needs_anchor: boolean;
 	}) {
 		const {
 			create_each_block,
