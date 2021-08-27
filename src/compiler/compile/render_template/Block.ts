@@ -462,7 +462,7 @@ export default class Block {
 			if (node.template) {
 				// console.log('block render node.template_index', node.template_index);
 				body.push(b`
-					const ${node.template_index} = @make_renderer(
+					const ${node.template_name} = @make_renderer(
 						${node.template}
 					)
 				`);

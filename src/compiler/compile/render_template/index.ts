@@ -307,7 +307,7 @@ export default function template(
 			if (node.template) {
 				const make_renderer = /-/.test(node.node.name) ? '@make_custom_renderer' : '@make_renderer';
 				body.push(b`
-					const ${node.template_index} = ${make_renderer}(
+					const ${node.template_name} = ${make_renderer}(
 						${node.template}
 					)
 				`);

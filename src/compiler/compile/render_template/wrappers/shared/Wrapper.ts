@@ -18,12 +18,12 @@ export default class Wrapper {
 	can_use_innerhtml: boolean;
 	is_static_content: boolean;
 
-	template_index: string;
+	template_name: string;
 	template: TemplateLiteral;
 
 	anchor: Identifier;
 
-	is_required_variable: boolean;
+	is_on_traverse_path: boolean;
 
 	constructor(
 		renderer: Renderer,
@@ -47,7 +47,7 @@ export default class Wrapper {
 		this.can_use_innerhtml = !renderer.options.hydratable;
 		this.is_static_content = !renderer.options.hydratable;
 
-		this.is_required_variable = !parent;
+		this.is_on_traverse_path = !parent || is_head(parent.var) || !parent.is_dom_node();
 
 		block.wrappers.push(this);
 	}
@@ -62,9 +62,10 @@ export default class Wrapper {
 		if (this.parent) this.parent.not_static_content();
 	}
 
-	require_variable() {
-		this.is_required_variable = true;
-		if (this.parent) this.parent.require_variable();
+	mark_as_on_traverse_path() {
+		this.is_on_traverse_path = true;
+
+		if (this.parent && !this.parent.is_on_traverse_path) this.parent.mark_as_on_traverse_path();
 	}
 
 	get_or_create_anchor(block: Block, parent_node: Identifier, parent_nodes: Identifier, anchor_name?: string): Identifier {

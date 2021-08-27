@@ -21,10 +21,9 @@ import Block from '../Block';
 import { trim_start, trim_end } from '../../../utils/trim';
 import { link } from '../../../utils/link';
 import { Identifier } from 'estree';
-import TemplateRenderer from '../TemplateRenderer';
+import TemplateRenderer from '../../render_ssr/Renderer';
 import { is_static_keyblock } from './shared/is_static_keyblock';
 import { is_needed_wrap_by_svg } from './shared/is_needed_wrap_by_svg';
-import { is_head } from './shared/is_head';
 
 const wrappers = {
 	AwaitBlock,
@@ -199,17 +198,9 @@ export default class FragmentWrapper {
 		}
 
 		const filter = (node: Wrapper) => {
-			if (!node.parent ||
-				is_head(node.parent.var) ||
-				!node.parent.is_dom_node() ||
-				!node.is_static_content ||
-				node.is_required_variable ||
-				(node.prev && !node.prev.is_dom_node()) ||
-				needs_variable(node)
-			) {
+			if ((node.prev && !node.prev.is_dom_node()) || check_traverse_path(node)) {
 				return true;
 			}
-
 			return false;
 		};
 
@@ -250,7 +241,7 @@ export default class FragmentWrapper {
 }
 
 function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
-	node.template_index = renderer.component.get_unique_name('render').name;
+	node.template_name = renderer.component.get_unique_name('render').name;
 	const wrap_by_svg = nodes.some(n => is_needed_wrap_by_svg(n))
 	node.template = to_template_literal(
 			nodes.map(n => n.node as INode),
@@ -286,13 +277,16 @@ function to_template_literal(nodes: INode[], name, locate, options, wrap_by_svg?
 	return templateLiteral;
 }
 
-export function needs_variable(node: Wrapper) {
+function check_traverse_path(node: Wrapper) {
 
-	while (node.next) {
-		if (!node.next.is_static_content || node.next.is_required_variable) {
-			return true;
-		}
-		return needs_variable(node.next);
+	if (!node.is_static_content || node.is_on_traverse_path) {
+		if (!node.is_on_traverse_path) node.mark_as_on_traverse_path();
+		return true;
 	}
+
+	if (node.next) {
+		return check_traverse_path(node.next);
+	}
+
 	return false;
 }

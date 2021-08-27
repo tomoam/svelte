@@ -2,8 +2,11 @@ import DebugTag from '../../nodes/DebugTag';
 import Renderer, { RenderOptions } from '../Renderer';
 import { x, p } from 'code-red';
 import { Identifier } from 'estree';
+import { is_static_only } from './utils/is_static_only';
 
 export default function(node: DebugTag, renderer: Renderer, options: RenderOptions) {
+	if (is_static_only(options)) return;
+
 	if (!options.dev) return;
 
 	const filename = options.filename || null;

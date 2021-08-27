@@ -224,9 +224,9 @@ export default class ElementWrapper extends Wrapper {
 			) {
 				this.parent.cannot_use_innerhtml(); // need to use add_location
 				this.parent.not_static_content();
-				this.require_variable();
-			} else if (this.attributes.length > 0) {
-				this.require_variable();
+				this.mark_as_on_traverse_path();
+			} else if (this.node.namespace === namespaces.foreign) {
+			 	this.mark_as_on_traverse_path();
 			}
 		}
 
@@ -250,7 +250,7 @@ export default class ElementWrapper extends Wrapper {
 
 		if (renderer.options.hydratable) {
 			let claim_statement;
-			if (this.template_index) {
+			if (this.template_name) {
 				claim_statement = this.get_claim_statement(node, parent_nodes || "#nodes", parent_node);
 			} else if (is_head(parent_node)) {
 				claim_statement = this.get_claim_statement(node, parent_nodes || "#nodes", parent_node);

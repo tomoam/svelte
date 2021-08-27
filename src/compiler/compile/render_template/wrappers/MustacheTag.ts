@@ -7,14 +7,14 @@ import RawMustacheTag from '../../nodes/RawMustacheTag';
 import { b, x } from 'code-red';
 import { Identifier } from 'estree';
 import { get_node_path } from './shared/get_node_path';
-import { is_text } from '../shared/is_text';
+import { is_text } from '../../render_ssr/handlers/utils/is_text';
 
 export default class MustacheTagWrapper extends Tag {
 	var: Identifier = { type: 'Identifier', name: 't' };
 
 	constructor(renderer: Renderer, block: Block, parent: Wrapper, node: MustacheTag | RawMustacheTag) {
 		super(renderer, block, parent, node);
-		this.require_variable();
+		this.mark_as_on_traverse_path();
 	}
 
 	get_claim_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
