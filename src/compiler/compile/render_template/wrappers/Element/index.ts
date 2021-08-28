@@ -249,20 +249,15 @@ export default class ElementWrapper extends Wrapper {
 		);
 
 		if (renderer.options.hydratable) {
-			let claim_statement;
-			if (this.template_name) {
-				claim_statement = this.get_claim_statement(node, parent_nodes || "#nodes", parent_node);
-			} else if (is_head(parent_node)) {
-				claim_statement = this.get_claim_statement(node, parent_nodes || "#nodes", parent_node);
-			} else if (parent_node) {
-				const trim_parent_nodes = this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes;
-				claim_statement = this.get_claim_statement(node, trim_parent_nodes, parent_node);
+			let claim_parent_nodes;
+			if (!this.template_name && !is_head(parent_node) && parent_node) {
+				claim_parent_nodes = this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || '[]';
 			} else {
-				claim_statement = this.get_claim_statement(node, "#nodes", parent_node);
+				claim_parent_nodes = parent_nodes || "#nodes";
 			}
 
 			block.chunks.claim.push(b`
-				${node} = ${claim_statement};
+				${node} = @claim_element(${node}, ${claim_parent_nodes}, ${parent_node});
 			`);
 
 			if (!this.void && (this.node.children.length > 1 || this.fragment.nodes.some(n => !n.is_dom_node()))) {
@@ -357,11 +352,6 @@ export default class ElementWrapper extends Wrapper {
 		} else {
 			return render_statement;
 		}
-	}
-
-	get_claim_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
-		const nodes = parent_nodes || '[]';
-		return x`@claim_element(${template_node}, ${nodes}, ${target})`;
 	}
 
 	add_directives_in_order (block: Block) {

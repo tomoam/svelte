@@ -176,7 +176,7 @@ export default class FragmentWrapper {
 			}
 		}
 
-		if (this.nodes.length > 0 && !(parent instanceof Element) && !(parent instanceof Head)) {
+		if (this.nodes.length > 0 && (!parent || !parent.node || (parent.node.type !== 'Element' && parent.node.type !== 'Head'))) {
 			create_template(this.nodes[0], this.nodes, renderer);
 		}
 
@@ -221,7 +221,7 @@ export default class FragmentWrapper {
 		}
 
 		head_wrappers.forEach((head_node) => {
-			const frag_nodes = head_node.fragment.nodes.filter(n => !(n instanceof Title));
+			const frag_nodes = head_node.fragment.nodes.filter(n => n.node.type !== 'Title');
 			if (frag_nodes.length) create_template(head_node, frag_nodes, renderer);
 			this.nodes.unshift(head_node);
 			link(last_child, last_child = head_node);

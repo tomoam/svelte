@@ -26,7 +26,7 @@ export function test({ assert, input, js, config }) {
 	if (ex_template_mode) {
 		start = js.locate('insert_experimental(target, div');
 	} else {
-		start = js.locate('insert(target, h1');
+		start = js.locate('insert(target, div');
 	}
 	expected = input.locate('<div');
 	actual = js.mapConsumer.originalPositionFor({

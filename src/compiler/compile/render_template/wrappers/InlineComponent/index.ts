@@ -124,13 +124,7 @@ export default class InlineComponentWrapper extends Wrapper {
 		const { component } = renderer;
 
 		const name = this.var;
-		// const anchor = this.create_anchor(block);
-		// const needs_anchor = this.needs_anchor(parent_node);
-		// const initial_anchor_node = this.get_initial_anchor_node(parent_node);
-		// const update_anchor_node = this.get_update_anchor_node(needs_anchor, anchor);
-
 		block.add_variable(name);
-		// block.add_variable(anchor);
 
 		const component_opts = x`{}` as ObjectExpression;
 
@@ -587,11 +581,5 @@ export default class InlineComponentWrapper extends Wrapper {
 				b`@transition_out(${name}.$$.fragment, #local);`
 			);
 		}
-
-		// if (!parent_node || is_head(parent_node) ) {
-		// 	if (needs_anchor) {
-		// 		block.chunks.destroy.push(b`if (detaching) @detach(${this.anchor});`);
-		// 	}
-		// }
 	}
 }
