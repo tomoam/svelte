@@ -1,8 +1,14 @@
 import Renderer, { RenderOptions } from '../Renderer';
 import EachBlock from '../../nodes/EachBlock';
 import { x } from 'code-red';
+import { is_static_only } from './utils/is_static_only';
 
 export default function(node: EachBlock, renderer: Renderer, options: RenderOptions) {
+	if (is_static_only(options)) {
+		renderer.add_string('<!>');
+		return;
+	}
+
 	const args = [node.context_node];
 	if (node.index) args.push({ type: 'Identifier', name: node.index });
 

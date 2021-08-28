@@ -3,6 +3,7 @@ import { get_attribute_value } from './shared/get_attribute_value';
 import Renderer, { RenderOptions } from '../Renderer';
 import InlineComponent from '../../nodes/InlineComponent';
 import { p, x } from 'code-red';
+import { is_static_only } from './utils/is_static_only';
 
 function get_prop_value(attribute) {
 	if (attribute.is_true) return x`true`;
@@ -17,6 +18,12 @@ function get_prop_value(attribute) {
 }
 
 export default function(node: InlineComponent, renderer: Renderer, options: RenderOptions) {
+
+	if (is_static_only(options)) {
+		renderer.add_string('<!>');
+		return;
+	}
+
 	const binding_props = [];
 	const binding_fns = [];
 

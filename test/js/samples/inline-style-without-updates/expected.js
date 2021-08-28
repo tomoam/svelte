@@ -2,20 +2,22 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
 	safe_not_equal,
 	set_style
 } from "svelte/internal";
+
+const render = make_renderer(`<div></div>`);
 
 function create_fragment(ctx) {
 	let div;
 
 	return {
 		c() {
-			div = element("div");
+			div = render().firstChild;
 			set_style(div, "color", color);
 		},
 		m(target, anchor) {

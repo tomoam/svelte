@@ -328,6 +328,16 @@ export default function dom(
 
 	const has_create_fragment = component.compile_options.dev || block.has_content();
 	if (has_create_fragment) {
+
+		renderer.fragment.nodes.filter(node => node.template).forEach((node) => {
+			const make_renderer = /-/.test(node.node.name) ? '@make_custom_renderer' : '@make_renderer';
+			body.push(b`
+				const ${node.template_name} = ${make_renderer}(
+					${node.template}
+				)
+			`);
+		});
+
 		body.push(b`
 			function create_fragment(#ctx) {
 				${block.get_contents()}

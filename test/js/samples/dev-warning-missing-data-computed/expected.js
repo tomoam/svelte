@@ -2,21 +2,20 @@
 import {
 	SvelteComponentDev,
 	add_location,
-	append_dev,
 	detach_dev,
 	dispatch_dev,
-	element,
 	init,
 	insert_dev,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data_dev,
-	space,
-	text,
 	validate_slots
 } from "svelte/internal";
 
 const file = undefined;
+const render = make_renderer(`<p><!> <!></p>`);
 
 function create_fragment(ctx) {
 	let p;
@@ -27,10 +26,10 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
-			p = element("p");
-			t0 = text(t0_value);
-			t1 = space();
-			t2 = text(/*bar*/ ctx[1]);
+			p = render().firstChild;
+			t0 = replace_text(p.firstChild, t0_value);
+			t1 = t0.nextSibling;
+			t2 = replace_text(t1.nextSibling, /*bar*/ ctx[1]);
 			add_location(p, file, 7, 0, 67);
 		},
 		l: function claim(nodes) {
@@ -38,9 +37,6 @@ function create_fragment(ctx) {
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, p, anchor);
-			append_dev(p, t0);
-			append_dev(p, t1);
-			append_dev(p, t2);
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*foo*/ 1 && t0_value !== (t0_value = Math.max(0, /*foo*/ ctx[0]) + "")) set_data_dev(t0, t0_value);

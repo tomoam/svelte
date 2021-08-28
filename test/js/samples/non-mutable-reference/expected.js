@@ -2,20 +2,26 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal
 } from "svelte/internal";
 
+const render = make_renderer(`<h1>Hello <!>!</h1>`);
+
 function create_fragment(ctx) {
 	let h1;
+	let t0;
+	let t1;
 
 	return {
 		c() {
-			h1 = element("h1");
-			h1.textContent = `Hello ${name}!`;
+			h1 = render().firstChild;
+			t0 = h1.firstChild;
+			t1 = replace_text(t0.nextSibling, name);
 		},
 		m(target, anchor) {
 			insert(target, h1, anchor);

@@ -3,16 +3,17 @@ import {
 	SvelteComponent,
 	attr,
 	claim_element,
-	claim_space,
+	claim_text,
 	detach,
-	element,
 	init,
 	insert_hydration,
+	make_renderer,
 	noop,
 	safe_not_equal,
-	space,
 	src_url_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<img alt="potato"> <img alt="potato">`);
 
 function create_fragment(ctx) {
 	let img0;
@@ -23,21 +24,21 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			img0 = element("img");
-			t = space();
-			img1 = element("img");
+			img0 = render().firstChild;
+			t = img0.nextSibling;
+			img1 = t.nextSibling;
 			this.h();
 		},
 		l(nodes) {
-			img0 = claim_element(nodes, "IMG", { alt: true, src: true });
-			t = claim_space(nodes);
-			img1 = claim_element(nodes, "IMG", { alt: true, src: true });
+			this.c();
+			if (!nodes.length) return;
+			img0 = claim_element(img0, nodes);
+			t = claim_text(t, nodes);
+			img1 = claim_element(img1, nodes);
 			this.h();
 		},
 		h() {
-			attr(img0, "alt", "potato");
 			if (!src_url_equal(img0.src, img0_src_value = /*url*/ ctx[0])) attr(img0, "src", img0_src_value);
-			attr(img1, "alt", "potato");
 			if (!src_url_equal(img1.src, img1_src_value = "" + (/*slug*/ ctx[1] + ".jpg"))) attr(img1, "src", img1_src_value);
 		},
 		m(target, anchor) {

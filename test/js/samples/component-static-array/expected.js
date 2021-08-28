@@ -3,7 +3,10 @@ import {
 	SvelteComponent,
 	create_component,
 	destroy_component,
+	detach,
 	init,
+	insert,
+	make_renderer,
 	mount_component,
 	noop,
 	safe_not_equal,
@@ -11,17 +14,22 @@ import {
 	transition_out
 } from "svelte/internal";
 
+const render = make_renderer(`<!>`);
+
 function create_fragment(ctx) {
 	let nested;
+	let nested_anchor;
 	let current;
 	nested = new /*Nested*/ ctx[0]({ props: { foo: [1, 2, 3] } });
 
 	return {
 		c() {
 			create_component(nested.$$.fragment);
+			nested_anchor = render().firstChild;
 		},
 		m(target, anchor) {
 			mount_component(nested, target, anchor);
+			insert(target, nested_anchor, anchor);
 			current = true;
 		},
 		p: noop,
@@ -35,6 +43,7 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
+			if (detaching) detach(nested_anchor);
 			destroy_component(nested, detaching);
 		}
 	};

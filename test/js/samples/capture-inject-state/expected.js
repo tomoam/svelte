@@ -2,23 +2,22 @@
 import {
 	SvelteComponentDev,
 	add_location,
-	append_dev,
 	detach_dev,
 	dispatch_dev,
-	element,
 	init,
 	insert_dev,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data_dev,
-	space,
 	subscribe,
-	text,
 	validate_slots,
 	validate_store
 } from "svelte/internal";
 
 const file = undefined;
+const render = make_renderer(`<p><!> <!> <!> <!> <!> <!></p>`);
 
 function create_fragment(ctx) {
 	let p;
@@ -36,18 +35,18 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
-			p = element("p");
-			t0 = text(/*prop*/ ctx[0]);
-			t1 = space();
-			t2 = text(/*realName*/ ctx[1]);
-			t3 = space();
-			t4 = text(/*local*/ ctx[3]);
-			t5 = space();
-			t6 = text(priv);
-			t7 = space();
-			t8 = text(/*$prop*/ ctx[2]);
-			t9 = space();
-			t10 = text(/*shadowedByModule*/ ctx[4]);
+			p = render().firstChild;
+			t0 = replace_text(p.firstChild, /*prop*/ ctx[0]);
+			t1 = t0.nextSibling;
+			t2 = replace_text(t1.nextSibling, /*realName*/ ctx[1]);
+			t3 = t2.nextSibling;
+			t4 = replace_text(t3.nextSibling, /*local*/ ctx[3]);
+			t5 = t4.nextSibling;
+			t6 = replace_text(t5.nextSibling, priv);
+			t7 = t6.nextSibling;
+			t8 = replace_text(t7.nextSibling, /*$prop*/ ctx[2]);
+			t9 = t8.nextSibling;
+			t10 = replace_text(t9.nextSibling, /*shadowedByModule*/ ctx[4]);
 			add_location(p, file, 22, 0, 430);
 		},
 		l: function claim(nodes) {
@@ -55,17 +54,6 @@ function create_fragment(ctx) {
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, p, anchor);
-			append_dev(p, t0);
-			append_dev(p, t1);
-			append_dev(p, t2);
-			append_dev(p, t3);
-			append_dev(p, t4);
-			append_dev(p, t5);
-			append_dev(p, t6);
-			append_dev(p, t7);
-			append_dev(p, t8);
-			append_dev(p, t9);
-			append_dev(p, t10);
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*prop*/ 1) set_data_dev(t0, /*prop*/ ctx[0]);

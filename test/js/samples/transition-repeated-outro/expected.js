@@ -4,18 +4,19 @@ import {
 	check_outros,
 	create_out_transition,
 	detach,
-	element,
-	empty,
 	group_outros,
 	init,
 	insert,
+	make_renderer,
 	safe_not_equal,
 	transition_in,
 	transition_out
 } from "svelte/internal";
 
 import { fade } from 'svelte/transition';
+const render = make_renderer(`<div><p>wheeee</p></div>`);
 
+// (7:0) {#if num < 5}
 function create_if_block(ctx) {
 	let div;
 	let div_outro;
@@ -23,8 +24,7 @@ function create_if_block(ctx) {
 
 	return {
 		c() {
-			div = element("div");
-			div.innerHTML = `<p>wheeee</p>`;
+			div = render().firstChild;
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -46,6 +46,8 @@ function create_if_block(ctx) {
 	};
 }
 
+const render_1 = make_renderer(`<!>`);
+
 function create_fragment(ctx) {
 	let if_block_anchor;
 	let current;
@@ -53,8 +55,8 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
+			if_block_anchor = render_1().firstChild;
 			if (if_block) if_block.c();
-			if_block_anchor = empty();
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -93,8 +95,8 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (if_block) if_block.d(detaching);
 			if (detaching) detach(if_block_anchor);
+			if (if_block) if_block.d(detaching);
 		}
 	};
 }

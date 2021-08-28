@@ -3,13 +3,14 @@ import {
 	SvelteComponent,
 	attr,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
-	safe_not_equal,
-	space
+	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<div data-foo="bar"></div> <div></div>`);
 
 function create_fragment(ctx) {
 	let div0;
@@ -18,10 +19,9 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div0 = element("div");
-			t = space();
-			div1 = element("div");
-			attr(div0, "data-foo", "bar");
+			div0 = render().firstChild;
+			t = div0.nextSibling;
+			div1 = t.nextSibling;
 			attr(div1, "data-foo", /*bar*/ ctx[0]);
 		},
 		m(target, anchor) {

@@ -2,36 +2,31 @@
 import {
 	SvelteComponentDev,
 	add_location,
-	append_dev,
 	detach_dev,
 	dispatch_dev,
-	element,
 	init,
 	insert_dev,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data_dev,
-	space,
-	text,
 	validate_slots
 } from "svelte/internal";
 
 const file = undefined;
+const render = make_renderer(`<h1>Hello <!>!</h1>`);
 
 function create_fragment(ctx) {
 	let h1;
 	let t0;
 	let t1;
-	let t2;
-	let t3;
 
 	const block = {
 		c: function create() {
-			h1 = element("h1");
-			t0 = text("Hello ");
-			t1 = text(/*name*/ ctx[0]);
-			t2 = text("!");
-			t3 = space();
+			h1 = render().firstChild;
+			t0 = h1.firstChild;
+			t1 = replace_text(t0.nextSibling, /*name*/ ctx[0]);
 			debugger;
 			add_location(h1, file, 4, 0, 38);
 		},
@@ -40,10 +35,6 @@ function create_fragment(ctx) {
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, h1, anchor);
-			append_dev(h1, t0);
-			append_dev(h1, t1);
-			append_dev(h1, t2);
-			insert_dev(target, t3, anchor);
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*name*/ 1) set_data_dev(t1, /*name*/ ctx[0]);
@@ -53,7 +44,6 @@ function create_fragment(ctx) {
 		o: noop,
 		d: function destroy(detaching) {
 			if (detaching) detach_dev(h1);
-			if (detaching) detach_dev(t3);
 		}
 	};
 

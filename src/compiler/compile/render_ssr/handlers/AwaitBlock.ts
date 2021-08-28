@@ -1,8 +1,14 @@
 import Renderer, { RenderOptions } from '../Renderer';
 import AwaitBlock from '../../nodes/AwaitBlock';
 import { x } from 'code-red';
+import { is_static_only } from './utils/is_static_only';
 
 export default function(node: AwaitBlock, renderer: Renderer, options: RenderOptions) {
+	if (is_static_only(options)) {
+		renderer.add_string('<!>');
+		return;
+	}
+
 	renderer.push();
 	renderer.render(node.pending.children, options);
 	const pending = renderer.pop();

@@ -138,6 +138,12 @@ export default class SlotWrapper extends Wrapper {
 			b`if (${slot_or_fallback}) ${slot_or_fallback}.c();`
 		);
 
+		this.anchor = block.get_unique_name(`${this.var.name}_anchor`);
+		const render_statement = this.get_node_path(parent_node);
+
+		block.add_variable(this.anchor);
+		block.chunks.create.push(b`${this.anchor} = ${render_statement};`);
+
 		if (renderer.options.hydratable) {
 			block.chunks.claim.push(
 				b`if (${slot_or_fallback}) ${slot_or_fallback}.l(${parent_nodes});`
@@ -146,7 +152,7 @@ export default class SlotWrapper extends Wrapper {
 
 		block.chunks.mount.push(b`
 			if (${slot_or_fallback}) {
-				${slot_or_fallback}.m(${parent_node || '#target'}, ${parent_node ? 'null' : '#anchor'});
+				${slot_or_fallback}.m(${parent_node || '#target'}, ${this.get_initial_anchor_node(parent_node)});
 			}
 		`);
 

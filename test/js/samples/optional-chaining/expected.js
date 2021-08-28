@@ -5,17 +5,18 @@ import {
 	create_component,
 	destroy_component,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	mount_component,
+	replace_text,
 	safe_not_equal,
 	set_data,
-	space,
-	text,
 	transition_in,
 	transition_out
 } from "svelte/internal";
+
+const render = make_renderer(`<!><!> <!><!> <!><!> <div></div> <!>`);
 
 function create_fragment(ctx) {
 	let t0_value = /*a*/ ctx[0].normal + "";
@@ -42,6 +43,7 @@ function create_fragment(ctx) {
 	let div_f_value;
 	let t9;
 	let component;
+	let component_anchor;
 	let current;
 
 	component = new /*Component*/ ctx[6]({
@@ -57,18 +59,19 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			t0 = text(t0_value);
-			t1 = text(t1_value);
-			t2 = space();
-			t3 = text(t3_value);
-			t4 = text(t4_value);
-			t5 = space();
-			t6 = text(t6_value);
-			t7 = text(t7_value);
-			t8 = space();
-			div = element("div");
-			t9 = space();
+			t0 = replace_text(render().firstChild, t0_value);
+			t1 = replace_text(t0.nextSibling, t1_value);
+			t2 = t1.nextSibling;
+			t3 = replace_text(t2.nextSibling, t3_value);
+			t4 = replace_text(t3.nextSibling, t4_value);
+			t5 = t4.nextSibling;
+			t6 = replace_text(t5.nextSibling, t6_value);
+			t7 = replace_text(t6.nextSibling, t7_value);
+			t8 = t7.nextSibling;
+			div = t8.nextSibling;
+			t9 = div.nextSibling;
 			create_component(component.$$.fragment);
+			component_anchor = t9.nextSibling;
 			attr(div, "a", div_a_value = /*a*/ ctx[0].normal);
 			attr(div, "b", div_b_value = /*b*/ ctx[1]?.optional);
 			attr(div, "c", div_c_value = /*c*/ ctx[2]['computed']);
@@ -89,6 +92,7 @@ function create_fragment(ctx) {
 			insert(target, div, anchor);
 			insert(target, t9, anchor);
 			mount_component(component, target, anchor);
+			insert(target, component_anchor, anchor);
 			current = true;
 		},
 		p(ctx, [dirty]) {
@@ -153,6 +157,7 @@ function create_fragment(ctx) {
 			if (detaching) detach(t8);
 			if (detaching) detach(div);
 			if (detaching) detach(t9);
+			if (detaching) detach(component_anchor);
 			destroy_component(component, detaching);
 		}
 	};

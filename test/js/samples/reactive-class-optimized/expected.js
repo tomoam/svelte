@@ -3,17 +3,17 @@ import {
 	SvelteComponent,
 	component_subscribe,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
 	safe_not_equal,
-	space,
 	subscribe,
 	toggle_class
 } from "svelte/internal";
 
 import { reactiveStoreVal, unreactiveExport } from './store';
+const render = make_renderer(`<div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div>`);
 
 function create_fragment(ctx) {
 	let div0;
@@ -36,23 +36,23 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div0 = element("div");
-			t0 = space();
-			div1 = element("div");
-			t1 = space();
-			div2 = element("div");
-			t2 = space();
-			div3 = element("div");
-			t3 = space();
-			div4 = element("div");
-			t4 = space();
-			div5 = element("div");
-			t5 = space();
-			div6 = element("div");
-			t6 = space();
-			div7 = element("div");
-			t7 = space();
-			div8 = element("div");
+			div0 = render().firstChild;
+			t0 = div0.nextSibling;
+			div1 = t0.nextSibling;
+			t1 = div1.nextSibling;
+			div2 = t1.nextSibling;
+			t2 = div2.nextSibling;
+			div3 = t2.nextSibling;
+			t3 = div3.nextSibling;
+			div4 = t3.nextSibling;
+			t4 = div4.nextSibling;
+			div5 = t4.nextSibling;
+			t5 = div5.nextSibling;
+			div6 = t5.nextSibling;
+			t6 = div6.nextSibling;
+			div7 = t6.nextSibling;
+			t7 = div7.nextSibling;
+			div8 = t7.nextSibling;
 			toggle_class(div0, "update1", reactiveModuleVar);
 			toggle_class(div1, "update2", /*reactiveConst*/ ctx[0].x);
 			toggle_class(div2, "update3", nonReactiveGlobal && /*reactiveConst*/ ctx[0].x);

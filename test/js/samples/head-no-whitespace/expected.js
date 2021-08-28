@@ -2,13 +2,14 @@
 import {
 	SvelteComponent,
 	append,
-	attr,
 	detach,
-	element,
 	init,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<meta name="twitter:creator" content="@sveltejs"><meta name="twitter:title" content="Svelte">`);
 
 function create_fragment(ctx) {
 	let meta0;
@@ -16,12 +17,8 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			meta0 = element("meta");
-			meta1 = element("meta");
-			attr(meta0, "name", "twitter:creator");
-			attr(meta0, "content", "@sveltejs");
-			attr(meta1, "name", "twitter:title");
-			attr(meta1, "content", "Svelte");
+			meta0 = render().firstChild;
+			meta1 = meta0.nextSibling;
 		},
 		m(target, anchor) {
 			append(document.head, meta0);

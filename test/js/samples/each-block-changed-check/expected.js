@@ -2,18 +2,15 @@
 import {
 	HtmlTag,
 	SvelteComponent,
-	append,
-	attr,
 	destroy_each,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
-	set_data,
-	space,
-	text
+	set_data
 } from "svelte/internal";
 
 function get_each_context(ctx, list, i) {
@@ -22,6 +19,8 @@ function get_each_context(ctx, list, i) {
 	child_ctx[6] = i;
 	return child_ctx;
 }
+
+const render = make_renderer(`<div class="comment"><strong> </strong> <span class="meta"><!> wrote <!> ago:</span> <!></div>`);
 
 // (8:0) {#each comments as comment, i}
 function create_each_block(ctx) {
@@ -35,40 +34,30 @@ function create_each_block(ctx) {
 	let t3;
 	let t4_value = /*elapsed*/ ctx[1](/*comment*/ ctx[4].time, /*time*/ ctx[2]) + "";
 	let t4;
-	let t5;
 	let t6;
 	let html_tag;
 	let raw_value = /*comment*/ ctx[4].html + "";
+	let html_anchor;
 
 	return {
 		c() {
-			div = element("div");
-			strong = element("strong");
-			t0 = text(/*i*/ ctx[6]);
-			t1 = space();
-			span = element("span");
-			t2 = text(t2_value);
-			t3 = text(" wrote ");
-			t4 = text(t4_value);
-			t5 = text(" ago:");
-			t6 = space();
+			div = render().firstChild;
+			strong = div.firstChild;
+			t0 = strong.firstChild;
+			t0.data = /*i*/ ctx[6];
+			t1 = strong.nextSibling;
+			span = t1.nextSibling;
+			t2 = replace_text(span.firstChild, t2_value);
+			t3 = t2.nextSibling;
+			t4 = replace_text(t3.nextSibling, t4_value);
+			t6 = span.nextSibling;
 			html_tag = new HtmlTag();
-			attr(span, "class", "meta");
+			html_anchor = t6.nextSibling;
 			html_tag.a = null;
-			attr(div, "class", "comment");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
-			append(div, strong);
-			append(strong, t0);
-			append(div, t1);
-			append(div, span);
-			append(span, t2);
-			append(span, t3);
-			append(span, t4);
-			append(span, t5);
-			append(div, t6);
-			html_tag.m(raw_value, div);
+			html_tag.m(raw_value, div, null);
 		},
 		p(ctx, dirty) {
 			if (dirty & /*comments*/ 1 && t2_value !== (t2_value = /*comment*/ ctx[4].author + "")) set_data(t2, t2_value);
@@ -81,7 +70,10 @@ function create_each_block(ctx) {
 	};
 }
 
+const render_1 = make_renderer(`<!> <p> </p>`);
+
 function create_fragment(ctx) {
+	let each_1_anchor;
 	let t0;
 	let p;
 	let t1;
@@ -98,9 +90,11 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			t0 = space();
-			p = element("p");
-			t1 = text(/*foo*/ ctx[3]);
+			each_1_anchor = render_1().firstChild;
+			t0 = each_1_anchor.nextSibling;
+			p = t0.nextSibling;
+			t1 = p.firstChild;
+			t1.data = /*foo*/ ctx[3];
 		},
 		m(target, anchor) {
 			for (let i = 0; i < each_blocks.length; i += 1) {
@@ -109,7 +103,6 @@ function create_fragment(ctx) {
 
 			insert(target, t0, anchor);
 			insert(target, p, anchor);
-			append(p, t1);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*comments, elapsed, time*/ 7) {

@@ -4,25 +4,27 @@ import {
 	create_component,
 	destroy_component,
 	detach,
-	element,
 	init,
 	insert,
 	listen,
+	make_renderer,
 	mount_component,
 	safe_not_equal,
 	set_input_value,
-	space,
 	transition_in,
 	transition_out
 } from "svelte/internal";
 
 import Foo from './Foo.svelte';
 import Bar from './Bar.svelte';
+const render = make_renderer(`<!> <!> <input>`);
 
 function create_fragment(ctx) {
 	let foo;
+	let foo_anchor;
 	let t0;
 	let bar;
+	let bar_anchor;
 	let t1;
 	let input;
 	let current;
@@ -34,10 +36,12 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(foo.$$.fragment);
-			t0 = space();
+			foo_anchor = render().firstChild;
+			t0 = foo_anchor.nextSibling;
 			create_component(bar.$$.fragment);
-			t1 = space();
-			input = element("input");
+			bar_anchor = t0.nextSibling;
+			t1 = bar_anchor.nextSibling;
+			input = t1.nextSibling;
 		},
 		m(target, anchor) {
 			mount_component(foo, target, anchor);

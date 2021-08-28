@@ -2,14 +2,15 @@
 import {
 	SvelteComponent,
 	action_destroyer,
-	attr,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<a href="#">Test</a>`);
 
 function create_fragment(ctx) {
 	let a;
@@ -19,9 +20,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			a = element("a");
-			a.textContent = "Test";
-			attr(a, "href", "#");
+			a = render().firstChild;
 		},
 		m(target, anchor) {
 			insert(target, a, anchor);

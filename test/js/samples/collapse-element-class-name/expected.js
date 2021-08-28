@@ -7,18 +7,18 @@ import {
 	create_component,
 	destroy_component,
 	detach,
-	element,
 	exclude_internal_props,
 	init,
 	insert,
+	make_renderer,
 	mount_component,
 	safe_not_equal,
-	space,
 	transition_in,
 	transition_out
 } from "svelte/internal";
 
 import Component from "./Component.svelte";
+const render = make_renderer(`<div></div> <!>`);
 
 function create_fragment(ctx) {
 	let div;
@@ -27,6 +27,7 @@ function create_fragment(ctx) {
 	let div_other_value;
 	let t;
 	let component;
+	let component_anchor;
 	let current;
 
 	component = new Component({
@@ -39,9 +40,10 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = element("div");
-			t = space();
+			div = render().firstChild;
+			t = div.nextSibling;
 			create_component(component.$$.fragment);
+			component_anchor = t.nextSibling;
 			attr(div, "class", div_class_value = "button button--size--" + /*size*/ ctx[0] + " button--theme--" + /*theme*/ ctx[1] + " " + (/*$$restProps*/ ctx[2].class || ''));
 			attr(div, "style", div_style_value = "color: green; background: white; font-size: " + /*size*/ ctx[0] + "; transform: " + /*$$restProps*/ ctx[2].scale + " " + /*$$restProps*/ ctx[2].rotate + "; " + /*$$restProps*/ ctx[2].styles);
 			attr(div, "other", div_other_value = "\n\t\tbutton\n\t\tbutton--size--" + /*size*/ ctx[0] + "\n\t\tbutton--theme--" + /*theme*/ ctx[1] + "\n  \t" + (/*$$restProps*/ ctx[2].class || ''));
@@ -50,6 +52,7 @@ function create_fragment(ctx) {
 			insert(target, div, anchor);
 			insert(target, t, anchor);
 			mount_component(component, target, anchor);
+			insert(target, component_anchor, anchor);
 			current = true;
 		},
 		p(ctx, [dirty]) {
@@ -83,6 +86,7 @@ function create_fragment(ctx) {
 		d(detaching) {
 			if (detaching) detach(div);
 			if (detaching) detach(t);
+			if (detaching) detach(component_anchor);
 			destroy_component(component, detaching);
 		}
 	};

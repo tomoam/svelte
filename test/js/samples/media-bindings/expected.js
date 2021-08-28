@@ -3,16 +3,18 @@ import {
 	SvelteComponent,
 	add_render_callback,
 	detach,
-	element,
 	init,
 	insert,
 	listen,
+	make_renderer,
 	noop,
 	raf,
 	run_all,
 	safe_not_equal,
 	time_ranges_to_array
 } from "svelte/internal";
+
+const render = make_renderer(`<audio></audio>`);
 
 function create_fragment(ctx) {
 	let audio;
@@ -35,7 +37,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			audio = element("audio");
+			audio = render().firstChild;
 			if (/*buffered*/ ctx[0] === void 0) add_render_callback(() => /*audio_progress_handler*/ ctx[11].call(audio));
 			if (/*buffered*/ ctx[0] === void 0 || /*seekable*/ ctx[1] === void 0) add_render_callback(() => /*audio_loadedmetadata_handler*/ ctx[12].call(audio));
 			if (/*played*/ ctx[2] === void 0 || /*currentTime*/ ctx[3] === void 0 || /*ended*/ ctx[10] === void 0) add_render_callback(audio_timeupdate_handler);

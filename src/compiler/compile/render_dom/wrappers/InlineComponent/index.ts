@@ -429,18 +429,19 @@ export default class InlineComponentWrapper extends Wrapper {
 
 			if (parent_nodes && this.renderer.options.hydratable) {
 				block.chunks.claim.push(
-					b`if (${name}) @claim_component(${name}.$$.fragment, ${parent_nodes});`
+					b`if (${name}) @claim_component(${name}.$$.fragment, @trim_nodes(${parent_nodes}));`
 				);
 			}
 
+			const initial_anchor_node = this.get_initial_anchor_node(parent_node);
 			block.chunks.mount.push(b`
 				if (${name}) {
-					@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? 'null' : '#anchor'});
+					@mount_component(${name}, ${parent_node || '#target'}, ${initial_anchor_node});
 				}
 			`);
 
-			const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
-			const update_mount_node = this.get_update_mount_node(anchor);
+			const update_anchor_node = this.get_or_create_anchor(block, parent_node, parent_nodes);
+			const update_mount_node = this.get_update_mount_node(update_anchor_node);
 
 			if (updates.length) {
 				block.chunks.update.push(b`
@@ -467,7 +468,7 @@ export default class InlineComponentWrapper extends Wrapper {
 
 						@create_component(${name}.$$.fragment);
 						@transition_in(${name}.$$.fragment, 1);
-						@mount_component(${name}, ${update_mount_node}, ${anchor});
+						@mount_component(${name}, ${update_mount_node}, ${update_anchor_node});
 					} else {
 						${name} = null;
 					}
@@ -536,7 +537,7 @@ export default class InlineComponentWrapper extends Wrapper {
 					`);
 				}
 				block.chunks.claim.push(
-					b`@claim_component(${name}.$$.fragment, ${nodes});`
+					b`@claim_component(${name}.$$.fragment, @trim_nodes(${parent_nodes ? parent_nodes : nodes}));`
 				);
 			}
 
@@ -555,9 +556,11 @@ export default class InlineComponentWrapper extends Wrapper {
 				block.chunks.mount.push(b`@mount_component(${name}, ${css_custom_properties_wrapper}, null);`);
 			} else {
 				block.chunks.mount.push(
-					b`@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? 'null' : '#anchor'});`
+					b`@mount_component(${name}, ${parent_node || '#target'}, ${this.get_initial_anchor_node(parent_node)});`
 				);
 			}
+
+			this.get_or_create_anchor(block, parent_node, parent_nodes);
 
 			block.chunks.intro.push(b`
 				@transition_in(${name}.$$.fragment, #local);

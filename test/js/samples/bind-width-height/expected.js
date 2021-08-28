@@ -4,12 +4,14 @@ import {
 	add_render_callback,
 	add_resize_listener,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<div>some content</div>`);
 
 function create_fragment(ctx) {
 	let div;
@@ -17,8 +19,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = element("div");
-			div.textContent = "some content";
+			div = render().firstChild;
 			add_render_callback(() => /*div_elementresize_handler*/ ctx[2].call(div));
 		},
 		m(target, anchor) {

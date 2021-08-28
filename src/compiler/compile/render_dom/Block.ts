@@ -177,8 +177,11 @@ export default class Block {
 		}
 
 		if (parent_node) {
-			this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
-			if (is_head(parent_node) && !no_detach) this.chunks.destroy.push(b`@detach(${id});`);
+			if (is_head(parent_node)) {
+				this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
+
+				if (!no_detach) this.chunks.destroy.push(b`@detach(${id});`);
+			} 
 		} else {
 			this.chunks.mount.push(b`@insert(#target, ${id}, #anchor);`);
 			if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(${id});`);
@@ -278,6 +281,17 @@ export default class Block {
 			if (this.chunks.claim.length === 0 && this.chunks.hydrate.length === 0) {
 				properties.claim = noop;
 			} else {
+				const prefix = [];
+				if (this.chunks.create.length > 0) {
+					prefix.push(b`this.c();`);
+				}
+				if (!this.wrappers.some((n) => n.node.type === 'Head')) {
+					prefix.push(b`if (!#nodes.length) return;`);
+				}
+
+				if (this.renderer.options.hydratable && prefix.length > 0) {
+					this.chunks.claim.unshift(prefix);
+				}
 				properties.claim = x`function #claim(#nodes) {
 					${this.chunks.claim}
 					${this.renderer.options.hydratable && this.chunks.hydrate.length > 0 && b`this.h();`}
@@ -438,15 +452,28 @@ export default class Block {
 		const args: any[] = [x`#ctx`];
 		if (key) args.unshift(key);
 
+		const body = [];
+
+		this.wrappers.filter(node => node.template).forEach((node) => {
+			const make_renderer = /-/.test(node.node.name) ? '@make_custom_renderer' : '@make_renderer';
+			body.push(b`
+				const ${node.template_name} = ${make_renderer}(
+					${node.template}
+				)
+			`);
+		});
+
 		const fn = b`function ${this.name}(${args}) {
 			${this.get_contents(key)}
 		}`;
 
-		return this.comment
+		body.push(this.comment
 			? b`
 				// ${this.comment}
 				${fn}`
-			: fn;
+			: fn);
+
+		return body;
 	}
 
 	render_listeners(chunk: string = '') {

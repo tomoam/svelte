@@ -4,11 +4,13 @@ import {
 	detach,
 	init,
 	insert,
+	make_renderer,
 	noop,
-	safe_not_equal,
-	space,
-	text
+	replace_text,
+	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<!> <!>`);
 
 function create_fragment(ctx) {
 	let t0;
@@ -18,9 +20,9 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			t0 = text(/*url*/ ctx[0]);
-			t1 = space();
-			t2 = text(t2_value);
+			t0 = replace_text(render().firstChild, /*url*/ ctx[0]);
+			t1 = t0.nextSibling;
+			t2 = replace_text(t1.nextSibling, t2_value);
 		},
 		m(target, anchor) {
 			insert(target, t0, anchor);

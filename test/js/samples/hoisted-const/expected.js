@@ -2,20 +2,25 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
 
+const render = make_renderer(`<b> </b>`);
+
 function create_fragment(ctx) {
 	let b;
+	let t_value = get_answer() + "";
+	let t;
 
 	return {
 		c() {
-			b = element("b");
-			b.textContent = `${get_answer()}`;
+			b = render().firstChild;
+			t = b.firstChild;
+			t.data = t_value;
 		},
 		m(target, anchor) {
 			insert(target, b, anchor);

@@ -2,13 +2,15 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
 	init,
 	insert,
 	listen,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<button></button>`);
 
 function create_fragment(ctx) {
 	let button;
@@ -17,7 +19,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			button = element("button");
+			button = render().firstChild;
 		},
 		m(target, anchor) {
 			insert(target, button, anchor);

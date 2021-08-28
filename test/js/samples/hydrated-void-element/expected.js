@@ -2,18 +2,18 @@
 import {
 	SvelteComponent,
 	attr,
-	children,
 	claim_element,
-	claim_space,
+	claim_text,
 	detach,
-	element,
 	init,
 	insert_hydration,
+	make_renderer,
 	noop,
 	safe_not_equal,
-	space,
 	src_url_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<img src="donuts.jpg" alt="donuts"> <div></div>`);
 
 function create_fragment(ctx) {
 	let img;
@@ -23,21 +23,21 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			img = element("img");
-			t = space();
-			div = element("div");
+			img = render().firstChild;
+			t = img.nextSibling;
+			div = t.nextSibling;
 			this.h();
 		},
 		l(nodes) {
-			img = claim_element(nodes, "IMG", { src: true, alt: true });
-			t = claim_space(nodes);
-			div = claim_element(nodes, "DIV", {});
-			children(div).forEach(detach);
+			this.c();
+			if (!nodes.length) return;
+			img = claim_element(img, nodes);
+			t = claim_text(t, nodes);
+			div = claim_element(div, nodes);
 			this.h();
 		},
 		h() {
 			if (!src_url_equal(img.src, img_src_value = "donuts.jpg")) attr(img, "src", img_src_value);
-			attr(img, "alt", "donuts");
 		},
 		m(target, anchor) {
 			insert_hydration(target, img, anchor);

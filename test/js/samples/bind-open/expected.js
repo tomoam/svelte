@@ -2,13 +2,15 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
 	init,
 	insert,
 	listen,
+	make_renderer,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
+
+const render = make_renderer(`<details><summary>summary</summary>content</details>`);
 
 function create_fragment(ctx) {
 	let details;
@@ -17,8 +19,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			details = element("details");
-			details.innerHTML = `<summary>summary</summary>content`;
+			details = render().firstChild;
 		},
 		m(target, anchor) {
 			insert(target, details, anchor);

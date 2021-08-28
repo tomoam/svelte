@@ -2,17 +2,18 @@
 import {
 	SvelteComponent,
 	add_render_callback,
-	append,
 	detach,
-	element,
 	init,
 	insert,
 	listen,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
-	set_data,
-	text
+	set_data
 } from "svelte/internal";
+
+const render = make_renderer(`<p>scrolled to <!></p>`);
 
 function create_fragment(ctx) {
 	let scrolling = false;
@@ -31,14 +32,12 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			p = element("p");
-			t0 = text("scrolled to ");
-			t1 = text(/*y*/ ctx[0]);
+			p = render().firstChild;
+			t0 = p.firstChild;
+			t1 = replace_text(t0.nextSibling, /*y*/ ctx[0]);
 		},
 		m(target, anchor) {
 			insert(target, p, anchor);
-			append(p, t0);
-			append(p, t1);
 
 			if (!mounted) {
 				dispose = listen(window, "scroll", () => {

@@ -4,13 +4,12 @@ import {
 	destroy_each,
 	detach_dev,
 	dispatch_dev,
-	empty,
 	init,
 	insert_dev,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
-	space,
-	text,
 	validate_each_argument,
 	validate_slots
 } from "svelte/internal";
@@ -24,11 +23,12 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
+const render = make_renderer(`<!>`);
+
 // (4:0) {#each things as thing, index}
 function create_each_block(ctx) {
-	let t0;
-	let t1_value = /*thing*/ ctx[0] + "";
-	let t1;
+	let t_value = /*thing*/ ctx[0] + "";
+	let t;
 
 	const block = {
 		c: function create() {
@@ -38,17 +38,14 @@ function create_each_block(ctx) {
 				debugger;
 			}
 
-			t0 = space();
-			t1 = text(t1_value);
+			t = replace_text(render().firstChild, t_value);
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, t0, anchor);
-			insert_dev(target, t1, anchor);
+			insert_dev(target, t, anchor);
 		},
 		p: noop,
 		d: function destroy(detaching) {
-			if (detaching) detach_dev(t0);
-			if (detaching) detach_dev(t1);
+			if (detaching) detach_dev(t);
 		}
 	};
 
@@ -62,6 +59,8 @@ function create_each_block(ctx) {
 
 	return block;
 }
+
+const render_1 = make_renderer(`<!>`);
 
 function create_fragment(ctx) {
 	let each_1_anchor;
@@ -79,7 +78,7 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = empty();
+			each_1_anchor = render_1().firstChild;
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -119,8 +118,8 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d: function destroy(detaching) {
-			destroy_each(each_blocks, detaching);
 			if (detaching) detach_dev(each_1_anchor);
+			destroy_each(each_blocks, detaching);
 		}
 	};
 

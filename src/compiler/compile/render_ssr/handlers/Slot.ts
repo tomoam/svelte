@@ -3,10 +3,16 @@ import Slot from '../../nodes/Slot';
 import { x } from 'code-red';
 import get_slot_data from '../../utils/get_slot_data';
 import { get_slot_scope } from './shared/get_slot_scope';
+import { is_static_only } from './utils/is_static_only';
 
 export default function(node: Slot, renderer: Renderer, options: RenderOptions & {
 	slot_scopes: Map<any, any>;
 }) {
+	if (is_static_only(options)) {
+		renderer.add_string('<!>');
+		return;
+	}
+
 	const slot_data = get_slot_data(node.values);
 	const slot = node.get_static_attribute_value('slot');
 	const nearest_inline_component = node.find_nearest(/InlineComponent/);

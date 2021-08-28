@@ -1,8 +1,14 @@
 import IfBlock from '../../nodes/IfBlock';
 import Renderer, { RenderOptions } from '../Renderer';
 import { x } from 'code-red';
+import { is_static_only } from './utils/is_static_only';
 
 export default function(node: IfBlock, renderer: Renderer, options: RenderOptions) {
+	if (is_static_only(options)) {
+		renderer.add_string('<!>');
+		return;
+	}
+
 	const condition = node.expression.node;
 
 	renderer.push();
