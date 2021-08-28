@@ -41,17 +41,13 @@ export default class TextWrapper extends Wrapper {
 		return true;
 	}
 
-	get_claim_statement(template_node: Identifier | string, parent_nodes: (ReturnType<typeof x>) | Identifier | string, target?: Identifier | string) {
-		const nodes = parent_nodes || '[]';
-		return x`@claim_text(${template_node}, ${nodes}, ${target})`;
-	}
-
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.skip) return;
 
 		const render_statement = get_node_path(this, parent_node);
+
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || "#nodes";
-		const claim_statement = this.get_claim_statement(this.var, trim_parent_nodes, parent_node);
+		const claim_statement = x`@claim_text(${this.var}, ${trim_parent_nodes}, ${parent_node})`;
 	
 		block.add_element(
 			this.var,

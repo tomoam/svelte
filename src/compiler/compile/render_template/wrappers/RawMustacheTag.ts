@@ -47,7 +47,6 @@ export default class RawMustacheTagWrapper extends Tag {
 			);
 
 			block.chunks.create.push(b`${html_tag} = new @HtmlTag();`);
-
 			if (this.renderer.options.hydratable) {
 				block.chunks.claim.push(b`${html_tag} = @claim_html_tag(${parent_nodes});`);
 			}

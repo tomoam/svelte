@@ -172,8 +172,8 @@ export default class AwaitBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		parent_nodes: Identifier
 	) {
-		const update_anchor_node = this.get_or_create_anchor(block, parent_node, parent_nodes);
-		const update_mount_node = this.get_update_mount_node(update_anchor_node);
+		const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
+		const update_mount_node = this.get_update_mount_node(anchor);
 
 		const snippet = this.node.expression.manipulate(block);
 
@@ -216,14 +216,14 @@ export default class AwaitBlockWrapper extends Wrapper {
 		}
 
 		const initial_mount_node = parent_node || '#target';
-		const initial_anchor_node = this.get_initial_anchor_node(parent_node);
+		const anchor_node = this.get_initial_anchor_node(parent_node);
 
 		const has_transitions = this.pending.block.has_intro_method || this.pending.block.has_outro_method;
 
 		block.chunks.mount.push(b`
-			${info}.block.m(${initial_mount_node}, ${info}.anchor = ${initial_anchor_node});
+			${info}.block.m(${initial_mount_node}, ${info}.anchor = ${anchor_node});
 			${info}.mount = () => ${update_mount_node};
-			${info}.anchor = ${update_anchor_node};
+			${info}.anchor = ${anchor};
 		`);
 
 		if (has_transitions) {
