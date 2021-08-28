@@ -6,7 +6,6 @@ import MustacheTag from '../../nodes/MustacheTag';
 import RawMustacheTag from '../../nodes/RawMustacheTag';
 import { b, x } from 'code-red';
 import { Identifier } from 'estree';
-import { get_node_path } from './shared/get_node_path';
 import { is_text } from '../../render_ssr/handlers/utils/is_text';
 
 export default class MustacheTagWrapper extends Tag {
@@ -23,7 +22,7 @@ export default class MustacheTagWrapper extends Tag {
 			value => x`@set_data(${this.var}, ${value})`
 		);
 
-		const node_path = get_node_path(this, parent_node);
+		const node_path = this.get_node_path(parent_node);
 		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next)) ? node_path : x`@replace_text(${node_path}, ${init})`;
 
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || '#nodes';

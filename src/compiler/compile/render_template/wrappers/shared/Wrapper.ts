@@ -4,7 +4,7 @@ import { b, x } from 'code-red';
 import { TemplateNode } from '../../../../interfaces';
 import { Identifier, TemplateLiteral } from 'estree';
 import { is_head } from './is_head';
-import { get_node_path } from './get_node_path';
+import { needs_svg_wrapper } from './needs_svg_wrapper';
 
 export default class Wrapper {
 	renderer: Renderer;
@@ -68,12 +68,26 @@ export default class Wrapper {
 		if (this.parent && !this.parent.is_on_traverse_path) this.parent.mark_as_on_traverse_path();
 	}
 
+	get_node_path(parent_node: Identifier) {
+		if (this.template_name) {
+			const node_path = needs_svg_wrapper(this) ? x`${this.template_name}().firstChild` : `${this.template_name}()`;
+			return x`${node_path}.firstChild`;
+		} else if (is_head(parent_node) && this.parent.template_name && (!this.prev || !this.prev.var)) {
+			return  x`${this.parent.template_name}().firstChild`;
+		} else if (this.prev) {
+			const prev_var = this.prev.is_dom_node() ? this.prev.var : this.prev.anchor;
+			return x`${prev_var}.nextSibling`;
+		} else {
+			return x`${parent_node}.firstChild`;
+		}
+	}
+
 	get_or_create_anchor(block: Block, parent_node: Identifier, parent_nodes: Identifier, anchor_name?: string): Identifier {
 		// TODO use this in EachBlock and IfBlock — tricky because
 		// children need to be created first
 		const needs_anchor = is_head(parent_node) || (this.next ? !this.next.is_dom_node() : !parent_node || !this.parent.is_dom_node());
 		this.anchor = block.get_unique_name(anchor_name || `${this.var.name}_anchor`);
-		const render_statement = get_node_path(this, parent_node);
+		const render_statement = this.get_node_path(parent_node);
 
 		if (needs_anchor) {
 			block.add_element(

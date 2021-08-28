@@ -4,7 +4,6 @@ import Text from '../../nodes/Text';
 import Wrapper from './shared/Wrapper';
 import { x } from 'code-red';
 import { Identifier } from 'estree';
-import { get_node_path } from './shared/get_node_path';
 
 export default class TextWrapper extends Wrapper {
 	node: Text;
@@ -44,7 +43,7 @@ export default class TextWrapper extends Wrapper {
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.skip) return;
 
-		const render_statement = get_node_path(this, parent_node);
+		const render_statement = this.get_node_path(parent_node);
 
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || "#nodes";
 		const claim_statement = x`@claim_text(${this.var}, ${trim_parent_nodes}, ${parent_node})`;

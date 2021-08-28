@@ -11,7 +11,6 @@ import { is_reserved_keyword } from '../../utils/reserved_keywords';
 import is_dynamic from './shared/is_dynamic';
 import { Identifier, ObjectExpression } from 'estree';
 import create_debugging_comment from './shared/create_debugging_comment';
-import { get_node_path } from './shared/get_node_path';
 
 export default class SlotWrapper extends Wrapper {
 	node: Slot;
@@ -140,7 +139,7 @@ export default class SlotWrapper extends Wrapper {
 		);
 
 		this.anchor = block.get_unique_name(`${this.var.name}_anchor`);
-		const render_statement = get_node_path(this, parent_node);
+		const render_statement = this.get_node_path(parent_node);
 
 		block.add_variable(this.anchor);
 		block.chunks.create.push(b`${this.anchor} = ${render_statement};`);

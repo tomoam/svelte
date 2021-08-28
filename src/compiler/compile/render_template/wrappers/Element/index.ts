@@ -26,7 +26,6 @@ import Action from '../../../nodes/Action';
 import MustacheTagWrapper from '../MustacheTag';
 import RawMustacheTagWrapper from '../RawMustacheTag';
 import is_dynamic from '../shared/is_dynamic';
-import { get_node_path } from '../shared/get_node_path';
 
 interface BindingGroup {
 	events: string[];
@@ -336,7 +335,7 @@ export default class ElementWrapper extends Wrapper {
 
 	get_render_statement(block: Block, parent_node: Identifier) {
 
-		const render_statement = get_node_path(this, parent_node);
+		const render_statement = this.get_node_path(parent_node);
 
 		const { name, namespace } = this.node;
 		const is: AttributeWrapper = this.attributes.find(attr => attr.node.name === 'is') as any;
