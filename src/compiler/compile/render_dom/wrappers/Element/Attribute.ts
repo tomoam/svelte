@@ -21,8 +21,16 @@ export class BaseAttributeWrapper {
 		if (node.dependencies.size > 0) {
 			parent.cannot_use_innerhtml();
 			parent.not_static_content();
+			parent.mark_as_on_traverse_path();
 
 			block.add_dependencies(node.dependencies);
+
+		} else if (
+			node.is_spread ||
+			node.name === 'src' ||
+			(!node.is_static && !node.is_true)
+		) {
+			parent.mark_as_on_traverse_path();
 		}
 	}
 
@@ -143,7 +151,7 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 			updater = block.renderer.options.dev
 				? b`@prop_dev(${element.var}, "${property_name}", ${should_cache ? this.last : value});`
 				: b`${element.var}.${property_name} = ${should_cache ? this.last : value};`;
-		} else {
+		} else if (!this.node.is_static || (element.node.namespace === namespaces.foreign)) {
 			block.chunks.hydrate.push(
 				b`${method}(${element.var}, "${name}", ${init});`
 			);

@@ -2,7 +2,6 @@ import Stats from '../Stats';
 import parse from '../parse/index';
 import render_dom from './render_dom/index';
 import render_ssr from './render_ssr/index';
-import render_template from './render_template/index';
 import { CompileOptions, Warning } from '../interfaces';
 import Component from './Component';
 import fuzzymatch from '../utils/fuzzymatch';
@@ -32,8 +31,7 @@ const valid_options = [
 	'loopGuardTimeout',
 	'preserveComments',
 	'preserveWhitespace',
-	'cssHash',
-	'experimental_template_mode'
+	'cssHash'
 ];
 
 function validate_options(options: CompileOptions, warnings: Warning[]) {
@@ -84,16 +82,7 @@ function validate_options(options: CompileOptions, warnings: Warning[]) {
 }
 
 export default function compile(source: string, options: CompileOptions = {}) {
-	const ex_template_mode = Boolean(process.env.SVELTE_EX_TEMPLATE_MODE);
-
-	options = Object.assign(
-		{
-			generate: 'dom',
-			dev: false,
-			experimental_template_mode: ex_template_mode,
-		},
-		options
-	);
+	options = Object.assign({ generate: 'dom', dev: false }, options);
 
 	const stats = new Stats();
 	const warnings = [];
@@ -119,9 +108,7 @@ export default function compile(source: string, options: CompileOptions = {}) {
 		? null
 		: options.generate === 'ssr'
 			? render_ssr(component, options)
-			: !options.experimental_template_mode
-				? render_dom(component, options)
-				: render_template(component, options);
+			: render_dom(component, options)
 
 	return component.generate(result);
 }

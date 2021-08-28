@@ -4,7 +4,7 @@ import {
 	attr,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -25,7 +25,7 @@ function create_fragment(ctx) {
 			if (!src_url_equal(img.src, img_src_value = "http://mdn.mozillademos.org/files/12676/star.svg")) attr(img, "src", img_src_value);
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
+			insert(target, div, anchor);
 		},
 		p: noop,
 		i: noop,

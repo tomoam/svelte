@@ -3,7 +3,7 @@ import {
 	SvelteComponent,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	replace_text,
@@ -24,7 +24,7 @@ function create_fragment(ctx) {
 			t1 = replace_text(t0.nextSibling, name);
 		},
 		m(target, anchor) {
-			insert_experimental(target, h1, anchor);
+			insert(target, h1, anchor);
 		},
 		p: noop,
 		i: noop,

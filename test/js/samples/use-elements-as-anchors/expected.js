@@ -3,7 +3,7 @@ import {
 	SvelteComponent,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -20,7 +20,7 @@ function create_if_block_4(ctx) {
 			p = render_4().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, p, anchor);
+			insert(target, p, anchor);
 		},
 		d(detaching) {
 			if (detaching) detach(p);
@@ -39,7 +39,7 @@ function create_if_block_3(ctx) {
 			p = render_3().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, p, anchor);
+			insert(target, p, anchor);
 		},
 		d(detaching) {
 			if (detaching) detach(p);
@@ -58,7 +58,7 @@ function create_if_block_2(ctx) {
 			p = render_2().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, p, anchor);
+			insert(target, p, anchor);
 		},
 		d(detaching) {
 			if (detaching) detach(p);
@@ -77,7 +77,7 @@ function create_if_block_1(ctx) {
 			p = render_1().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, p, anchor);
+			insert(target, p, anchor);
 		},
 		d(detaching) {
 			if (detaching) detach(p);
@@ -96,7 +96,7 @@ function create_if_block(ctx) {
 			p = render().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, p, anchor);
+			insert(target, p, anchor);
 		},
 		d(detaching) {
 			if (detaching) detach(p);
@@ -150,14 +150,14 @@ function create_fragment(ctx) {
 			if (if_block4) if_block4.c();
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
+			insert(target, div, anchor);
 			if (if_block0) if_block0.m(div, t0);
 			if (if_block1) if_block1.m(div, t3);
 			if (if_block2) if_block2.m(div, t4);
 			if (if_block3) if_block3.m(div, null);
-			insert_experimental(target, t7, anchor);
+			insert(target, t7, anchor);
 			if (if_block4) if_block4.m(target, anchor);
-			insert_experimental(target, if_block4_anchor, anchor);
+			insert(target, if_block4_anchor, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (/*a*/ ctx[0]) {

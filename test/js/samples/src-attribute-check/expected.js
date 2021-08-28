@@ -2,11 +2,11 @@
 import {
 	SvelteComponent,
 	attr,
-	claim_element_experimental,
-	claim_text_experimental,
+	claim_element,
+	claim_text,
 	detach,
 	init,
-	insert_experimental_hydration,
+	insert_hydration,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -32,9 +32,9 @@ function create_fragment(ctx) {
 		l(nodes) {
 			this.c();
 			if (!nodes.length) return;
-			img0 = claim_element_experimental(img0, nodes);
-			t = claim_text_experimental(t, nodes);
-			img1 = claim_element_experimental(img1, nodes);
+			img0 = claim_element(img0, nodes);
+			t = claim_text(t, nodes);
+			img1 = claim_element(img1, nodes);
 			this.h();
 		},
 		h() {
@@ -42,9 +42,9 @@ function create_fragment(ctx) {
 			if (!src_url_equal(img1.src, img1_src_value = "" + (/*slug*/ ctx[1] + ".jpg"))) attr(img1, "src", img1_src_value);
 		},
 		m(target, anchor) {
-			insert_experimental_hydration(target, img0, anchor);
-			insert_experimental_hydration(target, t, anchor);
-			insert_experimental_hydration(target, img1, anchor);
+			insert_hydration(target, img0, anchor);
+			insert_hydration(target, t, anchor);
+			insert_hydration(target, img1, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*url*/ 1 && !src_url_equal(img0.src, img0_src_value = /*url*/ ctx[0])) {

@@ -142,7 +142,7 @@ export interface CompileOptions {
 	format?: ModuleFormat;
 	name?: string;
 	filename?: string;
-	generate?: 'dom' | 'ssr' | 'template' | false;
+	generate?: 'dom' | 'ssr' | false;
 	errorMode?: 'throw' | 'warn';
 	varsReport?: 'full' | 'strict' | false;
 
@@ -165,8 +165,6 @@ export interface CompileOptions {
 
 	preserveComments?: boolean;
 	preserveWhitespace?: boolean;
-
-	experimental_template_mode?: boolean;
 }
 
 export interface ParserOptions {

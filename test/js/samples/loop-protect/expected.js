@@ -7,7 +7,7 @@ import {
 	dispatch_dev,
 	globals,
 	init,
-	insert_experimental_dev,
+	insert_dev,
 	loop_guard,
 	make_renderer,
 	noop,
@@ -31,7 +31,7 @@ function create_fragment(ctx) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_experimental_dev(target, div, anchor);
+			insert_dev(target, div, anchor);
 			/*div_binding*/ ctx[1](div);
 		},
 		p: noop,

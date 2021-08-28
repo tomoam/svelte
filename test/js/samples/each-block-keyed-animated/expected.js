@@ -6,7 +6,7 @@ import {
 	fix_and_destroy_block,
 	fix_position,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -40,7 +40,7 @@ function create_each_block(key_1, ctx) {
 			this.first = div;
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
+			insert(target, div, anchor);
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
@@ -91,7 +91,7 @@ function create_fragment(ctx) {
 				each_blocks[i].m(target, anchor);
 			}
 
-			insert_experimental(target, each_1_anchor, anchor);
+			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*things*/ 1) {

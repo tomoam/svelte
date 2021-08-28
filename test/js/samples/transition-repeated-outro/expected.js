@@ -6,7 +6,7 @@ import {
 	detach,
 	group_outros,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	safe_not_equal,
 	transition_in,
@@ -27,7 +27,7 @@ function create_if_block(ctx) {
 			div = render().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
+			insert(target, div, anchor);
 			current = true;
 		},
 		i(local) {
@@ -60,7 +60,7 @@ function create_fragment(ctx) {
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
-			insert_experimental(target, if_block_anchor, anchor);
+			insert(target, if_block_anchor, anchor);
 			current = true;
 		},
 		p(ctx, [dirty]) {

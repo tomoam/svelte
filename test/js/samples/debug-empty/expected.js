@@ -5,7 +5,7 @@ import {
 	detach_dev,
 	dispatch_dev,
 	init,
-	insert_experimental_dev,
+	insert_dev,
 	make_renderer,
 	noop,
 	replace_text,
@@ -34,7 +34,7 @@ function create_fragment(ctx) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_experimental_dev(target, h1, anchor);
+			insert_dev(target, h1, anchor);
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*name*/ 1) set_data_dev(t1, /*name*/ ctx[0]);

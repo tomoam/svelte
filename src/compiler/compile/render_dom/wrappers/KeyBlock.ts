@@ -90,7 +90,7 @@ export default class KeyBlockWrapper extends Wrapper {
 		}
 		block.chunks.mount.push(
 			b`${this.var}.m(${parent_node || '#target'}, ${
-				parent_node ? 'null' : '#anchor'
+				this.get_initial_anchor_node(parent_node)
 			});`
 		);
 		const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);

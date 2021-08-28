@@ -5,7 +5,7 @@ import {
 	detach_dev,
 	dispatch_dev,
 	init,
-	insert_experimental_dev,
+	insert_dev,
 	make_renderer,
 	noop,
 	replace_text,
@@ -41,7 +41,7 @@ function create_each_block(ctx) {
 			t = replace_text(render().firstChild, t_value);
 		},
 		m: function mount(target, anchor) {
-			insert_experimental_dev(target, t, anchor);
+			insert_dev(target, t, anchor);
 		},
 		p: noop,
 		d: function destroy(detaching) {
@@ -88,7 +88,7 @@ function create_fragment(ctx) {
 				each_blocks[i].m(target, anchor);
 			}
 
-			insert_experimental_dev(target, each_1_anchor, anchor);
+			insert_dev(target, each_1_anchor, anchor);
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*things*/ 0) {

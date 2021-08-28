@@ -3,7 +3,7 @@ import {
 	SvelteComponent,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	listen,
 	make_renderer,
 	noop,
@@ -22,7 +22,7 @@ function create_fragment(ctx) {
 			a = render().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, a, anchor);
+			insert(target, a, anchor);
 
 			if (!mounted) {
 				dispose = listen(a, "touchstart", touchstart_handler);

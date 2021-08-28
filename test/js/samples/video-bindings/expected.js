@@ -5,7 +5,7 @@ import {
 	add_resize_listener,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	listen,
 	make_renderer,
 	noop,
@@ -42,7 +42,7 @@ function create_fragment(ctx) {
 			add_render_callback(() => /*video_elementresize_handler*/ ctx[6].call(video));
 		},
 		m(target, anchor) {
-			insert_experimental(target, video, anchor);
+			insert(target, video, anchor);
 			video_resize_listener = add_resize_listener(video, /*video_elementresize_handler*/ ctx[6].bind(video));
 
 			if (!mounted) {

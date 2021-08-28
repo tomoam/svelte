@@ -4,7 +4,7 @@ import {
 	add_render_callback,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	listen,
 	make_renderer,
 	noop,
@@ -46,7 +46,7 @@ function create_fragment(ctx) {
 			if (/*ended*/ ctx[10] === void 0) add_render_callback(() => /*audio_ended_handler*/ ctx[19].call(audio));
 		},
 		m(target, anchor) {
-			insert_experimental(target, audio, anchor);
+			insert(target, audio, anchor);
 
 			if (!isNaN(/*volume*/ ctx[6])) {
 				audio.volume = /*volume*/ ctx[6];

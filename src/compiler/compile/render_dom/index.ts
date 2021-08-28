@@ -11,7 +11,7 @@ import { apply_preprocessor_sourcemap } from '../../utils/mapped_code';
 import { RawSourceMap, DecodedSourceMap } from '@ampproject/remapping/dist/types/types';
 import { flatten } from '../../utils/flatten';
 
-export default function dom(
+export default function template(
 	component: Component,
 	options: CompileOptions
 ): { js: Node[]; css: CssResult } {
@@ -328,6 +328,18 @@ export default function dom(
 
 	const has_create_fragment = component.compile_options.dev || block.has_content();
 	if (has_create_fragment) {
+
+		renderer.fragment.nodes.forEach((node) => {
+			if (node.template) {
+				const make_renderer = /-/.test(node.node.name) ? '@make_custom_renderer' : '@make_renderer';
+				body.push(b`
+					const ${node.template_name} = ${make_renderer}(
+						${node.template}
+					)
+				`);
+			}
+		});
+
 		body.push(b`
 			function create_fragment(#ctx) {
 				${block.get_contents()}

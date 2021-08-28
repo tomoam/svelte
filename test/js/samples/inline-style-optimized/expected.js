@@ -3,7 +3,7 @@ import {
 	SvelteComponent,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -21,7 +21,7 @@ function create_fragment(ctx) {
 			set_style(div, "color", /*color*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
+			insert(target, div, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*color*/ 1) {

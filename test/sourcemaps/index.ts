@@ -112,7 +112,7 @@ describe('sourcemaps', () => {
 			css.mapConsumer = css.map && await new SourceMapConsumer(css.map);
 			css.locate = getLocator(css.code || '');
 			css.locate_1 = getLocator(css.code || '', { offsetLine: 1 });
-			await test({ assert, input, preprocessed, js, css, config });
+			await test({ assert, input, preprocessed, js, css });
 		});
 	});
 });

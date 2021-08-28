@@ -5,7 +5,7 @@ import {
 	destroy_component,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	mount_component,
 	noop,
@@ -37,9 +37,9 @@ function create_fragment(ctx) {
 		},
 		m(target, anchor) {
 			mount_component(imported, target, anchor);
-			insert_experimental(target, t, anchor);
+			insert(target, t, anchor);
 			mount_component(nonimported, target, anchor);
-			insert_experimental(target, nonimported_anchor, anchor);
+			insert(target, nonimported_anchor, anchor);
 			current = true;
 		},
 		p: noop,

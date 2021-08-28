@@ -4,7 +4,7 @@ import {
 	action_destroyer,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	is_function,
 	make_renderer,
 	noop,
@@ -24,7 +24,7 @@ function create_fragment(ctx) {
 			button = render().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, button, anchor);
+			insert(target, button, anchor);
 
 			if (!mounted) {
 				dispose = action_destroyer(foo_action = foo.call(null, button, /*foo_function*/ ctx[1]));

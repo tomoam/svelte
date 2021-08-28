@@ -9,7 +9,7 @@ import {
 	detach,
 	exclude_internal_props,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	mount_component,
 	safe_not_equal,
@@ -49,10 +49,10 @@ function create_fragment(ctx) {
 			attr(div, "other", div_other_value = "\n\t\tbutton\n\t\tbutton--size--" + /*size*/ ctx[0] + "\n\t\tbutton--theme--" + /*theme*/ ctx[1] + "\n  \t" + (/*$$restProps*/ ctx[2].class || ''));
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
-			insert_experimental(target, t, anchor);
+			insert(target, div, anchor);
+			insert(target, t, anchor);
 			mount_component(component, target, anchor);
-			insert_experimental(target, component_anchor, anchor);
+			insert(target, component_anchor, anchor);
 			current = true;
 		},
 		p(ctx, [dirty]) {

@@ -5,7 +5,7 @@ import {
 	destroy_component,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	listen,
 	make_renderer,
 	mount_component,
@@ -45,10 +45,10 @@ function create_fragment(ctx) {
 		},
 		m(target, anchor) {
 			mount_component(foo, target, anchor);
-			insert_experimental(target, t0, anchor);
+			insert(target, t0, anchor);
 			mount_component(bar, target, anchor);
-			insert_experimental(target, t1, anchor);
-			insert_experimental(target, input, anchor);
+			insert(target, t1, anchor);
+			insert(target, input, anchor);
 			set_input_value(input, /*z*/ ctx[0]);
 			current = true;
 

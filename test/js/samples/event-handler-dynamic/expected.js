@@ -3,7 +3,7 @@ import {
 	SvelteComponent,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	is_function,
 	listen,
 	make_renderer,
@@ -42,11 +42,11 @@ function create_fragment(ctx) {
 			button2 = t5.nextSibling;
 		},
 		m(target, anchor) {
-			insert_experimental(target, p0, anchor);
-			insert_experimental(target, t3, anchor);
-			insert_experimental(target, p1, anchor);
-			insert_experimental(target, t5, anchor);
-			insert_experimental(target, button2, anchor);
+			insert(target, p0, anchor);
+			insert(target, t3, anchor);
+			insert(target, p1, anchor);
+			insert(target, t5, anchor);
+			insert(target, button2, anchor);
 
 			if (!mounted) {
 				dispose = [

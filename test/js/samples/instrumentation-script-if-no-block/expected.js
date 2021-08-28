@@ -3,7 +3,7 @@ import {
 	SvelteComponent,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	listen,
 	make_renderer,
 	noop,
@@ -32,9 +32,9 @@ function create_fragment(ctx) {
 			t3 = replace_text(t2.nextSibling, /*x*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert_experimental(target, button, anchor);
-			insert_experimental(target, t1, anchor);
-			insert_experimental(target, p, anchor);
+			insert(target, button, anchor);
+			insert(target, t1, anchor);
+			insert(target, p, anchor);
 
 			if (!mounted) {
 				dispose = listen(button, "click", /*foo*/ ctx[1]);

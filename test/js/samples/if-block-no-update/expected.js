@@ -3,7 +3,7 @@ import {
 	SvelteComponent,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -20,7 +20,7 @@ function create_else_block(ctx) {
 			p = render_1().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, p, anchor);
+			insert(target, p, anchor);
 		},
 		d(detaching) {
 			if (detaching) detach(p);
@@ -39,7 +39,7 @@ function create_if_block(ctx) {
 			p = render().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, p, anchor);
+			insert(target, p, anchor);
 		},
 		d(detaching) {
 			if (detaching) detach(p);
@@ -67,7 +67,7 @@ function create_fragment(ctx) {
 		},
 		m(target, anchor) {
 			if_block.m(target, anchor);
-			insert_experimental(target, if_block_anchor, anchor);
+			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (current_block_type !== (current_block_type = select_block_type(ctx, dirty))) {

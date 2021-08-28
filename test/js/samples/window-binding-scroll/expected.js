@@ -4,7 +4,7 @@ import {
 	add_render_callback,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	listen,
 	make_renderer,
 	noop,
@@ -37,7 +37,7 @@ function create_fragment(ctx) {
 			t1 = replace_text(t0.nextSibling, /*y*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert_experimental(target, p, anchor);
+			insert(target, p, anchor);
 
 			if (!mounted) {
 				dispose = listen(window, "scroll", () => {

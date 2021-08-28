@@ -6,7 +6,7 @@ import {
 	detach_dev,
 	dispatch_dev,
 	init,
-	insert_experimental_dev,
+	insert_dev,
 	make_renderer,
 	noop,
 	replace_text,
@@ -50,7 +50,7 @@ function create_each_block(ctx) {
 			add_location(span, file, 8, 1, 116);
 		},
 		m: function mount(target, anchor) {
-			insert_experimental_dev(target, span, anchor);
+			insert_dev(target, span, anchor);
 		},
 		p: function update(ctx, dirty) {
 			if (dirty & /*things*/ 1 && t_value !== (t_value = /*thing*/ ctx[4].name + "")) set_data_dev(t, t_value);
@@ -117,8 +117,8 @@ function create_fragment(ctx) {
 				each_blocks[i].m(target, anchor);
 			}
 
-			insert_experimental_dev(target, t0, anchor);
-			insert_experimental_dev(target, p, anchor);
+			insert_dev(target, t0, anchor);
+			insert_dev(target, p, anchor);
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*things*/ 1) {

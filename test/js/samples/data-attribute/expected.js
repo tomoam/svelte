@@ -4,7 +4,7 @@ import {
 	attr,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -25,9 +25,9 @@ function create_fragment(ctx) {
 			attr(div1, "data-foo", /*bar*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert_experimental(target, div0, anchor);
-			insert_experimental(target, t, anchor);
-			insert_experimental(target, div1, anchor);
+			insert(target, div0, anchor);
+			insert(target, t, anchor);
+			insert(target, div1, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*bar*/ 1) {

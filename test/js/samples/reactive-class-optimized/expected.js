@@ -4,7 +4,7 @@ import {
 	component_subscribe,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -64,23 +64,23 @@ function create_fragment(ctx) {
 			toggle_class(div8, "static4", unreactiveExport);
 		},
 		m(target, anchor) {
-			insert_experimental(target, div0, anchor);
-			insert_experimental(target, t0, anchor);
-			insert_experimental(target, div1, anchor);
-			insert_experimental(target, t1, anchor);
-			insert_experimental(target, div2, anchor);
-			insert_experimental(target, t2, anchor);
-			insert_experimental(target, div3, anchor);
-			insert_experimental(target, t3, anchor);
-			insert_experimental(target, div4, anchor);
-			insert_experimental(target, t4, anchor);
-			insert_experimental(target, div5, anchor);
-			insert_experimental(target, t5, anchor);
-			insert_experimental(target, div6, anchor);
-			insert_experimental(target, t6, anchor);
-			insert_experimental(target, div7, anchor);
-			insert_experimental(target, t7, anchor);
-			insert_experimental(target, div8, anchor);
+			insert(target, div0, anchor);
+			insert(target, t0, anchor);
+			insert(target, div1, anchor);
+			insert(target, t1, anchor);
+			insert(target, div2, anchor);
+			insert(target, t2, anchor);
+			insert(target, div3, anchor);
+			insert(target, t3, anchor);
+			insert(target, div4, anchor);
+			insert(target, t4, anchor);
+			insert(target, div5, anchor);
+			insert(target, t5, anchor);
+			insert(target, div6, anchor);
+			insert(target, t6, anchor);
+			insert(target, div7, anchor);
+			insert(target, t7, anchor);
+			insert(target, div8, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*reactiveModuleVar*/ 0) {

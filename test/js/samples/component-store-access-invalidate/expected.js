@@ -4,7 +4,7 @@ import {
 	component_subscribe,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -25,7 +25,7 @@ function create_fragment(ctx) {
 			t.data = /*$foo*/ ctx[0];
 		},
 		m(target, anchor) {
-			insert_experimental(target, h1, anchor);
+			insert(target, h1, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*$foo*/ 1) set_data(t, /*$foo*/ ctx[0]);

@@ -5,7 +5,7 @@ import {
 	create_in_transition,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -26,7 +26,7 @@ function create_if_block(ctx) {
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
-			insert_experimental(target, if_block_anchor, anchor);
+			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
 			if (/*y*/ ctx[1]) {
@@ -64,7 +64,7 @@ function create_if_block_1(ctx) {
 			div = render().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
+			insert(target, div, anchor);
 		},
 		i(local) {
 			if (local) {
@@ -96,7 +96,7 @@ function create_fragment(ctx) {
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
-			insert_experimental(target, if_block_anchor, anchor);
+			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (/*x*/ ctx[0]) {

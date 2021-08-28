@@ -216,7 +216,7 @@ export default class AwaitBlockWrapper extends Wrapper {
 		}
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = parent_node ? 'null' : '#anchor';
+		const anchor_node = this.get_initial_anchor_node(parent_node);
 
 		const has_transitions = this.pending.block.has_intro_method || this.pending.block.has_outro_method;
 

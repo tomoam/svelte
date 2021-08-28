@@ -6,7 +6,7 @@ import {
 	destroy_component,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	mount_component,
 	replace_text,
@@ -80,19 +80,19 @@ function create_fragment(ctx) {
 			attr(div, "f", div_f_value = /*f*/ ctx[5]?.());
 		},
 		m(target, anchor) {
-			insert_experimental(target, t0, anchor);
-			insert_experimental(target, t1, anchor);
-			insert_experimental(target, t2, anchor);
-			insert_experimental(target, t3, anchor);
-			insert_experimental(target, t4, anchor);
-			insert_experimental(target, t5, anchor);
-			insert_experimental(target, t6, anchor);
-			insert_experimental(target, t7, anchor);
-			insert_experimental(target, t8, anchor);
-			insert_experimental(target, div, anchor);
-			insert_experimental(target, t9, anchor);
+			insert(target, t0, anchor);
+			insert(target, t1, anchor);
+			insert(target, t2, anchor);
+			insert(target, t3, anchor);
+			insert(target, t4, anchor);
+			insert(target, t5, anchor);
+			insert(target, t6, anchor);
+			insert(target, t7, anchor);
+			insert(target, t8, anchor);
+			insert(target, div, anchor);
+			insert(target, t9, anchor);
 			mount_component(component, target, anchor);
-			insert_experimental(target, component_anchor, anchor);
+			insert(target, component_anchor, anchor);
 			current = true;
 		},
 		p(ctx, [dirty]) {

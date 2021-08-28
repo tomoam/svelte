@@ -4,7 +4,7 @@ import {
 	attribute_to_object,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -21,7 +21,7 @@ function create_fragment(ctx) {
 			this.c = noop;
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
+			insert(target, div, anchor);
 		},
 		p: noop,
 		i: noop,
@@ -53,7 +53,7 @@ class Component extends SvelteElement {
 
 		if (options) {
 			if (options.target) {
-				insert_experimental(options.target, this, options.anchor);
+				insert(options.target, this, options.anchor);
 			}
 		}
 	}

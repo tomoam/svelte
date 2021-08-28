@@ -4,7 +4,7 @@ import {
 	destroy_each,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -32,7 +32,7 @@ function create_each_block(ctx) {
 			t.data = t_value;
 		},
 		m(target, anchor) {
-			insert_experimental(target, span, anchor);
+			insert(target, span, anchor);
 		},
 		p(ctx, dirty) {
 			if (dirty & /*createElement*/ 1 && t_value !== (t_value = /*node*/ ctx[1] + "")) set_data(t, t_value);
@@ -67,7 +67,7 @@ function create_fragment(ctx) {
 				each_blocks[i].m(target, anchor);
 			}
 
-			insert_experimental(target, each_1_anchor, anchor);
+			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*createElement*/ 1) {

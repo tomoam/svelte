@@ -5,7 +5,7 @@ import {
 	add_resize_listener,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -23,7 +23,7 @@ function create_fragment(ctx) {
 			add_render_callback(() => /*div_elementresize_handler*/ ctx[2].call(div));
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
+			insert(target, div, anchor);
 			div_resize_listener = add_resize_listener(div, /*div_elementresize_handler*/ ctx[2].bind(div));
 		},
 		p: noop,

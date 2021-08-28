@@ -3,7 +3,7 @@ import {
 	SvelteComponent,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -21,7 +21,7 @@ function create_fragment(ctx) {
 			set_input_type(input, "search");
 		},
 		m(target, anchor) {
-			insert_experimental(target, input, anchor);
+			insert(target, input, anchor);
 		},
 		p: noop,
 		i: noop,

@@ -3,10 +3,10 @@ import {
 	SvelteComponent,
 	attr,
 	children,
-	claim_element_experimental,
+	claim_element,
 	detach,
 	init,
-	insert_experimental_hydration,
+	insert_hydration,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -27,16 +27,16 @@ function create_fragment(ctx) {
 		l(nodes) {
 			this.c();
 			if (!nodes.length) return;
-			svg = claim_element_experimental(svg, nodes);
+			svg = claim_element(svg, nodes);
 			var svg_nodes = children(svg);
-			img = claim_element_experimental(img, svg_nodes, svg);
+			img = claim_element(img, svg_nodes, svg);
 			this.h();
 		},
 		h() {
 			attr(img, "src", /*url*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert_experimental_hydration(target, svg, anchor);
+			insert_hydration(target, svg, anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*url*/ 1) {

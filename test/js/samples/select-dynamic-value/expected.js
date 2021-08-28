@@ -3,7 +3,7 @@ import {
 	SvelteComponent,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -28,7 +28,7 @@ function create_fragment(ctx) {
 			option1.value = option1.__value;
 		},
 		m(target, anchor) {
-			insert_experimental(target, select, anchor);
+			insert(target, select, anchor);
 			select_option(select, /*current*/ ctx[0]);
 		},
 		p(ctx, [dirty]) {

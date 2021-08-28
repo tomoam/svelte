@@ -4,7 +4,7 @@ import {
 	append_styles,
 	detach,
 	init,
-	insert_experimental,
+	insert,
 	make_renderer,
 	noop,
 	safe_not_equal
@@ -24,7 +24,7 @@ function create_fragment(ctx) {
 			div = render().firstChild;
 		},
 		m(target, anchor) {
-			insert_experimental(target, div, anchor);
+			insert(target, div, anchor);
 		},
 		p: noop,
 		i: noop,

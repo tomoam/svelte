@@ -42,21 +42,16 @@ export default class TextWrapper extends Wrapper {
 
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.skip) return;
-		const use_space = this.use_space();
 
-		const string_literal = {
-			type: 'Literal',
-			value: this.data,
-			loc: {
-				start: this.renderer.locate(this.node.start),
-				end: this.renderer.locate(this.node.end)
-			}
-		};
+		const render_statement = this.get_node_path(parent_node);
 
+		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || "#nodes";
+		const claim_statement = x`@claim_text(${this.var}, ${trim_parent_nodes}, ${parent_node})`;
+	
 		block.add_element(
 			this.var,
-			use_space ? x`@space()` : x`@text(${string_literal})`,
-			parent_nodes && (use_space ? x`@claim_space(${parent_nodes})` : x`@claim_text(${parent_nodes}, ${string_literal})`),
+			render_statement,
+			claim_statement,
 			parent_node as Identifier
 		);
 	}

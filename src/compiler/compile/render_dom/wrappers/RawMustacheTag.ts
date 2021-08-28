@@ -22,7 +22,7 @@ export default class RawMustacheTagWrapper extends Tag {
 		this.not_static_content();
 	}
 
-	render(block: Block, parent_node: Identifier, _parent_nodes: Identifier) {
+	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		const in_head = is_head(parent_node);
 
 		const can_use_innerhtml = !in_head && parent_node && !this.prev && !this.next;
@@ -37,10 +37,7 @@ export default class RawMustacheTagWrapper extends Tag {
 
 			block.chunks.mount.push(insert(init));
 		} else {
-			const needs_anchor = in_head || (this.next ? !this.next.is_dom_node() : (!this.parent || !this.parent.is_dom_node()));
-
 			const html_tag = block.get_unique_name('html_tag');
-			const html_anchor = needs_anchor && block.get_unique_name('html_anchor');
 
 			block.add_variable(html_tag);
 
@@ -49,18 +46,16 @@ export default class RawMustacheTagWrapper extends Tag {
 				content => x`${html_tag}.p(${content})`
 			);
 
-			const update_anchor = needs_anchor ? html_anchor : this.next ? this.next.var : 'null';
-
 			block.chunks.create.push(b`${html_tag} = new @HtmlTag();`);
 			if (this.renderer.options.hydratable) {
-				block.chunks.claim.push(b`${html_tag} = @claim_html_tag(${_parent_nodes});`);
+				block.chunks.claim.push(b`${html_tag} = @claim_html_tag(${parent_nodes});`);
 			}
-			block.chunks.hydrate.push(b`${html_tag}.a = ${update_anchor};`);
-			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${parent_node ? null : '#anchor'});`);
 
-			if (needs_anchor) {
-				block.add_element(html_anchor, x`@empty()`, x`@empty()`, parent_node);
-			}
+			const insert_anchor = this.get_initial_anchor_node(parent_node);
+			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${insert_anchor});`);
+
+			const update_anchor = this.get_or_create_anchor(block, parent_node, parent_nodes, 'html_anchor');
+			block.chunks.hydrate.push(b`${html_tag}.a = ${update_anchor};`);
 
 			if (!parent_node || in_head) {
 				block.chunks.destroy.push(b`if (detaching) ${html_tag}.d();`);
