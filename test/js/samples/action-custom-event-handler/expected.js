@@ -3,6 +3,7 @@ import {
 	SvelteComponent,
 	action_destroyer,
 	detach,
+	first_child,
 	init,
 	insert,
 	is_function,
@@ -21,7 +22,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			button = render().firstChild;
+			button = first_child(render());
 		},
 		m(target, anchor) {
 			insert(target, button, anchor);

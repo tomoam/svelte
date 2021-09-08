@@ -2,9 +2,11 @@
 import {
 	SvelteComponent,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
+	next_sibling,
 	noop,
 	replace_text,
 	safe_not_equal,
@@ -32,21 +34,21 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div0 = render().firstChild;
-			p0 = div0.firstChild;
-			t1 = p0.nextSibling;
-			p1 = t1.nextSibling;
-			t2 = p1.firstChild;
-			t3 = replace_text(t2.nextSibling, world1);
-			t4 = p1.nextSibling;
-			p2 = t4.nextSibling;
-			t5 = p2.firstChild;
-			t6 = replace_text(t5.nextSibling, world2);
-			t7 = div0.nextSibling;
-			div1 = t7.nextSibling;
-			p3 = div1.firstChild;
-			t8 = p3.firstChild;
-			t9 = replace_text(t8.nextSibling, /*world3*/ ctx[0]);
+			div0 = first_child(render());
+			p0 = first_child(div0);
+			t1 = next_sibling(p0);
+			p1 = next_sibling(t1);
+			t2 = first_child(p1);
+			t3 = replace_text(next_sibling(t2), world1);
+			t4 = next_sibling(p1);
+			p2 = next_sibling(t4);
+			t5 = first_child(p2);
+			t6 = replace_text(next_sibling(t5), world2);
+			t7 = next_sibling(div0);
+			div1 = next_sibling(t7);
+			p3 = first_child(div1);
+			t8 = first_child(p3);
+			t9 = replace_text(next_sibling(t8), /*world3*/ ctx[0]);
 		},
 		m(target, anchor) {
 			insert(target, div0, anchor);

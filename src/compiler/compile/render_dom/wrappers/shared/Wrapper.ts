@@ -69,15 +69,15 @@ export default class Wrapper {
 
 	get_node_path(parent_node: Identifier) {
 		if (this.template_name) {
-			const node_path = needs_svg_wrapper(this) ? x`${this.template_name}().firstChild` : `${this.template_name}()`;
-			return x`${node_path}.firstChild`;
+			const node_path = needs_svg_wrapper(this) ? x`@first_child(${this.template_name}())` : `${this.template_name}()`;
+			return x`@first_child(${node_path})`;
 		} else if (is_head(parent_node) && this.parent.template_name && (!this.prev || !this.prev.var)) {
-			return  x`${this.parent.template_name}().firstChild`;
+			return  x`@first_child(${this.parent.template_name}())`;
 		} else if (this.prev) {
 			const prev_var = this.prev.is_dom_node() ? this.prev.var : this.prev.anchor;
-			return x`${prev_var}.nextSibling`;
+			return x`@next_sibling(${prev_var})`;
 		} else {
-			return x`${parent_node}.firstChild`;
+			return x`@first_child(${parent_node})`;
 		}
 	}
 

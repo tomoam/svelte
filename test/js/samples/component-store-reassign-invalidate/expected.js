@@ -2,10 +2,12 @@
 import {
 	SvelteComponent,
 	detach,
+	first_child,
 	init,
 	insert,
 	listen,
 	make_renderer,
+	next_sibling,
 	noop,
 	safe_not_equal,
 	set_data,
@@ -25,11 +27,11 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			h1 = render().firstChild;
-			t0 = h1.firstChild;
+			h1 = first_child(render());
+			t0 = first_child(h1);
 			t0.data = /*$foo*/ ctx[1];
-			t1 = h1.nextSibling;
-			button = t1.nextSibling;
+			t1 = next_sibling(h1);
+			button = next_sibling(t1);
 		},
 		m(target, anchor) {
 			insert(target, h1, anchor);

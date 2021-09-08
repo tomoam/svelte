@@ -5,6 +5,7 @@ import {
 	children,
 	claim_element,
 	detach,
+	first_child,
 	init,
 	insert_hydration,
 	make_renderer,
@@ -21,8 +22,8 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			svg = replace_or_appned_node(render().firstChild, document.createElementNS("https://svelte.dev/docs#svelte_options", "svg"));
-			img = replace_or_appned_node(svg.firstChild, document.createElementNS("https://svelte.dev/docs#svelte_options", "img"), svg);
+			svg = replace_or_appned_node(first_child(render()), document.createElementNS("https://svelte.dev/docs#svelte_options", "svg"));
+			img = replace_or_appned_node(first_child(svg), document.createElementNS("https://svelte.dev/docs#svelte_options", "img"), svg);
 			this.h();
 		},
 		l(nodes) {

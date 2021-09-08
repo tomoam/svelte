@@ -4,6 +4,7 @@ import {
 	create_component,
 	destroy_component,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -26,7 +27,7 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(lazyload.$$.fragment);
-			lazyload_anchor = render().firstChild;
+			lazyload_anchor = first_child(render());
 		},
 		m(target, anchor) {
 			mount_component(lazyload, target, anchor);

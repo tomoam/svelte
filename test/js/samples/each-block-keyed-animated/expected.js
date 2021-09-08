@@ -3,6 +3,7 @@ import {
 	SvelteComponent,
 	create_animation,
 	detach,
+	first_child,
 	fix_and_destroy_block,
 	fix_position,
 	init,
@@ -34,8 +35,8 @@ function create_each_block(key_1, ctx) {
 		key: key_1,
 		first: null,
 		c() {
-			div = render().firstChild;
-			t = div.firstChild;
+			div = first_child(render());
+			t = first_child(div);
 			t.data = t_value;
 			this.first = div;
 		},
@@ -84,7 +85,7 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = render_1().firstChild;
+			each_1_anchor = first_child(render_1());
 		},
 		m(target, anchor) {
 			for (let i = 0; i < each_blocks.length; i += 1) {

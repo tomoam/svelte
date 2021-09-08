@@ -4,6 +4,7 @@ import {
 	add_render_callback,
 	add_resize_listener,
 	detach,
+	first_child,
 	init,
 	insert,
 	listen,
@@ -37,7 +38,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			video = render().firstChild;
+			video = first_child(render());
 			if (/*videoHeight*/ ctx[1] === void 0 || /*videoWidth*/ ctx[2] === void 0) add_render_callback(() => /*video_resize_handler*/ ctx[5].call(video));
 			add_render_callback(() => /*video_elementresize_handler*/ ctx[6].call(video));
 		},

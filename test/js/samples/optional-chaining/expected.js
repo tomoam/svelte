@@ -5,10 +5,12 @@ import {
 	create_component,
 	destroy_component,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
 	mount_component,
+	next_sibling,
 	replace_text,
 	safe_not_equal,
 	set_data,
@@ -59,19 +61,19 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			t0 = replace_text(render().firstChild, t0_value);
-			t1 = replace_text(t0.nextSibling, t1_value);
-			t2 = t1.nextSibling;
-			t3 = replace_text(t2.nextSibling, t3_value);
-			t4 = replace_text(t3.nextSibling, t4_value);
-			t5 = t4.nextSibling;
-			t6 = replace_text(t5.nextSibling, t6_value);
-			t7 = replace_text(t6.nextSibling, t7_value);
-			t8 = t7.nextSibling;
-			div = t8.nextSibling;
-			t9 = div.nextSibling;
+			t0 = replace_text(first_child(render()), t0_value);
+			t1 = replace_text(next_sibling(t0), t1_value);
+			t2 = next_sibling(t1);
+			t3 = replace_text(next_sibling(t2), t3_value);
+			t4 = replace_text(next_sibling(t3), t4_value);
+			t5 = next_sibling(t4);
+			t6 = replace_text(next_sibling(t5), t6_value);
+			t7 = replace_text(next_sibling(t6), t7_value);
+			t8 = next_sibling(t7);
+			div = next_sibling(t8);
+			t9 = next_sibling(div);
 			create_component(component.$$.fragment);
-			component_anchor = t9.nextSibling;
+			component_anchor = next_sibling(t9);
 			attr(div, "a", div_a_value = /*a*/ ctx[0].normal);
 			attr(div, "b", div_b_value = /*b*/ ctx[1]?.optional);
 			attr(div, "c", div_c_value = /*c*/ ctx[2]['computed']);

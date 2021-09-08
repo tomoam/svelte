@@ -4,9 +4,11 @@ import {
 	add_location,
 	detach_dev,
 	dispatch_dev,
+	first_child,
 	init,
 	insert_dev,
 	make_renderer,
+	next_sibling,
 	noop,
 	replace_text,
 	safe_not_equal,
@@ -35,18 +37,18 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
-			p = render().firstChild;
-			t0 = replace_text(p.firstChild, /*prop*/ ctx[0]);
-			t1 = t0.nextSibling;
-			t2 = replace_text(t1.nextSibling, /*realName*/ ctx[1]);
-			t3 = t2.nextSibling;
-			t4 = replace_text(t3.nextSibling, /*local*/ ctx[3]);
-			t5 = t4.nextSibling;
-			t6 = replace_text(t5.nextSibling, priv);
-			t7 = t6.nextSibling;
-			t8 = replace_text(t7.nextSibling, /*$prop*/ ctx[2]);
-			t9 = t8.nextSibling;
-			t10 = replace_text(t9.nextSibling, /*shadowedByModule*/ ctx[4]);
+			p = first_child(render());
+			t0 = replace_text(first_child(p), /*prop*/ ctx[0]);
+			t1 = next_sibling(t0);
+			t2 = replace_text(next_sibling(t1), /*realName*/ ctx[1]);
+			t3 = next_sibling(t2);
+			t4 = replace_text(next_sibling(t3), /*local*/ ctx[3]);
+			t5 = next_sibling(t4);
+			t6 = replace_text(next_sibling(t5), priv);
+			t7 = next_sibling(t6);
+			t8 = replace_text(next_sibling(t7), /*$prop*/ ctx[2]);
+			t9 = next_sibling(t8);
+			t10 = replace_text(next_sibling(t9), /*shadowedByModule*/ ctx[4]);
 			add_location(p, file, 22, 0, 430);
 		},
 		l: function claim(nodes) {

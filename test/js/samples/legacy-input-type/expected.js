@@ -2,6 +2,7 @@
 import {
 	SvelteComponent,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -17,7 +18,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			input = render().firstChild;
+			input = first_child(render());
 			set_input_type(input, "search");
 		},
 		m(target, anchor) {

@@ -4,6 +4,7 @@ import {
 	create_component,
 	destroy_component,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -25,7 +26,7 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(nested.$$.fragment);
-			nested_anchor = render().firstChild;
+			nested_anchor = first_child(render());
 		},
 		m(target, anchor) {
 			mount_component(nested, target, anchor);

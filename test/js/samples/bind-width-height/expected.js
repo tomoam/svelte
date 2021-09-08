@@ -4,6 +4,7 @@ import {
 	add_render_callback,
 	add_resize_listener,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -19,7 +20,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = render().firstChild;
+			div = first_child(render());
 			add_render_callback(() => /*div_elementresize_handler*/ ctx[2].call(div));
 		},
 		m(target, anchor) {

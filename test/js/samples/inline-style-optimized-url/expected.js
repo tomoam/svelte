@@ -2,6 +2,7 @@
 import {
 	SvelteComponent,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -17,7 +18,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = render().firstChild;
+			div = first_child(render());
 			set_style(div, "background", "url(data:image/png;base64," + /*data*/ ctx[0] + ")");
 		},
 		m(target, anchor) {

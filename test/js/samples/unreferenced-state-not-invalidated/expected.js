@@ -2,6 +2,7 @@
 import {
 	SvelteComponent,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -19,8 +20,8 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			p = render().firstChild;
-			t = p.firstChild;
+			p = first_child(render());
+			t = first_child(p);
 			t.data = /*y*/ ctx[0];
 		},
 		m(target, anchor) {

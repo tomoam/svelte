@@ -4,6 +4,7 @@ import {
 	destroy_each,
 	detach_dev,
 	dispatch_dev,
+	first_child,
 	init,
 	insert_dev,
 	make_renderer,
@@ -38,7 +39,7 @@ function create_each_block(ctx) {
 				debugger;
 			}
 
-			t = replace_text(render().firstChild, t_value);
+			t = replace_text(first_child(render()), t_value);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, t, anchor);
@@ -78,7 +79,7 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = render_1().firstChild;
+			each_1_anchor = first_child(render_1());
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");

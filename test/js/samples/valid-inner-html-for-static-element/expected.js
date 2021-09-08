@@ -3,6 +3,7 @@ import {
 	SvelteComponent,
 	attr,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -20,8 +21,8 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = render().firstChild;
-			img = div.firstChild;
+			div = first_child(render());
+			img = first_child(div);
 			if (!src_url_equal(img.src, img_src_value = "http://mdn.mozillademos.org/files/12676/star.svg")) attr(img, "src", img_src_value);
 		},
 		m(target, anchor) {

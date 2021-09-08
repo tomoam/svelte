@@ -3,6 +3,7 @@ import {
 	SvelteComponent,
 	append_styles,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -21,7 +22,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = render().firstChild;
+			div = first_child(render());
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);

@@ -110,6 +110,14 @@ export function text(data: string) {
 	return document.createTextNode(data);
 }
 
+export function first_child(node: ChildNode) {
+	return node.firstChild;
+}
+
+export function next_sibling(node: ChildNode) {
+	return node.nextSibling;
+}
+
 export function replace_text(elm: ChildNode, data: string) {
 	const textNode = text(data);
 	elm.replaceWith(textNode);

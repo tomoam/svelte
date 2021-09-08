@@ -5,6 +5,7 @@ import {
 	claim_element,
 	claim_text,
 	detach,
+	first_child,
 	init,
 	insert_hydration,
 	make_renderer,
@@ -22,9 +23,9 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			svg = render().firstChild;
-			title = svg.firstChild;
-			t = title.firstChild;
+			svg = first_child(render());
+			title = first_child(svg);
+			t = first_child(title);
 		},
 		l(nodes) {
 			this.c();

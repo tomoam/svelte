@@ -2,6 +2,7 @@
 import {
 	SvelteComponent,
 	detach,
+	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -17,7 +18,7 @@ function create_else_block(ctx) {
 
 	return {
 		c() {
-			p = render_1().firstChild;
+			p = first_child(render_1());
 		},
 		m(target, anchor) {
 			insert(target, p, anchor);
@@ -36,7 +37,7 @@ function create_if_block(ctx) {
 
 	return {
 		c() {
-			p = render().firstChild;
+			p = first_child(render());
 		},
 		m(target, anchor) {
 			insert(target, p, anchor);
@@ -62,7 +63,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			if_block_anchor = render_2().firstChild;
+			if_block_anchor = first_child(render_2());
 			if_block.c();
 		},
 		m(target, anchor) {

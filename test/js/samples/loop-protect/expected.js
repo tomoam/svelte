@@ -5,6 +5,7 @@ import {
 	binding_callbacks,
 	detach_dev,
 	dispatch_dev,
+	first_child,
 	globals,
 	init,
 	insert_dev,
@@ -24,7 +25,7 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
-			div = render().firstChild;
+			div = first_child(render());
 			add_location(div, file, 22, 0, 288);
 		},
 		l: function claim(nodes) {
