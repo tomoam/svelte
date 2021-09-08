@@ -3,11 +3,9 @@ import {
 	SvelteComponent,
 	attr,
 	detach,
-	first_child,
 	init,
 	insert,
 	make_renderer,
-	next_sibling,
 	noop,
 	safe_not_equal
 } from "svelte/internal";
@@ -22,9 +20,9 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div0 = first_child(render());
-			t = next_sibling(div0);
-			div1 = next_sibling(t);
+			div0 = render().firstChild;
+			t = div0.nextSibling;
+			div1 = t.nextSibling;
 			attr(div0, "style", /*style*/ ctx[0]);
 			attr(div1, "style", div1_style_value = "" + (/*key*/ ctx[1] + ": " + /*value*/ ctx[2]));
 		},

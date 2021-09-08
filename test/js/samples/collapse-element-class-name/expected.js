@@ -8,12 +8,10 @@ import {
 	destroy_component,
 	detach,
 	exclude_internal_props,
-	first_child,
 	init,
 	insert,
 	make_renderer,
 	mount_component,
-	next_sibling,
 	safe_not_equal,
 	transition_in,
 	transition_out
@@ -42,10 +40,10 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = first_child(render());
-			t = next_sibling(div);
+			div = render().firstChild;
+			t = div.nextSibling;
 			create_component(component.$$.fragment);
-			component_anchor = next_sibling(t);
+			component_anchor = t.nextSibling;
 			attr(div, "class", div_class_value = "button button--size--" + /*size*/ ctx[0] + " button--theme--" + /*theme*/ ctx[1] + " " + (/*$$restProps*/ ctx[2].class || ''));
 			attr(div, "style", div_style_value = "color: green; background: white; font-size: " + /*size*/ ctx[0] + "; transform: " + /*$$restProps*/ ctx[2].scale + " " + /*$$restProps*/ ctx[2].rotate + "; " + /*$$restProps*/ ctx[2].styles);
 			attr(div, "other", div_other_value = "\n\t\tbutton\n\t\tbutton--size--" + /*size*/ ctx[0] + "\n\t\tbutton--theme--" + /*theme*/ ctx[1] + "\n  \t" + (/*$$restProps*/ ctx[2].class || ''));

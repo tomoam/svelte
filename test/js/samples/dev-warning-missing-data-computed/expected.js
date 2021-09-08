@@ -4,11 +4,9 @@ import {
 	add_location,
 	detach_dev,
 	dispatch_dev,
-	first_child,
 	init,
 	insert_dev,
 	make_renderer,
-	next_sibling,
 	noop,
 	replace_text,
 	safe_not_equal,
@@ -28,10 +26,10 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
-			p = first_child(render());
-			t0 = replace_text(first_child(p), t0_value);
-			t1 = next_sibling(t0);
-			t2 = replace_text(next_sibling(t1), /*bar*/ ctx[1]);
+			p = render().firstChild;
+			t0 = replace_text(p.firstChild, t0_value);
+			t1 = t0.nextSibling;
+			t2 = replace_text(t1.nextSibling, /*bar*/ ctx[1]);
 			add_location(p, file, 7, 0, 67);
 		},
 		l: function claim(nodes) {

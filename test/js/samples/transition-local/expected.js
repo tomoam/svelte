@@ -4,7 +4,6 @@ import {
 	add_render_callback,
 	create_in_transition,
 	detach,
-	first_child,
 	init,
 	insert,
 	make_renderer,
@@ -22,7 +21,7 @@ function create_if_block(ctx) {
 
 	return {
 		c() {
-			if_block_anchor = first_child(render_1());
+			if_block_anchor = render_1().firstChild;
 			if (if_block) if_block.c();
 		},
 		m(target, anchor) {
@@ -62,7 +61,7 @@ function create_if_block_1(ctx) {
 
 	return {
 		c() {
-			div = first_child(render());
+			div = render().firstChild;
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -92,7 +91,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			if_block_anchor = first_child(render_2());
+			if_block_anchor = render_2().firstChild;
 			if (if_block) if_block.c();
 		},
 		m(target, anchor) {

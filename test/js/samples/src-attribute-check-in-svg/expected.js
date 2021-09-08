@@ -5,7 +5,6 @@ import {
 	children,
 	claim_element,
 	detach,
-	first_child,
 	init,
 	insert_hydration,
 	make_renderer,
@@ -21,8 +20,8 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			svg = first_child(render());
-			img = first_child(svg);
+			svg = render().firstChild;
+			img = svg.firstChild;
 			this.h();
 		},
 		l(nodes) {

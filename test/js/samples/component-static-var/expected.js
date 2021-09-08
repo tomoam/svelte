@@ -4,13 +4,11 @@ import {
 	create_component,
 	destroy_component,
 	detach,
-	first_child,
 	init,
 	insert,
 	listen,
 	make_renderer,
 	mount_component,
-	next_sibling,
 	safe_not_equal,
 	set_input_value,
 	transition_in,
@@ -38,12 +36,12 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			create_component(foo.$$.fragment);
-			foo_anchor = first_child(render());
-			t0 = next_sibling(foo_anchor);
+			foo_anchor = render().firstChild;
+			t0 = foo_anchor.nextSibling;
 			create_component(bar.$$.fragment);
-			bar_anchor = next_sibling(t0);
-			t1 = next_sibling(bar_anchor);
-			input = next_sibling(t1);
+			bar_anchor = t0.nextSibling;
+			t1 = bar_anchor.nextSibling;
+			input = t1.nextSibling;
 		},
 		m(target, anchor) {
 			mount_component(foo, target, anchor);

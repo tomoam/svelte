@@ -4,11 +4,9 @@ import {
 	SvelteComponent,
 	destroy_each,
 	detach,
-	first_child,
 	init,
 	insert,
 	make_renderer,
-	next_sibling,
 	noop,
 	replace_text,
 	safe_not_equal,
@@ -43,18 +41,18 @@ function create_each_block(ctx) {
 
 	return {
 		c() {
-			div = first_child(render());
-			strong = first_child(div);
-			t0 = first_child(strong);
+			div = render().firstChild;
+			strong = div.firstChild;
+			t0 = strong.firstChild;
 			t0.data = /*i*/ ctx[6];
-			t1 = next_sibling(strong);
-			span = next_sibling(t1);
-			t2 = replace_text(first_child(span), t2_value);
-			t3 = next_sibling(t2);
-			t4 = replace_text(next_sibling(t3), t4_value);
-			t6 = next_sibling(span);
+			t1 = strong.nextSibling;
+			span = t1.nextSibling;
+			t2 = replace_text(span.firstChild, t2_value);
+			t3 = t2.nextSibling;
+			t4 = replace_text(t3.nextSibling, t4_value);
+			t6 = span.nextSibling;
 			html_tag = new HtmlTag();
-			html_anchor = next_sibling(t6);
+			html_anchor = t6.nextSibling;
 			html_tag.a = null;
 		},
 		m(target, anchor) {
@@ -92,10 +90,10 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = first_child(render_1());
-			t0 = next_sibling(each_1_anchor);
-			p = next_sibling(t0);
-			t1 = first_child(p);
+			each_1_anchor = render_1().firstChild;
+			t0 = each_1_anchor.nextSibling;
+			p = t0.nextSibling;
+			t1 = p.firstChild;
 			t1.data = /*foo*/ ctx[3];
 		},
 		m(target, anchor) {

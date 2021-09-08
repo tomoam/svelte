@@ -5,11 +5,9 @@ import {
 	claim_element,
 	claim_text,
 	detach,
-	first_child,
 	init,
 	insert_hydration,
 	make_renderer,
-	next_sibling,
 	noop,
 	safe_not_equal,
 	src_url_equal
@@ -26,9 +24,9 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			img0 = first_child(render());
-			t = next_sibling(img0);
-			img1 = next_sibling(t);
+			img0 = render().firstChild;
+			t = img0.nextSibling;
+			img1 = t.nextSibling;
 			this.h();
 		},
 		l(nodes) {
