@@ -22,17 +22,20 @@ export default class MustacheTagWrapper extends Tag {
 			value => x`@set_data(${this.var}, ${value})`
 		);
 
-		const node_path = this.get_node_path(parent_node);
-		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next)) ? node_path : x`@replace_text(${node_path}, ${init})`;
+		// const node_path = this.get_node_path(parent_node);
+		const node_path = this.get_create_statement(parent_node);
+		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next)) ? node_path : b`@replace_text(${node_path}, ${init})`;
 
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || '#nodes';
 		const claim_statement = x`@claim_text(${this.var}, ${trim_parent_nodes}, ${parent_node})`;
 
-		block.add_element(
+		// block.add_element(
+		block.add_statement(
 			this.var,
 			render_statement,
 			claim_statement,
-			parent_node
+			parent_node,
+			this.id,
 		);
 
 		if (!is_text(this.node.prev) && !is_text(this.node.next)) {

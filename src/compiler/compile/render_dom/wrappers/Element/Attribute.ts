@@ -188,7 +188,8 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 
 	get_init(block: Block, value) {
 		this.last = this.should_cache && block.get_unique_name(
-			`${this.parent.var.name}_${this.name.replace(/[^a-zA-Z_$]/g, '_')}_value`
+			// `${this.parent.var.name}_${this.name.replace(/[^a-zA-Z_$]/g, '_')}_value`
+			`${this.parent.id.name}_${this.name.replace(/[^a-zA-Z_$]/g, '_')}_value`
 		);
 
 		if (this.should_cache) block.add_variable(this.last);

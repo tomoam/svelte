@@ -188,6 +188,14 @@ export default class EachBlockWrapper extends Wrapper {
 		}
 	}
 
+	set_index_number(_block: Block) {
+		// super.set_index_number(block);
+
+		this.fragment.nodes.forEach((child) => {
+			child.set_index_number(this.block);
+		});
+	}
+
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.fragment.nodes.length === 0) return;
 

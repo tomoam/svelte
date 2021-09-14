@@ -73,6 +73,8 @@ export default class Block {
 	has_update_method = false;
 	autofocus?: { element_var: string, condition_expression?: any };
 
+	sequence: number = 0;
+
 	constructor(options: BlockOptions) {
 		this.parent = options.parent;
 		this.renderer = options.renderer;
@@ -151,6 +153,10 @@ export default class Block {
 		}
 	}
 
+	get_index_number() {
+		return this.sequence++;
+	}
+
 	add_dependencies(dependencies: Set<string>) {
 		dependencies.forEach(dependency => {
 			this.dependencies.add(dependency);
@@ -185,6 +191,33 @@ export default class Block {
 		} else {
 			this.chunks.mount.push(b`@insert(#target, ${id}, #anchor);`);
 			if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(${id});`);
+		}
+	}
+
+	add_statement(
+		id: Identifier,
+		render_statement: Node[],
+		claim_statement: Node,
+		parent_node: Node,
+		tag: Identifier,
+		no_detach?: boolean
+	) {
+		// this.chunks.create.push(b`${id} = ${render_statement};`);
+		this.chunks.create.push(render_statement);
+
+		if (this.renderer.options.hydratable) {
+			this.chunks.claim.push(b`/* ${tag.name} */ ${id} = ${claim_statement || render_statement};`);
+		}
+
+		if (parent_node) {
+			if (is_head(parent_node)) {
+				this.chunks.mount.push(b`@append(${parent_node}, /* ${tag.name} */ ${id});`);
+
+				if (!no_detach) this.chunks.destroy.push(b`@detach(/* ${tag.name} */ ${id});`);
+			} 
+		} else {
+			this.chunks.mount.push(b`@insert(#target, /* ${tag.name} */ ${id}, #anchor);`);
+			if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(/* ${tag.name} */ ${id});`);
 		}
 	}
 
@@ -270,6 +303,10 @@ export default class Block {
 					? b`this.h();`
 					: this.chunks.hydrate
 			);
+
+			const map :	Map<string, { id: Identifier; init?: Node }> = new Map(); 
+			map.set("node", { id: { type: "Identifier", name: "node"}, init: x`new Array(${this.sequence})`})
+			this.variables = new Map([...map, ...this.variables]);
 
 			properties.create = x`function #create() {
 				${this.chunks.create}

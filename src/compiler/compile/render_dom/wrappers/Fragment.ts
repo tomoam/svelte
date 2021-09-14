@@ -133,6 +133,8 @@ export default class FragmentWrapper {
 
 				link(last_child, last_child = wrapper);
 			} else {
+
+
 				const Wrapper = wrappers[child.type];
 				if (!Wrapper) continue;
 
@@ -214,6 +216,12 @@ export default class FragmentWrapper {
 		});
 
 		this.nodes = this.nodes.filter(filter);
+
+		if (!parent) {
+			this.nodes.forEach((child) => {
+				child.set_index_number(block);
+			});
+		}
 
 		if (body_wrapper) {
 			this.nodes.unshift(body_wrapper);

@@ -22,6 +22,10 @@ export default class Wrapper {
 	template_name: string;
 	template: TemplateLiteral;
 
+	index_in_fragment: number;
+
+	id: Identifier;
+
 	anchor: Identifier;
 
 	constructor(
@@ -65,6 +69,26 @@ export default class Wrapper {
 		this.is_on_traverse_path = true;
 
 		if (this.parent && !this.parent.is_on_traverse_path) this.parent.mark_as_on_traverse_path();
+	}
+
+	set_index_number(block: Block) {
+		this.index_in_fragment = block.get_index_number();
+		this.id = this.var;
+		this.var = { type: "Identifier", name: `node[${this.index_in_fragment}]`};
+	}
+
+	get_create_statement(parent_node: Identifier) {
+		if (this.template_name) {
+			const node_path = needs_svg_wrapper(this) ? x`${this.template_name}().firstChild` : `${this.template_name}()`;
+			return b`${this.var} = ${node_path}.firstChild`;
+		} else if (is_head(parent_node) && this.parent.template_name && (!this.prev || !this.prev.var)) {
+			return b`${this.var} = ${this.parent.template_name}.firstChild`;
+		} else if (this.prev) {
+			// const prev_var = this.prev.is_dom_node() ? this.prev.var : this.prev.anchor;
+			return b`@next_sibling(node, ${`/* ${this.id.name} */ ${this.index_in_fragment}`}, ${this.index_in_fragment - 1 === this.prev.index_in_fragment ? null : this.prev.index_in_fragment});`
+		} else {
+			return b`@first_child(node, ${`/* ${this.id.name} */ ${this.index_in_fragment}`}, ${this.index_in_fragment - 1 === this.parent.index_in_fragment ? null : this.parent.index_in_fragment});`
+		}
 	}
 
 	get_node_path(parent_node: Identifier) {

@@ -241,11 +241,12 @@ export default class ElementWrapper extends Wrapper {
 		const nodes = parent_nodes && block.get_unique_name(`${this.var.name}_nodes`); // if we're in unclaimable territory, i.e. <head>, parent_nodes is null
 		const children = x`@children(${this.node.name === 'template' ? x`${node}.content` : node})`;
 
-		block.add_variable(node);
+		// block.add_variable(node);
 		const render_statement = this.get_render_statement(block, parent_node);
-		block.chunks.create.push(
-			b`${node} = ${render_statement};`
-		);
+		// block.chunks.create.push(
+		// 	b`${node} = ${render_statement};`
+		// );
+		block.chunks.create.push(render_statement);
 
 		if (renderer.options.hydratable) {
 			let claim_parent_nodes;
@@ -333,9 +334,18 @@ export default class ElementWrapper extends Wrapper {
 		return this.is_static_content && this.fragment.nodes.every(node => node.node.type === 'Text' || node.node.type === 'MustacheTag');
 	}
 
+	set_index_number(block: Block) {
+		super.set_index_number(block);
+
+		this.fragment.nodes.forEach((child) => {
+			child.set_index_number(block);
+		});
+	}
+
 	get_render_statement(block: Block, parent_node: Identifier) {
 
-		const render_statement = this.get_node_path(parent_node);
+		// const render_statement = this.get_node_path(parent_node);
+		const render_statement = this.get_create_statement(parent_node);
 
 		const { name, namespace } = this.node;
 		const is: AttributeWrapper = this.attributes.find(attr => attr.node.name === 'is') as any;
