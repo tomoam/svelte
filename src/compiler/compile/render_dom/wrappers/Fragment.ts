@@ -218,8 +218,9 @@ export default class FragmentWrapper {
 		this.nodes = this.nodes.filter(filter);
 
 		if (!parent) {
+			const root_node = this.nodes[0];
 			this.nodes.forEach((child) => {
-				child.set_index_number(block);
+				child.set_index_number(root_node);
 			});
 		}
 
@@ -250,6 +251,7 @@ export default class FragmentWrapper {
 
 function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
 	node.template_name = renderer.component.get_unique_name('render').name;
+	node.routes_name = renderer.component.get_unique_name('routes').name;
 	const svg_wrap = nodes.some(n => needs_svg_wrapper(n));
 	node.template = to_template_literal(
 			nodes.map(n => n.node as INode),

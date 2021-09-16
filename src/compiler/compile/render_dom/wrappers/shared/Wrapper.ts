@@ -2,7 +2,7 @@ import Renderer from '../../Renderer';
 import Block from '../../Block';
 import { b, x } from 'code-red';
 import { TemplateNode } from '../../../../interfaces';
-import { Identifier, TemplateLiteral } from 'estree';
+import { Node, Identifier, TemplateLiteral } from 'estree';
 import { is_head } from './is_head';
 import { needs_svg_wrapper } from './needs_svg_wrapper';
 
@@ -22,7 +22,14 @@ export default class Wrapper {
 	template_name: string;
 	template: TemplateLiteral;
 
-	index_in_fragment: number;
+	root_node: Wrapper;
+
+	sequence: number = 0;
+
+	routes_name: string;
+	routes: Array<number | Node> = [];
+
+	index_in_nodes: number;
 
 	id: Identifier;
 
@@ -71,23 +78,50 @@ export default class Wrapper {
 		if (this.parent && !this.parent.is_on_traverse_path) this.parent.mark_as_on_traverse_path();
 	}
 
-	set_index_number(block: Block) {
-		this.index_in_fragment = block.get_index_number();
+	set_index_number(root_node: Wrapper) {
+		this.root_node = root_node;
+		this.index_in_nodes = this.root_node.sequence++;
+
 		this.id = this.var;
-		this.var = { type: "Identifier", name: `node[${this.index_in_fragment}]`};
+		this.var = { type: "Identifier", name: `node[${this.index_in_nodes}]`};
+		if (this.prev) {
+			this.root_node.routes.push(this.prev.index_in_nodes + 1);
+		} else {
+			this.root_node.routes.push(0);
+		}
 	}
 
-	get_create_statement(parent_node: Identifier) {
+	get_create_statement(block: Block, parent_node: Identifier) {
 		if (this.template_name) {
+
+			const node_name = block.get_unique_name('node');
+			block.chunks.declarations.push(b`
+				const ${node_name} = new Array(${this.sequence});
+			`);
+
+			const statements = [];
 			const node_path = needs_svg_wrapper(this) ? x`${this.template_name}().firstChild` : `${this.template_name}()`;
-			return b`${this.var} = ${node_path}.firstChild`;
+			statements.push(b`${this.var} = ${node_path}.firstChild;`);
+
+			if (this.sequence > 1) {
+				statements.push(b`@traverse(${node_name}, 1, ${this.routes_name});`);
+			}
+
+			return statements;
 		} else if (is_head(parent_node) && this.parent.template_name && (!this.prev || !this.prev.var)) {
-			return b`${this.var} = ${this.parent.template_name}.firstChild`;
+			const statements = [];
+			statements.push(b`${this.var} = ${this.parent.template_name}.firstChild`);
+			if (this.sequence > 1) {
+				statements.push(b`@traverse(node, 1, ${this.parent.routes_name});`);
+			}
+			return statements;
 		} else if (this.prev) {
 			// const prev_var = this.prev.is_dom_node() ? this.prev.var : this.prev.anchor;
-			return b`@next_sibling(node, ${`/* ${this.id.name} */ ${this.index_in_fragment}`}, ${this.index_in_fragment - 1 === this.prev.index_in_fragment ? null : this.prev.index_in_fragment});`
+			// return b`@next_sibling(node, ${`/* ${this.id.name} */ ${this.index_in_fragment}`}, ${this.index_in_fragment - 1 === this.prev.index_in_fragment ? null : this.prev.index_in_fragment});`
+			return undefined;
 		} else {
-			return b`@first_child(node, ${`/* ${this.id.name} */ ${this.index_in_fragment}`}, ${this.index_in_fragment - 1 === this.parent.index_in_fragment ? null : this.parent.index_in_fragment});`
+			// return b`@first_child(node, ${`/* ${this.id.name} */ ${this.index_in_fragment}`}, ${this.index_in_fragment - 1 === this.parent.index_in_fragment ? null : this.parent.index_in_fragment});`
+			return undefined;
 		}
 	}
 

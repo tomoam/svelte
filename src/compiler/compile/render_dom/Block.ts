@@ -73,8 +73,6 @@ export default class Block {
 	has_update_method = false;
 	autofocus?: { element_var: string, condition_expression?: any };
 
-	sequence: number = 0;
-
 	constructor(options: BlockOptions) {
 		this.parent = options.parent;
 		this.renderer = options.renderer;
@@ -153,10 +151,6 @@ export default class Block {
 		}
 	}
 
-	get_index_number() {
-		return this.sequence++;
-	}
-
 	add_dependencies(dependencies: Set<string>) {
 		dependencies.forEach(dependency => {
 			this.dependencies.add(dependency);
@@ -203,10 +197,12 @@ export default class Block {
 		no_detach?: boolean
 	) {
 		// this.chunks.create.push(b`${id} = ${render_statement};`);
-		this.chunks.create.push(render_statement);
+		if (render_statement) {
+			this.chunks.create.push(render_statement);
+		}
 
 		if (this.renderer.options.hydratable) {
-			this.chunks.claim.push(b`/* ${tag.name} */ ${id} = ${claim_statement || render_statement};`);
+			this.chunks.claim.push(b`${`/* ${tag.name} */ ${id}`} = ${claim_statement || render_statement};`);
 		}
 
 		if (parent_node) {
@@ -304,9 +300,9 @@ export default class Block {
 					: this.chunks.hydrate
 			);
 
-			const map :	Map<string, { id: Identifier; init?: Node }> = new Map(); 
-			map.set("node", { id: { type: "Identifier", name: "node"}, init: x`new Array(${this.sequence})`})
-			this.variables = new Map([...map, ...this.variables]);
+			// const map :	Map<string, { id: Identifier; init?: Node }> = new Map(); 
+			// map.set("node", { id: { type: "Identifier", name: "node"}, init: x`new Array(${this.sequence})`})
+			// this.variables = new Map([...map, ...this.variables]);
 
 			properties.create = x`function #create() {
 				${this.chunks.create}
@@ -498,6 +494,12 @@ export default class Block {
 					${node.template}
 				)
 			`);
+
+			if (node.sequence > 1 ) {
+				body.push(b`
+					const ${node.routes_name} = [${node.routes.toString()}];
+				`);
+			}
 		});
 
 		const fn = b`function ${this.name}(${args}) {

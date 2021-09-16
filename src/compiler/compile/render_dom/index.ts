@@ -336,6 +336,12 @@ export default function dom(
 					${node.template}
 				)
 			`);
+
+			if (node.sequence > 1 ) {
+				body.push(b`
+					const ${node.routes_name} = [${node.routes.toString()}];
+				`);
+			}
 		});
 
 		body.push(b`

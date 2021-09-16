@@ -246,7 +246,9 @@ export default class ElementWrapper extends Wrapper {
 		// block.chunks.create.push(
 		// 	b`${node} = ${render_statement};`
 		// );
-		block.chunks.create.push(render_statement);
+		if (render_statement) {
+			block.chunks.create.push(render_statement);
+		}
 
 		if (renderer.options.hydratable) {
 			let claim_parent_nodes;
@@ -334,18 +336,18 @@ export default class ElementWrapper extends Wrapper {
 		return this.is_static_content && this.fragment.nodes.every(node => node.node.type === 'Text' || node.node.type === 'MustacheTag');
 	}
 
-	set_index_number(block: Block) {
-		super.set_index_number(block);
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
 
 		this.fragment.nodes.forEach((child) => {
-			child.set_index_number(block);
+			child.set_index_number(root_node);
 		});
 	}
 
 	get_render_statement(block: Block, parent_node: Identifier) {
 
 		// const render_statement = this.get_node_path(parent_node);
-		const render_statement = this.get_create_statement(parent_node);
+		const render_statement = this.get_create_statement(block, parent_node);
 
 		const { name, namespace } = this.node;
 		const is: AttributeWrapper = this.attributes.find(attr => attr.node.name === 'is') as any;

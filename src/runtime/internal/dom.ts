@@ -110,28 +110,14 @@ export function text(data: string) {
 	return document.createTextNode(data);
 }
 
-export function traversal_loop(node: ChildNode[], routes: Array<Array<number>>) {
-	for (let i = 0 ; i < node.length ; i++) {
-		traversal(node, i, routes[i][0], routes[i][1]);
+export function traverse(node: ChildNode[], routes: Array<number>, start: number, end: number = node.length) {
+	for (let i = start ; i < end ; i++) {
+		if (routes[i] === 0) {
+			node[i] = node[i - 1].firstChild;
+		} else {
+			node[i] = node[routes[i] - 1].nextSibling;
+		}
 	}
-}
-
-export function traversal(node: ChildNode[], index: number, flag: number, from_index: number = index - 1) {
-	if (flag === /* firstChild */ 0) {
-		node[index] = node[from_index].firstChild;
-	} else /* nextSibling */ {
-		node[index] = node[from_index].nextSibling;
-	}
-}
-
-export function first_child(node: ChildNode[], index: number, from_index: number = index - 1) {
-	node[index] = node[from_index].firstChild;
-	return node[index];
-}
-
-export function next_sibling(node: ChildNode[], index: number, from_index: number = index - 1) {
-	node[index] = node[from_index].nextSibling;
-	return node[index];
 }
 
 export function replace_text(elm: ChildNode, data: string) {

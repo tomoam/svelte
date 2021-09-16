@@ -188,11 +188,12 @@ export default class EachBlockWrapper extends Wrapper {
 		}
 	}
 
-	set_index_number(_block: Block) {
+	set_index_number(_root_node: Wrapper) {
 		// super.set_index_number(block);
 
+		const root_node = this.fragment.nodes[0];
 		this.fragment.nodes.forEach((child) => {
-			child.set_index_number(this.block);
+			child.set_index_number(root_node);
 		});
 	}
 
