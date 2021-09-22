@@ -232,8 +232,8 @@ function get_dom_updater(
 
 	if (node.name === 'select') {
 		return node.get_static_attribute_value('multiple') === true ?
-			b`@select_options(${element.var}, ${binding.snippet})` :
-			b`@select_option(${element.var}, ${binding.snippet})`;
+			b`@select_options(${element.get_node_name()}, ${binding.snippet})` :
+			b`@select_option(${element.get_node_name()}, ${binding.snippet})`;
 	}
 
 	if (binding.node.name === 'group') {
@@ -241,16 +241,16 @@ function get_dom_updater(
 
 		const condition = type === 'checkbox'
 			? x`~${binding.snippet}.indexOf(${element.var}.__value)`
-			: x`${element.var}.__value === ${binding.snippet}`;
+			: x`${element.get_node_name()}.__value === ${binding.snippet}`;
 
-		return b`${element.var}.checked = ${condition};`;
+		return b`${element.get_node_name()}.checked = ${condition};`;
 	}
 
 	if (binding.node.name === 'value') {
-		return b`@set_input_value(${element.var}, ${binding.snippet});`;
+		return b`@set_input_value(${element.get_node_name()}, ${binding.snippet});`;
 	}
 
-	return b`${element.var}.${binding.node.name} = ${binding.snippet};`;
+	return b`${element.get_node_name()}.${binding.node.name} = ${binding.snippet};`;
 }
 
 function get_binding_group(renderer: Renderer, value: Binding, block: Block) {

@@ -31,8 +31,7 @@ export default class Tag extends Wrapper {
 		const dependencies = this.node.expression.dynamic_dependencies();
 		let snippet = this.node.expression.manipulate(block);
 
-		// const value = this.node.should_cache && block.get_unique_name(`${this.var.name}_value`);
-		const value = this.node.should_cache && block.get_unique_name(`${this.id.name}_value`);
+		const value = this.node.should_cache && block.get_unique_name(`${this.var.name}_value`);
 		const content = this.node.should_cache ? value : snippet;
 
 		snippet = x`${snippet} + ""`;

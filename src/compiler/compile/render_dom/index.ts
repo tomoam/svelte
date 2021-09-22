@@ -339,7 +339,7 @@ export default function dom(
 
 			if (node.sequence > 1 ) {
 				body.push(b`
-					const ${node.routes_name} = [${node.routes.toString()}];
+					const ${node.routes_name} = () => [${node.routes.toString()}];
 				`);
 			}
 		});

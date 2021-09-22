@@ -19,12 +19,11 @@ export default class MustacheTagWrapper extends Tag {
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		const { init } = this.rename_this_method(
 			block,
-			value => x`@set_data(${this.var}, ${value})`
+			value => x`@set_data(${this.get_node_name()}, ${value})`
 		);
 
-		// const node_path = this.get_node_path(parent_node);
-		const node_path = this.get_create_statement(block, parent_node);
-		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next)) ? node_path : b`@replace_text(${node_path}, ${init})`;
+		const node_path = this.get_create_statement(parent_node);
+		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next)) ? node_path : b`@replace_text(${this.get_node_name()}, ${init})`;
 
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || '#nodes';
 		const claim_statement = x`@claim_text(${this.var}, ${trim_parent_nodes}, ${parent_node})`;
@@ -32,15 +31,15 @@ export default class MustacheTagWrapper extends Tag {
 		// block.add_element(
 		block.add_statement(
 			this.var,
+			this.get_node_name(),
 			render_statement,
 			claim_statement,
 			parent_node,
-			this.id,
 		);
 
 		if (!is_text(this.node.prev) && !is_text(this.node.next)) {
 			block.chunks.create.push(b`
-				${this.var}.data = ${init};	
+				${this.get_node_name()}.data = ${init};	
 			`);
 		}
 	}

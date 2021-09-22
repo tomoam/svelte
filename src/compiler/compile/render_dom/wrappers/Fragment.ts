@@ -24,6 +24,7 @@ import { Identifier } from 'estree';
 import TemplateRenderer from '../../render_ssr/Renderer';
 import { is_static_keyblock } from './shared/is_static_keyblock';
 import { needs_svg_wrapper } from './shared/needs_svg_wrapper';
+import { b } from 'code-red';
 
 const wrappers = {
 	AwaitBlock,
@@ -222,6 +223,15 @@ export default class FragmentWrapper {
 			this.nodes.forEach((child) => {
 				child.set_index_number(root_node);
 			});
+
+			root_node.node_name = block.get_unique_name('node');
+			// block.chunks.declarations.push(b`
+			// 	const ${root_node.node_name} = new Array(${root_node.sequence});
+			// `);
+			block.chunks.declarations.push(b`
+				let ${root_node.node_name} = [];
+			`);
+			// block.add_variable(root_node.node_name, x`[]`);
 		}
 
 		if (body_wrapper) {

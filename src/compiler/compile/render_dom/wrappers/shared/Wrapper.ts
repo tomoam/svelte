@@ -31,7 +31,7 @@ export default class Wrapper {
 
 	index_in_nodes: number;
 
-	id: Identifier;
+	node_name: Identifier;
 
 	anchor: Identifier;
 
@@ -82,8 +82,6 @@ export default class Wrapper {
 		this.root_node = root_node;
 		this.index_in_nodes = this.root_node.sequence++;
 
-		this.id = this.var;
-		this.var = { type: "Identifier", name: `node[${this.index_in_nodes}]`};
 		if (this.prev) {
 			this.root_node.routes.push(this.prev.index_in_nodes + 1);
 		} else {
@@ -91,36 +89,26 @@ export default class Wrapper {
 		}
 	}
 
-	get_create_statement(block: Block, parent_node: Identifier) {
+	get_node_name() {
+		return x`${this.root_node.node_name}[${this.index_in_nodes}]`;
+	}
+
+	get_create_statement(parent_node: Identifier) {
 		if (this.template_name) {
-
-			const node_name = block.get_unique_name('node');
-			block.chunks.declarations.push(b`
-				const ${node_name} = new Array(${this.sequence});
-			`);
-
 			const statements = [];
 			const node_path = needs_svg_wrapper(this) ? x`${this.template_name}().firstChild` : `${this.template_name}()`;
-			statements.push(b`${this.var} = ${node_path}.firstChild;`);
-
-			if (this.sequence > 1) {
-				statements.push(b`@traverse(${node_name}, 1, ${this.routes_name});`);
-			}
-
+			statements.push(b`@traverse(${this.node_name}, ${node_path}, ${this.sequence > 1 ? `${this.routes_name}()` : null});`);
 			return statements;
 		} else if (is_head(parent_node) && this.parent.template_name && (!this.prev || !this.prev.var)) {
 			const statements = [];
-			statements.push(b`${this.var} = ${this.parent.template_name}.firstChild`);
+			statements.push(b`${this.get_node_name()} = ${this.parent.template_name}.firstChild`);
 			if (this.sequence > 1) {
-				statements.push(b`@traverse(node, 1, ${this.parent.routes_name});`);
+				statements.push(b`@traverse(node, ${this.parent.routes_name}, ${this.index_in_nodes});`);
 			}
 			return statements;
 		} else if (this.prev) {
-			// const prev_var = this.prev.is_dom_node() ? this.prev.var : this.prev.anchor;
-			// return b`@next_sibling(node, ${`/* ${this.id.name} */ ${this.index_in_fragment}`}, ${this.index_in_fragment - 1 === this.prev.index_in_fragment ? null : this.prev.index_in_fragment});`
 			return undefined;
 		} else {
-			// return b`@first_child(node, ${`/* ${this.id.name} */ ${this.index_in_fragment}`}, ${this.index_in_fragment - 1 === this.parent.index_in_fragment ? null : this.parent.index_in_fragment});`
 			return undefined;
 		}
 	}
@@ -132,7 +120,7 @@ export default class Wrapper {
 		} else if (is_head(parent_node) && this.parent.template_name && (!this.prev || !this.prev.var)) {
 			return  x`${this.parent.template_name}().firstChild`;
 		} else if (this.prev) {
-			const prev_var = this.prev.is_dom_node() ? this.prev.var : this.prev.anchor;
+			const prev_var = this.prev.is_dom_node() ? this.prev.get_node_name() : this.prev.anchor;
 			return x`${prev_var}.nextSibling`;
 		} else {
 			return x`${parent_node}.firstChild`;
@@ -154,20 +142,20 @@ export default class Wrapper {
 				parent_node as Identifier
 			);
 		} else {
-			block.add_variable(this.anchor);
-			block.chunks.create.push(b`${this.anchor} = ${render_statement};`);
+			// block.add_variable(this.anchor);
+			// block.chunks.create.push(b`${this.anchor} = ${render_statement};`);
 		}
 
-		return needs_anchor ? this.anchor : this.next ? this.next.var : { type: 'Identifier', name: 'null' };
+		return needs_anchor ? this.anchor : this.next ? this.next.get_node_name() as Identifier : { type: 'Identifier', name: 'null' };
 	}
 
 	get_initial_anchor_node(parent_node: Identifier): Identifier {
-		return !parent_node ? { type: 'Identifier', name: '#anchor' } : !is_head(parent_node) && this.next && this.next.is_dom_node() ? this.next.var : { type: 'Identifier', name: 'null' }; 
+		return !parent_node ? { type: 'Identifier', name: '#anchor' } : !is_head(parent_node) && this.next && this.next.is_dom_node() ? this.next.get_node_name() as Identifier : { type: 'Identifier', name: 'null' }; 
 	}
 
 	get_update_mount_node(anchor: Identifier): Identifier {
 		return ((this.parent && this.parent.is_dom_node())
-			? this.parent.var
+			? this.parent.get_node_name()
 			: x`${anchor}.parentNode`) as Identifier;
 	}
 

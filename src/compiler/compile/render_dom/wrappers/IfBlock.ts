@@ -169,6 +169,24 @@ export default class IfBlockWrapper extends Wrapper {
 		renderer.blocks.push(...blocks);
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		this.branches.forEach(branch => {
+
+			const root_node = branch.fragment.nodes[0];
+			branch.fragment.nodes.forEach((child) => {
+				child.set_index_number(root_node);
+			});
+
+			root_node.node_name = branch.block.get_unique_name('node');
+
+			branch.block.chunks.declarations.push(b`
+				let ${root_node.node_name} = [];
+			`);
+		});
+	}
+
 	render(
 		block: Block,
 		parent_node: Identifier,

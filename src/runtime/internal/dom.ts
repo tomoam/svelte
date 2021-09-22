@@ -110,20 +110,25 @@ export function text(data: string) {
 	return document.createTextNode(data);
 }
 
-export function traverse(node: ChildNode[], routes: Array<number>, start: number, end: number = node.length) {
-	for (let i = start ; i < end ; i++) {
-		if (routes[i] === 0) {
-			node[i] = node[i - 1].firstChild;
-		} else {
-			node[i] = node[routes[i] - 1].nextSibling;
-		}
+export function init_each_block(get_each_context, ctx, each_value, get_key, lookup, each_blocks, create_each_block, length: number = each_blocks.length) {
+	for (let i = 0; i < length; i=(i+1)|0) {
+		let child_ctx = get_each_context(ctx, each_value, i);
+		let key = get_key(child_ctx);
+		lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
+	}
+}
+
+export function traverse(node: ChildNode[], fragment: Node, routes: Array<number> = []) {
+	node[0] = fragment.firstChild;
+	for (let i = 1 ; i < routes.length ; i=(i+1)|0) {
+		node[i] = routes[i] === 0 ? node[i - 1].firstChild : node[routes[i] - 1].nextSibling;
 	}
 }
 
 export function replace_text(elm: ChildNode, data: string) {
 	const textNode = text(data);
 	elm.replaceWith(textNode);
-	return textNode;
+	elm = textNode;
 }
 
 export function insert_blank_anchor(next_node: ChildNode, parent_node?: ChildNode) {

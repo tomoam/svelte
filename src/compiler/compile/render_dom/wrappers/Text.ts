@@ -43,20 +43,17 @@ export default class TextWrapper extends Wrapper {
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.skip) return;
 
-		// this.set_index_number(block);
-
-		// const render_statement = this.get_node_path(parent_node);
-		const render_statement = this.get_create_statement(block, parent_node);
+		const render_statement = this.get_create_statement(parent_node);
 
 		const trim_parent_nodes = parent_node && this.parent.node.children.length === 1 ? x`@trim_nodes(@children(${parent_node}))` : parent_nodes || '#nodes';
 		const claim_statement = x`@claim_text(${this.var}, ${trim_parent_nodes}, ${parent_node})`;
 
 		block.add_statement(
 			this.var,
+			this.get_node_name(),
 			render_statement,
 			claim_statement,
 			parent_node as Identifier,
-			this.id
 		);
 	}
 }

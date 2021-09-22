@@ -53,7 +53,7 @@ export default class StyleAttributeWrapper extends AttributeWrapper {
 
 					const update = b`
 						if (${condition}) {
-							@set_style(${this.parent.var}, "${prop.key}", ${value}, ${prop.important ? 1 : null});
+							@set_style(${this.parent.get_node_name()}, "${prop.key}", ${value}, ${prop.important ? 1 : null});
 						}`;
 
 					block.chunks.update.push(update);
@@ -63,7 +63,7 @@ export default class StyleAttributeWrapper extends AttributeWrapper {
 			}
 
 			block.chunks.hydrate.push(
-				b`@set_style(${this.parent.var}, "${prop.key}", ${value}, ${prop.important ? 1 : null});`
+				b`@set_style(${this.parent.get_node_name()}, "${prop.key}", ${value}, ${prop.important ? 1 : null});`
 			);
 		});
 	}

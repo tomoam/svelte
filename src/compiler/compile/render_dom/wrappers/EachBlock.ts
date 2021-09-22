@@ -189,12 +189,16 @@ export default class EachBlockWrapper extends Wrapper {
 	}
 
 	set_index_number(_root_node: Wrapper) {
-		// super.set_index_number(block);
-
 		const root_node = this.fragment.nodes[0];
 		this.fragment.nodes.forEach((child) => {
 			child.set_index_number(root_node);
 		});
+
+		root_node.node_name = this.block.get_unique_name('node');
+
+		this.block.chunks.declarations.push(b`
+			let ${root_node.node_name} = [];
+		`);
 	}
 
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
@@ -382,7 +386,8 @@ export default class EachBlockWrapper extends Wrapper {
 		block.add_variable(lookup, x`new @_Map()`);
 
 		if (this.fragment.nodes[0].is_dom_node()) {
-			this.block.first = this.fragment.nodes[0].var;
+			// this.block.first = this.fragment.nodes[0].var;
+			this.block.first = this.fragment.nodes[0].get_node_name() as Identifier;
 		} else {
 			this.block.first = this.block.get_unique_name('first');
 			this.block.add_element(
@@ -397,18 +402,18 @@ export default class EachBlockWrapper extends Wrapper {
 			const ${get_key} = #ctx => ${this.node.key.manipulate(block)};
 
 			${this.renderer.options.dev && b`@validate_each_keys(#ctx, ${this.vars.each_block_value}, ${this.vars.get_each_context}, ${get_key});`}
-			for (let #i = 0; #i < ${data_length}; #i += 1) {
-				let child_ctx = ${this.vars.get_each_context}(#ctx, ${this.vars.each_block_value}, #i);
-				let key = ${get_key}(child_ctx);
-				${lookup}.set(key, ${iterations}[#i] = ${create_each_block}(key, child_ctx));
-			}
+			@init_each_block(${this.vars.get_each_context}, #ctx, ${this.vars.each_block_value}, ${get_key}, ${lookup}, ${iterations}, ${create_each_block}, ${this.vars.fixed_length && data_length});
 		`);
 
-		block.chunks.create.push(b`
-			for (let #i = 0; #i < ${view_length}; #i += 1) {
-				${iterations}[#i].c();
-			}
-		`);
+		if (this.vars.fixed_length) {
+			block.chunks.create.push(b`
+				${iterations}.slice(0, ${view_length}).forEach((block) => block.c());
+			`);
+		} else {
+			block.chunks.create.push(b`
+				${iterations}.forEach((block) => block.c());
+			`);
+		}
 
 		if (parent_nodes && this.renderer.options.hydratable) {
 			block.chunks.claim.push(b`
@@ -418,11 +423,15 @@ export default class EachBlockWrapper extends Wrapper {
 			`);
 		}
 
-		block.chunks.mount.push(b`
-			for (let #i = 0; #i < ${view_length}; #i += 1) {
-				${iterations}[#i].m(${initial_mount_node}, ${initial_anchor_node});
-			}
-		`);
+		if (this.vars.fixed_length) {
+			block.chunks.mount.push(b`
+				${iterations}.slice(0, ${view_length}).forEach((block) => block.m(${initial_mount_node}, ${initial_anchor_node}));
+			`);
+		} else {
+			block.chunks.mount.push(b`
+				${iterations}.forEach((block) => block.m(${initial_mount_node}, ${initial_anchor_node}));
+			`);
+		}
 
 		this.update_anchor_node = this.get_or_create_anchor(block, parent_node, parent_nodes);
 		this.update_mount_node = this.get_update_mount_node(this.update_anchor_node);
@@ -461,11 +470,15 @@ export default class EachBlockWrapper extends Wrapper {
 			`);
 		}
 
-		block.chunks.destroy.push(b`
-			for (let #i = 0; #i < ${view_length}; #i += 1) {
-				${iterations}[#i].d(${parent_node ? null : 'detaching'});
-			}
-		`);
+		if (this.vars.fixed_length) {
+			block.chunks.destroy.push(b`
+				${iterations}.slice(0, ${view_length}).forEach((block) => block.d(${parent_node ? null : 'detaching'}));
+			`);
+		} else {
+			block.chunks.destroy.push(b`
+				${iterations}.forEach((block) => block.d(${parent_node ? null : 'detaching'}));
+			`);
+		}
 	}
 
 	render_unkeyed({
