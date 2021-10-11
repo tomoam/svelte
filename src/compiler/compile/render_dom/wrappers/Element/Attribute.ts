@@ -123,17 +123,17 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 
 		if (is_legacy_input_type) {
 			block.chunks.hydrate.push(
-				b`@set_input_type(${element.get_node_name()}, ${init});`
+				b`@set_input_type(${element.get_var()}, ${init});`
 			);
-			updater = b`@set_input_type(${element.get_node_name()}, ${should_cache ? this.last : value});`;
+			updater = b`@set_input_type(${element.get_var()}, ${should_cache ? this.last : value});`;
 		} else if (this.is_select_value_attribute) {
 			// annoying special case
 			const is_multiple_select = element.node.get_static_attribute_value('multiple');
 
 			if (is_multiple_select) {
-				updater = b`@select_options(${element.get_node_name()}, ${value});`;
+				updater = b`@select_options(${element.get_var()}, ${value});`;
 			} else {
-				updater = b`@select_option(${element.get_node_name()}, ${value});`;
+				updater = b`@select_option(${element.get_var()}, ${value});`;
 			}
 
 			block.chunks.mount.push(b`
@@ -141,25 +141,25 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 			`);
 		} else if (this.is_src) {
 			block.chunks.hydrate.push(
-				b`if (!@src_url_equal(${element.get_node_name()}.src, ${init})) ${method}(${element.get_node_name()}, "${name}", ${this.last});`
+				b`if (!@src_url_equal(${element.get_var()}.src, ${init})) ${method}(${element.get_var()}, "${name}", ${this.last});`
 			);
-			updater = b`${method}(${element.get_node_name()}, "${name}", ${should_cache ? this.last : value});`;
+			updater = b`${method}(${element.get_var()}, "${name}", ${should_cache ? this.last : value});`;
 		} else if (property_name) {
 			block.chunks.hydrate.push(
-				b`${element.get_node_name()}.${property_name} = ${init};`
+				b`${element.get_var()}.${property_name} = ${init};`
 			);
 			updater = block.renderer.options.dev
-				? b`@prop_dev(${element.get_node_name()}, "${property_name}", ${should_cache ? this.last : value});`
-				: b`${element.get_node_name()}.${property_name} = ${should_cache ? this.last : value};`;
+				? b`@prop_dev(${element.get_var()}, "${property_name}", ${should_cache ? this.last : value});`
+				: b`${element.get_var()}.${property_name} = ${should_cache ? this.last : value};`;
 		} else if (!this.node.is_static || (element.node.namespace === namespaces.foreign)) {
 			block.chunks.hydrate.push(
-				b`${method}(${element.get_node_name()}, "${name}", ${init});`
+				b`${method}(${element.get_var()}, "${name}", ${init});`
 			);
-			updater = b`${method}(${element.get_node_name()}, "${name}", ${should_cache ? this.last : value});`;
+			updater = b`${method}(${element.get_var()}, "${name}", ${should_cache ? this.last : value});`;
 		}
 
 		if (is_indirectly_bound_value) {
-			const update_value = b`${element.get_node_name()}.value = ${element.get_node_name()}.__value;`;
+			const update_value = b`${element.get_var()}.value = ${element.get_var()}.__value;`;
 			block.chunks.hydrate.push(update_value);
 
 			updater = b`
@@ -181,7 +181,7 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 		if (name === 'autofocus') {
 			block.autofocus = {
 				// element_var: element.var,
-				element_var: element.get_node_name() as Identifier,
+				element_var: element.get_var() as Identifier,
 				condition_expression: this.node.is_true ? undefined : value
 			};
 		}
@@ -206,7 +206,7 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 
 		if (should_cache) {
 			condition = this.is_src
-				? x`${condition} && (!@src_url_equal(${element.get_node_name()}.src, (${last} = ${value})))`
+				? x`${condition} && (!@src_url_equal(${element.get_var()}.src, (${last} = ${value})))`
 				: x`${condition} && (${last} !== (${last} = ${value}))`;
 		}
 
@@ -214,7 +214,7 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 			const type = element.node.get_static_attribute_value('type');
 
 			if (type === null || type === '' || type === 'text' || type === 'email' || type === 'password') {
-				condition = x`${condition} && ${element.get_node_name()}.${property_name} !== ${should_cache ? last : value}`;
+				condition = x`${condition} && ${element.get_var()}.${property_name} !== ${should_cache ? last : value}`;
 			}
 		}
 

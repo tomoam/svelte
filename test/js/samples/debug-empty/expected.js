@@ -11,39 +11,38 @@ import {
 	replace_text,
 	safe_not_equal,
 	set_data_dev,
+	traverse,
 	validate_slots
 } from "svelte/internal";
 
 const file = undefined;
 const render = make_renderer(`<h1>Hello <!>!</h1>`);
+const node_path = () => [0,0,2,3,0];
 
 function create_fragment(ctx) {
-	let h1;
-	let t0;
-	let t1;
+	let render_nodes = [];
 
 	const block = {
 		c: function create() {
-			h1 = render().firstChild;
-			t0 = h1.firstChild;
-			t1 = replace_text(t0.nextSibling, /*name*/ ctx[0]);
+			traverse(render(), render_nodes, node_path());
+			render_nodes[2] = replace_text(render_nodes[2], /*name*/ ctx[0]);
 			debugger;
-			add_location(h1, file, 4, 0, 38);
+			add_location(render_nodes[0], file, 4, 0, 38);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, h1, anchor);
+			insert_dev(target, render_nodes[0], anchor); /* h1 */
 		},
 		p: function update(ctx, [dirty]) {
-			if (dirty & /*name*/ 1) set_data_dev(t1, /*name*/ ctx[0]);
+			if (dirty & /*name*/ 1) set_data_dev(render_nodes[2], /*name*/ ctx[0]);
 			debugger;
 		},
 		i: noop,
 		o: noop,
 		d: function destroy(detaching) {
-			if (detaching) detach_dev(h1);
+			if (detaching) detach_dev(render_nodes[0]); /* h1 */
 		}
 	};
 

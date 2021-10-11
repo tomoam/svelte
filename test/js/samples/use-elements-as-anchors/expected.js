@@ -6,24 +6,25 @@ import {
 	insert,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render_4 = make_renderer(`<p>a</p>`);
 
 // (10:1) {#if a}
 function create_if_block_4(ctx) {
-	let p;
+	let render_nodes = [];
 
 	return {
 		c() {
-			p = render_4().firstChild;
+			traverse(render_4(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 		},
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 		}
 	};
 }
@@ -32,17 +33,17 @@ const render_3 = make_renderer(`<p>b</p>`);
 
 // (16:1) {#if b}
 function create_if_block_3(ctx) {
-	let p;
+	let render_nodes = [];
 
 	return {
 		c() {
-			p = render_3().firstChild;
+			traverse(render_3(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 		},
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 		}
 	};
 }
@@ -51,17 +52,17 @@ const render_2 = make_renderer(`<p>c</p>`);
 
 // (20:1) {#if c}
 function create_if_block_2(ctx) {
-	let p;
+	let render_nodes = [];
 
 	return {
 		c() {
-			p = render_2().firstChild;
+			traverse(render_2(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 		},
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 		}
 	};
 }
@@ -70,17 +71,17 @@ const render_1 = make_renderer(`<p>d</p>`);
 
 // (26:1) {#if d}
 function create_if_block_1(ctx) {
-	let p;
+	let render_nodes = [];
 
 	return {
 		c() {
-			p = render_1().firstChild;
+			traverse(render_1(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 		},
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 		}
 	};
 }
@@ -89,38 +90,26 @@ const render = make_renderer(`<p>e</p>`);
 
 // (33:0) {#if e}
 function create_if_block(ctx) {
-	let p;
+	let render_nodes = [];
 
 	return {
 		c() {
-			p = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 		},
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 		}
 	};
 }
 
 const render_5 = make_renderer(`<div><!> <p>this can be used as an anchor</p> <!> <!> <p>so can this</p> <!></div> <!>`);
+const node_path_5 = () => [0,0,2,3,4,5,6,7,8,9,10,11,1,13];
 
 function create_fragment(ctx) {
-	let div;
-	let if_block0_anchor;
-	let t0;
-	let p0;
-	let t2;
-	let if_block1_anchor;
-	let t3;
-	let if_block2_anchor;
-	let t4;
-	let p1;
-	let t6;
-	let if_block3_anchor;
-	let t7;
-	let if_block4_anchor;
+	let render_nodes = [];
 	let if_block0 = /*a*/ ctx[0] && create_if_block_4(ctx);
 	let if_block1 = /*b*/ ctx[1] && create_if_block_3(ctx);
 	let if_block2 = /*c*/ ctx[2] && create_if_block_2(ctx);
@@ -129,35 +118,22 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = render_5().firstChild;
-			if_block0_anchor = div.firstChild;
+			traverse(render_5(), render_nodes, node_path_5());
 			if (if_block0) if_block0.c();
-			t0 = if_block0_anchor.nextSibling;
-			p0 = t0.nextSibling;
-			t2 = p0.nextSibling;
-			if_block1_anchor = t2.nextSibling;
 			if (if_block1) if_block1.c();
-			t3 = if_block1_anchor.nextSibling;
-			if_block2_anchor = t3.nextSibling;
 			if (if_block2) if_block2.c();
-			t4 = if_block2_anchor.nextSibling;
-			p1 = t4.nextSibling;
-			t6 = p1.nextSibling;
-			if_block3_anchor = t6.nextSibling;
 			if (if_block3) if_block3.c();
-			t7 = div.nextSibling;
-			if_block4_anchor = t7.nextSibling;
 			if (if_block4) if_block4.c();
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
-			if (if_block0) if_block0.m(div, t0);
-			if (if_block1) if_block1.m(div, t3);
-			if (if_block2) if_block2.m(div, t4);
-			if (if_block3) if_block3.m(div, null);
-			insert(target, t7, anchor);
-			if (if_block4) if_block4.m(target, anchor);
-			insert(target, if_block4_anchor, anchor);
+			insert(target, render_nodes[0], anchor); /* div */
+			if (if_block0) if_block0.m(render_nodes[0], render_nodes[1]);
+			if (if_block1) if_block1.m(render_nodes[0], render_nodes[5]);
+			if (if_block2) if_block2.m(render_nodes[0], render_nodes[7]);
+			if (if_block3) if_block3.m(render_nodes[0], render_nodes[11]);
+			insert(target, render_nodes[12], anchor); /* t7 */
+			insert(target, render_nodes[13], anchor); /* if_block4 */
+			if (if_block4) if_block4.m(target, render_nodes[13]);
 		},
 		p(ctx, [dirty]) {
 			if (/*a*/ ctx[0]) {
@@ -166,7 +142,7 @@ function create_fragment(ctx) {
 				} else {
 					if_block0 = create_if_block_4(ctx);
 					if_block0.c();
-					if_block0.m(div, t0);
+					if_block0.m(render_nodes[0], render_nodes[1]);
 				}
 			} else if (if_block0) {
 				if_block0.d(1);
@@ -179,7 +155,7 @@ function create_fragment(ctx) {
 				} else {
 					if_block1 = create_if_block_3(ctx);
 					if_block1.c();
-					if_block1.m(div, t3);
+					if_block1.m(render_nodes[0], render_nodes[5]);
 				}
 			} else if (if_block1) {
 				if_block1.d(1);
@@ -192,7 +168,7 @@ function create_fragment(ctx) {
 				} else {
 					if_block2 = create_if_block_2(ctx);
 					if_block2.c();
-					if_block2.m(div, t4);
+					if_block2.m(render_nodes[0], render_nodes[7]);
 				}
 			} else if (if_block2) {
 				if_block2.d(1);
@@ -205,7 +181,7 @@ function create_fragment(ctx) {
 				} else {
 					if_block3 = create_if_block_1(ctx);
 					if_block3.c();
-					if_block3.m(div, null);
+					if_block3.m(render_nodes[0], render_nodes[11]);
 				}
 			} else if (if_block3) {
 				if_block3.d(1);
@@ -218,7 +194,7 @@ function create_fragment(ctx) {
 				} else {
 					if_block4 = create_if_block(ctx);
 					if_block4.c();
-					if_block4.m(if_block4_anchor.parentNode, if_block4_anchor);
+					if_block4.m(render_nodes[13].parentNode, render_nodes[13]);
 				}
 			} else if (if_block4) {
 				if_block4.d(1);
@@ -228,13 +204,13 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 			if (if_block0) if_block0.d();
 			if (if_block1) if_block1.d();
 			if (if_block2) if_block2.d();
 			if (if_block3) if_block3.d();
-			if (detaching) detach(t7);
-			if (detaching) detach(if_block4_anchor);
+			if (detaching) detach(render_nodes[12]); /* t7 */
+			if (detaching) detach(render_nodes[13]); /* if_block4 */
 			if (if_block4) if_block4.d(detaching);
 		}
 	};

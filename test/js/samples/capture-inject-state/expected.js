@@ -12,58 +12,44 @@ import {
 	safe_not_equal,
 	set_data_dev,
 	subscribe,
+	traverse,
 	validate_slots,
 	validate_store
 } from "svelte/internal";
 
 const file = undefined;
 const render = make_renderer(`<p><!> <!> <!> <!> <!> <!></p>`);
+const node_path = () => [0,0,2,3,4,5,6,7,8,9,10,11];
 
 function create_fragment(ctx) {
-	let p;
-	let t0;
-	let t1;
-	let t2;
-	let t3;
-	let t4;
-	let t5;
-	let t6;
-	let t7;
-	let t8;
-	let t9;
-	let t10;
+	let render_nodes = [];
 
 	const block = {
 		c: function create() {
-			p = render().firstChild;
-			t0 = replace_text(p.firstChild, /*prop*/ ctx[0]);
-			t1 = t0.nextSibling;
-			t2 = replace_text(t1.nextSibling, /*realName*/ ctx[1]);
-			t3 = t2.nextSibling;
-			t4 = replace_text(t3.nextSibling, /*local*/ ctx[3]);
-			t5 = t4.nextSibling;
-			t6 = replace_text(t5.nextSibling, priv);
-			t7 = t6.nextSibling;
-			t8 = replace_text(t7.nextSibling, /*$prop*/ ctx[2]);
-			t9 = t8.nextSibling;
-			t10 = replace_text(t9.nextSibling, /*shadowedByModule*/ ctx[4]);
-			add_location(p, file, 22, 0, 430);
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1] = replace_text(render_nodes[1], /*prop*/ ctx[0]);
+			render_nodes[3] = replace_text(render_nodes[3], /*realName*/ ctx[1]);
+			render_nodes[5] = replace_text(render_nodes[5], /*local*/ ctx[3]);
+			render_nodes[7] = replace_text(render_nodes[7], priv);
+			render_nodes[9] = replace_text(render_nodes[9], /*$prop*/ ctx[2]);
+			render_nodes[11] = replace_text(render_nodes[11], /*shadowedByModule*/ ctx[4]);
+			add_location(render_nodes[0], file, 22, 0, 430);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, p, anchor);
+			insert_dev(target, render_nodes[0], anchor); /* p */
 		},
 		p: function update(ctx, [dirty]) {
-			if (dirty & /*prop*/ 1) set_data_dev(t0, /*prop*/ ctx[0]);
-			if (dirty & /*realName*/ 2) set_data_dev(t2, /*realName*/ ctx[1]);
-			if (dirty & /*$prop*/ 4) set_data_dev(t8, /*$prop*/ ctx[2]);
+			if (dirty & /*prop*/ 1) set_data_dev(render_nodes[1], /*prop*/ ctx[0]);
+			if (dirty & /*realName*/ 2) set_data_dev(render_nodes[3], /*realName*/ ctx[1]);
+			if (dirty & /*$prop*/ 4) set_data_dev(render_nodes[9], /*$prop*/ ctx[2]);
 		},
 		i: noop,
 		o: noop,
 		d: function destroy(detaching) {
-			if (detaching) detach_dev(p);
+			if (detaching) detach_dev(render_nodes[0]); /* p */
 		}
 	};
 

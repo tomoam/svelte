@@ -70,7 +70,7 @@ export function insert_hydration(target: NodeEx, node: NodeEx, anchor?: NodeEx) 
 }
 
 export function detach(node: Node) {
-	node.parentNode.removeChild(node);
+	if (node.parentNode) node.parentNode.removeChild(node);
 }
 
 export function destroy_each(iterations, detaching) {
@@ -111,24 +111,139 @@ export function text(data: string) {
 }
 
 export function init_each_block(get_each_context, ctx, each_value, get_key, lookup, each_blocks, create_each_block, length: number = each_blocks.length) {
-	for (let i = 0; i < length; i=(i+1)|0) {
+	for (let i = 0; i < length; i = i + 1) {
 		let child_ctx = get_each_context(ctx, each_value, i);
 		let key = get_key(child_ctx);
 		lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
 	}
 }
 
-export function traverse(node: ChildNode[], fragment: Node, routes: Array<number> = []) {
+export function traverse(fragment: Node, node: ChildNode[], routes: Array<number> = []) {
 	node[0] = fragment.firstChild;
-	for (let i = 1 ; i < routes.length ; i=(i+1)|0) {
+	for (let i = 1 ; i < routes.length ; i = i + 1) {
 		node[i] = routes[i] === 0 ? node[i - 1].firstChild : node[routes[i] - 1].nextSibling;
+	}
+}
+
+export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[], routes: Array<number>, claim_func_map: Map<number, Function>, start: number, first_parent_node?) {
+	let point = start;
+	const point_stack = [];
+
+	let parent_node = first_parent_node || ssr_nodes[0].parentNode;
+	const parent_node_stack = [];
+
+	let nodes = ssr_nodes;
+	const nodes_stack = [];
+	nodes_stack.push(nodes);
+	for (let i = start ; i < routes.length ; i = i + 1) {
+
+		let ssr_node;
+
+		if (i === 0) {
+			if (claim_func_map.has(i)) {
+				const func = claim_func_map.get(i);
+				func(nodes);
+			}
+			ssr_node = nodes[0];
+		} else if (routes[i] === 0) {
+			const base_node = render_nodes[i - 1];
+
+			parent_node_stack.push(parent_node);
+			parent_node = base_node;
+	
+			point_stack.push(i - 1);
+			point = i;
+
+			nodes_stack.push(nodes);
+			nodes = children(base_node as Element);
+			if (claim_func_map.has(i)) {
+				const func = claim_func_map.get(i);
+				func(nodes);
+				ssr_node = nodes[0];
+			} else {
+				ssr_node = base_node.firstChild
+			}
+
+		} else {
+			while (point !== routes[i] - 1) {
+				point = point_stack.pop();
+				nodes = nodes_stack.pop();
+				parent_node = parent_node_stack.pop();
+			}
+			point = i;
+			const base_node = render_nodes[routes[i] - 1];
+
+			if (claim_func_map.has(i)) {
+				const func = claim_func_map.get(i);
+				func(nodes);
+				ssr_node = nodes[0];
+			} else {
+				ssr_node = base_node.nextSibling;
+			}
+		}
+
+		const render_node = render_nodes[i];
+
+		if (render_node.nodeType === 1) {
+			if (!ssr_node) {
+				ssr_node = render_node
+				insert_hydration(parent_node, ssr_node);
+			} else {
+				nodes[0] && nodes.shift();
+	
+				const remove = [];
+				for (let j = 0; j < ssr_node.attributes.length; j++) {
+					const attribute = ssr_node.attributes[j];
+					if (!((render_node as Element).attributes[attribute.name])) {
+						remove.push(attribute.name);
+					}
+				}
+				remove.forEach(v => ssr_node.removeAttribute(v));
+			}
+
+		} else if (render_node.nodeType === 3) {
+
+			if (!ssr_node) {
+				ssr_node = text((render_node as Text).data);
+				insert_hydration(parent_node, ssr_node);
+			} else if (ssr_node.nodeType === 3 && (render_node as Text).data !== ssr_node.data) {
+				if (ssr_node.data.startsWith((render_node as Text).data)) {
+					if ((render_node as Text).data.length < ssr_node.data.length) {
+						nodes[0] = ssr_node.splitText((render_node as Text).data.length);
+					} else if ((render_node as Text).data.length === ssr_node.data.length) {
+						nodes[0] && nodes.shift();
+					} else {
+						ssr_node.data = (render_node as Text).data;
+						nodes[0] && nodes.shift();
+					}
+				} else {
+					ssr_node.data = (render_node as Text).data;
+					nodes[0] && nodes.shift();
+				}
+
+			} else if (ssr_node.nodeType === 1 || ssr_node.nodeType === 8) {
+				insert_hydration(parent_node, render_node, ssr_node);
+				ssr_node = render_node;
+			} else {
+				nodes[0] && nodes.shift();
+			}
+		} else if (render_node.nodeType === 8) {
+			if (!ssr_node || ssr_node.nodeType !== 8 || (ssr_node as Comment).textContent !== '') {
+				insert_hydration(parent_node, render_node, ssr_node);
+				ssr_node = render_node;
+			} else {
+				nodes[0] && nodes.shift();
+			}
+		}
+
+		render_nodes[i] = ssr_node;
 	}
 }
 
 export function replace_text(elm: ChildNode, data: string) {
 	const textNode = text(data);
 	elm.replaceWith(textNode);
-	elm = textNode;
+	return textNode;
 }
 
 export function insert_blank_anchor(next_node: ChildNode, parent_node?: ChildNode) {
@@ -136,16 +251,6 @@ export function insert_blank_anchor(next_node: ChildNode, parent_node?: ChildNod
 	const anchor = empty();
 	insert_hydration(target, anchor, next_node);
 	return anchor;
-}
-
-export function replace_or_appned_node(old_node: ChildNode, new_node: ChildNode, parent_node?: ChildNode) {
-	if (!new_node) return old_node;
-	if (old_node) {
-		old_node.replaceWith(new_node);
-	} else if (parent_node) {
-		parent_node.appendChild(new_node);
-	}
-	return new_node;
 }
 
 function create_template(html) {
@@ -430,6 +535,7 @@ export function claim_html_tag(nodes) {
 	const start_index = find_comment(nodes, 'HTML_TAG_START', 0);
 	const end_index = find_comment(nodes, 'HTML_TAG_END', start_index);
 	if (start_index === end_index) {
+		nodes.splice(start_index, start_index + 1);
 		return new HtmlTagHydration();
 	}
 

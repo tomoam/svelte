@@ -17,21 +17,22 @@ export default class Wrapper {
 	var: Identifier;
 	can_use_innerhtml: boolean;
 	is_static_content: boolean;
-	is_on_traverse_path: boolean;
+	is_on_traverse_path: boolean = false;
 
 	template_name: string;
 	template: TemplateLiteral;
 
 	root_node: Wrapper;
+	render_nodes_var: Identifier;
+	render_nodes: Wrapper[] = [];
 
-	sequence: number = 0;
+	index_in_render_nodes_sequence: number = 0;
+	index_in_render_nodes: number;
 
-	routes_name: string;
-	routes: Array<number | Node> = [];
+	node_path_var_name: string;
+	node_path: Array<number | Node> = [];
 
-	index_in_nodes: number;
-
-	node_name: Identifier;
+	claim_func_map_var: Identifier;
 
 	anchor: Identifier;
 
@@ -54,8 +55,8 @@ export default class Wrapper {
 			}
 		});
 
-		this.can_use_innerhtml = !renderer.options.hydratable;
-		this.is_static_content = !renderer.options.hydratable;
+		this.can_use_innerhtml = true;
+		this.is_static_content = true;
 
 		this.is_on_traverse_path = !parent || is_head(parent.var) || !parent.is_dom_node();
 
@@ -76,38 +77,74 @@ export default class Wrapper {
 		this.is_on_traverse_path = true;
 
 		if (this.parent && !this.parent.is_on_traverse_path) this.parent.mark_as_on_traverse_path();
+
+		if (this.prev && !this.prev.is_on_traverse_path) this.prev.mark_as_on_traverse_path();
 	}
 
 	set_index_number(root_node: Wrapper) {
-		this.root_node = root_node;
-		this.index_in_nodes = this.root_node.sequence++;
-
-		if (this.prev) {
-			this.root_node.routes.push(this.prev.index_in_nodes + 1);
-		} else {
-			this.root_node.routes.push(0);
+		if (!this.is_on_traverse_path) {
+			return;
 		}
+
+		this.root_node = root_node;
+		this.index_in_render_nodes = this.root_node.index_in_render_nodes_sequence++;
+
+		if (this.prev && this.prev.index_in_render_nodes !== undefined) {
+			this.root_node.node_path.push(this.prev.index_in_render_nodes + 1);
+		} else {
+			this.root_node.node_path.push(0);
+		}
+
+		this.root_node.render_nodes.push(this);
 	}
 
-	get_node_name() {
-		return x`${this.root_node.node_name}[${this.index_in_nodes}]`;
+	get_render_nodes_var() {
+		return this.root_node.render_nodes_var;
+	}
+
+	get_var() {
+		return x`${this.root_node.render_nodes_var}[${this.index_in_render_nodes}]`;
+	}
+
+	get_claim_func_map_var(block: Block) {
+		if (!this.root_node.claim_func_map_var) {
+			this.root_node.claim_func_map_var = block.get_unique_name('claim_func_var');
+		}
+		return this.root_node.claim_func_map_var;
+	}
+
+	is_end_node() {
+		return this.index_in_render_nodes === (this.root_node.index_in_render_nodes_sequence - 1);
 	}
 
 	get_create_statement(parent_node: Identifier) {
 		if (this.template_name) {
 			const statements = [];
 			const node_path = needs_svg_wrapper(this) ? x`${this.template_name}().firstChild` : `${this.template_name}()`;
-			statements.push(b`@traverse(${this.node_name}, ${node_path}, ${this.sequence > 1 ? `${this.routes_name}()` : null});`);
+			statements.push(b`@traverse(${node_path}, ${this.render_nodes_var}, ${this.index_in_render_nodes_sequence > 1 ? `${this.node_path_var_name}()` : null});`);
 			return statements;
 		} else if (is_head(parent_node) && this.parent.template_name && (!this.prev || !this.prev.var)) {
 			const statements = [];
-			statements.push(b`${this.get_node_name()} = ${this.parent.template_name}.firstChild`);
-			if (this.sequence > 1) {
-				statements.push(b`@traverse(node, ${this.parent.routes_name}, ${this.index_in_nodes});`);
+			statements.push(b`@traverse(${this.parent.template_name}(), ${this.parent.render_nodes_var}, ${this.parent.index_in_render_nodes_sequence > 1 ? `${this.parent.node_path_var_name}()` : null});`);
+			return statements;
+		} else {
+			return undefined;
+		}
+	}
+
+	get_claim_statement(block: Block, parent_node: Identifier, parent_nodes) {
+		if (this.is_end_node()) {
+			const statements = [];
+			if (is_head(parent_node) && this.parent.template_name) {
+				statements.push(b`
+					@traverse_claim(${parent_nodes}, ${this.get_render_nodes_var()}, ${this.root_node.node_path_var_name}(), ${this.get_claim_func_map_var(block)}, 0, @_document.head);
+				`);
+			} else {
+				statements.push(b`
+					@traverse_claim(#nodes, ${this.get_render_nodes_var()}, ${this.root_node.node_path_var_name}(), ${this.get_claim_func_map_var(block)}, 0);
+				`);
 			}
 			return statements;
-		} else if (this.prev) {
-			return undefined;
 		} else {
 			return undefined;
 		}
@@ -120,7 +157,7 @@ export default class Wrapper {
 		} else if (is_head(parent_node) && this.parent.template_name && (!this.prev || !this.prev.var)) {
 			return  x`${this.parent.template_name}().firstChild`;
 		} else if (this.prev) {
-			const prev_var = this.prev.is_dom_node() ? this.prev.get_node_name() : this.prev.anchor;
+			const prev_var = this.prev.is_dom_node() ? this.prev.get_var() : this.prev.anchor;
 			return x`${prev_var}.nextSibling`;
 		} else {
 			return x`${parent_node}.firstChild`;
@@ -146,16 +183,16 @@ export default class Wrapper {
 			// block.chunks.create.push(b`${this.anchor} = ${render_statement};`);
 		}
 
-		return needs_anchor ? this.anchor : this.next ? this.next.get_node_name() as Identifier : { type: 'Identifier', name: 'null' };
+		return needs_anchor ? this.anchor : this.next ? this.next.get_var() as Identifier : { type: 'Identifier', name: 'null' };
 	}
 
 	get_initial_anchor_node(parent_node: Identifier): Identifier {
-		return !parent_node ? { type: 'Identifier', name: '#anchor' } : !is_head(parent_node) && this.next && this.next.is_dom_node() ? this.next.get_node_name() as Identifier : { type: 'Identifier', name: 'null' }; 
+		return !parent_node ? { type: 'Identifier', name: '#anchor' } : !is_head(parent_node) && this.next && this.next.is_dom_node() ? this.next.get_var() as Identifier : { type: 'Identifier', name: 'null' }; 
 	}
 
 	get_update_mount_node(anchor: Identifier): Identifier {
 		return ((this.parent && this.parent.is_dom_node())
-			? this.parent.get_node_name()
+			? this.parent.get_var()
 			: x`${anchor}.parentNode`) as Identifier;
 	}
 

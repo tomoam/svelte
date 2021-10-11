@@ -9,50 +9,47 @@ import {
 	noop,
 	replace_text,
 	safe_not_equal,
-	set_data
+	set_data,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<input> <h1><!>!</h1>`);
+const node_path = () => [0,1,2,0,4];
 
 function create_fragment(ctx) {
-	let input;
-	let t0;
-	let h1;
-	let t1;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			input = render().firstChild;
-			t0 = input.nextSibling;
-			h1 = t0.nextSibling;
-			t1 = replace_text(h1.firstChild, /*name*/ ctx[0]);
-			input.value = /*name*/ ctx[0];
+			traverse(render(), render_nodes, node_path());
+			render_nodes[3] = replace_text(render_nodes[3], /*name*/ ctx[0]);
+			render_nodes[0].value = /*name*/ ctx[0];
 		},
 		m(target, anchor) {
-			insert(target, input, anchor);
-			insert(target, t0, anchor);
-			insert(target, h1, anchor);
+			insert(target, render_nodes[0], anchor); /* input */
+			insert(target, render_nodes[1], anchor); /* t0 */
+			insert(target, render_nodes[2], anchor); /* h1 */
 
 			if (!mounted) {
-				dispose = listen(input, "input", /*onInput*/ ctx[1]);
+				dispose = listen(render_nodes[0], "input", /*onInput*/ ctx[1]);
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*name*/ 1 && input.value !== /*name*/ ctx[0]) {
-				input.value = /*name*/ ctx[0];
+			if (dirty & /*name*/ 1 && render_nodes[0].value !== /*name*/ ctx[0]) {
+				render_nodes[0].value = /*name*/ ctx[0];
 			}
 
-			if (dirty & /*name*/ 1) set_data(t1, /*name*/ ctx[0]);
+			if (dirty & /*name*/ 1) set_data(render_nodes[3], /*name*/ ctx[0]);
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(input);
-			if (detaching) detach(t0);
-			if (detaching) detach(h1);
+			if (detaching) detach(render_nodes[0]); /* input */
+			if (detaching) detach(render_nodes[1]); /* t0 */
+			if (detaching) detach(render_nodes[2]); /* h1 */
 			mounted = false;
 			dispose();
 		}

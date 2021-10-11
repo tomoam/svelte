@@ -7,38 +7,39 @@ import {
 	listen,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<details><summary>summary</summary>content</details>`);
 
 function create_fragment(ctx) {
-	let details;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			details = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, details, anchor);
-			details.open = /*open*/ ctx[0];
+			insert(target, render_nodes[0], anchor); /* details */
+			render_nodes[0].open = /*open*/ ctx[0];
 
 			if (!mounted) {
-				dispose = listen(details, "toggle", /*details_toggle_handler*/ ctx[1]);
+				dispose = listen(render_nodes[0], "toggle", /*details_toggle_handler*/ ctx[1]);
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*open*/ 1) {
-				details.open = /*open*/ ctx[0];
+				render_nodes[0].open = /*open*/ ctx[0];
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(details);
+			if (detaching) detach(render_nodes[0]); /* details */
 			mounted = false;
 			dispose();
 		}

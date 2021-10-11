@@ -9,7 +9,7 @@ export default function(node: SlotTemplate | Element | InlineComponent, renderer
 	slot_scopes: Map<any, any>;
 }) {
 	const parent_inline_component = node.parent as InlineComponent;
-	const children = remove_whitespace_children(node instanceof SlotTemplate ? node.children : [node], node.next);
+	const children = remove_whitespace_children(node instanceof SlotTemplate ? node.children : [node], node.next, options.preserveComments);
 
 	renderer.push();
 	renderer.render(children, options);
@@ -40,6 +40,6 @@ function is_empty_template_literal(template_literal) {
 	return (
 		template_literal.expressions.length === 0 &&
 		template_literal.quasis.length === 1 &&
-		template_literal.quasis[0].value.raw === ''
+		(template_literal.quasis[0].value.raw === '' || template_literal.quasis[0].value.raw === '<!---->')
 	);
 }

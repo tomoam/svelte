@@ -10,49 +10,35 @@ import {
 	noop,
 	run_all,
 	safe_not_equal,
-	set_data
+	set_data,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<p><button>set handler 1</button> <button>set handler 2</button></p> <p> </p> <button>click</button>`);
+const node_path = () => [0,0,2,3,1,5,0,6,8];
 
 function create_fragment(ctx) {
-	let p0;
-	let button0;
-	let t1;
-	let button1;
-	let t3;
-	let p1;
-	let t4;
-	let t5;
-	let button2;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			p0 = render().firstChild;
-			button0 = p0.firstChild;
-			t1 = button0.nextSibling;
-			button1 = t1.nextSibling;
-			t3 = p0.nextSibling;
-			p1 = t3.nextSibling;
-			t4 = p1.firstChild;
-			t4.data = /*number*/ ctx[1];
-			t5 = p1.nextSibling;
-			button2 = t5.nextSibling;
+			traverse(render(), render_nodes, node_path());
+			render_nodes[6].data = /*number*/ ctx[1];
 		},
 		m(target, anchor) {
-			insert(target, p0, anchor);
-			insert(target, t3, anchor);
-			insert(target, p1, anchor);
-			insert(target, t5, anchor);
-			insert(target, button2, anchor);
+			insert(target, render_nodes[0], anchor); /* p0 */
+			insert(target, render_nodes[4], anchor); /* t3 */
+			insert(target, render_nodes[5], anchor); /* p1 */
+			insert(target, render_nodes[7], anchor); /* t5 */
+			insert(target, render_nodes[8], anchor); /* button2 */
 
 			if (!mounted) {
 				dispose = [
-					listen(button0, "click", /*updateHandler1*/ ctx[2]),
-					listen(button1, "click", /*updateHandler2*/ ctx[3]),
-					listen(button2, "click", function () {
+					listen(render_nodes[1], "click", /*updateHandler1*/ ctx[2]),
+					listen(render_nodes[3], "click", /*updateHandler2*/ ctx[3]),
+					listen(render_nodes[8], "click", function () {
 						if (is_function(/*clickHandler*/ ctx[0])) /*clickHandler*/ ctx[0].apply(this, arguments);
 					})
 				];
@@ -62,16 +48,16 @@ function create_fragment(ctx) {
 		},
 		p(new_ctx, [dirty]) {
 			ctx = new_ctx;
-			if (dirty & /*number*/ 2) set_data(t4, /*number*/ ctx[1]);
+			if (dirty & /*number*/ 2) set_data(render_nodes[6], /*number*/ ctx[1]);
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(p0);
-			if (detaching) detach(t3);
-			if (detaching) detach(p1);
-			if (detaching) detach(t5);
-			if (detaching) detach(button2);
+			if (detaching) detach(render_nodes[0]); /* p0 */
+			if (detaching) detach(render_nodes[4]); /* t3 */
+			if (detaching) detach(render_nodes[5]); /* p1 */
+			if (detaching) detach(render_nodes[7]); /* t5 */
+			if (detaching) detach(render_nodes[8]); /* button2 */
 			mounted = false;
 			run_all(dispose);
 		}

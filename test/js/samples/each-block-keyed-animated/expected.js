@@ -11,6 +11,7 @@ import {
 	noop,
 	safe_not_equal,
 	set_data,
+	traverse,
 	update_keyed_each
 } from "svelte/internal";
 
@@ -21,12 +22,12 @@ function get_each_context(ctx, list, i) {
 }
 
 const render = make_renderer(`<div> </div>`);
+const node_path = () => [0,0];
 
 // (19:0) {#each things as thing (thing.id)}
 function create_each_block(key_1, ctx) {
-	let div;
+	let render_nodes = [];
 	let t_value = /*thing*/ ctx[1].name + "";
-	let t;
 	let rect;
 	let stop_animation = noop;
 
@@ -34,31 +35,30 @@ function create_each_block(key_1, ctx) {
 		key: key_1,
 		first: null,
 		c() {
-			div = render().firstChild;
-			t = div.firstChild;
-			t.data = t_value;
-			this.first = div;
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1].data = t_value;
+			this.first = render_nodes[0];
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert(target, render_nodes[0], anchor); /* div */
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*things*/ 1 && t_value !== (t_value = /*thing*/ ctx[1].name + "")) set_data(t, t_value);
+			if (dirty & /*things*/ 1 && t_value !== (t_value = /*thing*/ ctx[1].name + "")) set_data(render_nodes[1], t_value);
 		},
 		r() {
-			rect = div.getBoundingClientRect();
+			rect = render_nodes[0].getBoundingClientRect();
 		},
 		f() {
-			fix_position(div);
+			fix_position(render_nodes[0]);
 			stop_animation();
 		},
 		a() {
 			stop_animation();
-			stop_animation = create_animation(div, rect, foo, {});
+			stop_animation = create_animation(render_nodes[0], rect, foo, {});
 		},
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 		}
 	};
 }
@@ -66,9 +66,9 @@ function create_each_block(key_1, ctx) {
 const render_1 = make_renderer(`<!>`);
 
 function create_fragment(ctx) {
+	let render_nodes = [];
 	let each_blocks = [];
 	let each_1_lookup = new Map();
-	let each_1_anchor;
 	let each_value = /*things*/ ctx[0];
 	const get_key = ctx => /*thing*/ ctx[1].id;
 
@@ -80,35 +80,29 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
+			traverse(render_1(), render_nodes);
+
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
-
-			each_1_anchor = render_1().firstChild;
 		},
 		m(target, anchor) {
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(target, anchor);
-			}
-
-			insert(target, each_1_anchor, anchor);
+			insert(target, render_nodes[0], anchor); /* each_1 */
+			each_blocks.forEach(block => block.m(target, render_nodes[0]));
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*things*/ 1) {
 				each_value = /*things*/ ctx[0];
 				for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].r();
-				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, each_1_anchor.parentNode, fix_and_destroy_block, create_each_block, each_1_anchor, get_each_context);
+				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, render_nodes[0].parentNode, fix_and_destroy_block, create_each_block, render_nodes[0], get_each_context);
 				for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].a();
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(each_1_anchor);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].d(detaching);
-			}
+			if (detaching) detach(render_nodes[0]); /* each_1 */
+			each_blocks.forEach(block => block.d(detaching));
 		}
 	};
 }

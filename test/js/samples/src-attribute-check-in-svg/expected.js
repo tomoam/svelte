@@ -2,51 +2,49 @@
 import {
 	SvelteComponent,
 	attr,
-	children,
-	claim_element,
 	detach,
 	init,
 	insert_hydration,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse,
+	traverse_claim
 } from "svelte/internal";
 
 const render = make_renderer(`<svg><img alt="potato"></svg>`);
+const node_path = () => [0,0];
 
 function create_fragment(ctx) {
-	let svg;
-	let img;
+	let render_nodes = [];
 
 	return {
 		c() {
-			svg = render().firstChild;
-			img = svg.firstChild;
+			traverse(render(), render_nodes, node_path());
 			this.h();
 		},
 		l(nodes) {
 			this.c();
 			if (!nodes.length) return;
-			svg = claim_element(svg, nodes);
-			var svg_nodes = children(svg);
-			img = claim_element(img, svg_nodes, svg);
+			const claim_func_var = new Map();
+			traverse_claim(nodes, render_nodes, node_path(), claim_func_var, 0);
 			this.h();
 		},
 		h() {
-			attr(img, "src", /*url*/ ctx[0]);
+			attr(render_nodes[1], "src", /*url*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert_hydration(target, svg, anchor);
+			insert_hydration(target, render_nodes[0], anchor); /* svg */
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*url*/ 1) {
-				attr(img, "src", /*url*/ ctx[0]);
+				attr(render_nodes[1], "src", /*url*/ ctx[0]);
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(svg);
+			if (detaching) detach(render_nodes[0]); /* svg */
 		}
 	};
 }

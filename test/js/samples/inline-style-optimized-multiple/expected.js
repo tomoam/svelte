@@ -7,36 +7,37 @@ import {
 	make_renderer,
 	noop,
 	safe_not_equal,
-	set_style
+	set_style,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<div></div>`);
 
 function create_fragment(ctx) {
-	let div;
+	let render_nodes = [];
 
 	return {
 		c() {
-			div = render().firstChild;
-			set_style(div, "color", /*color*/ ctx[0]);
-			set_style(div, "transform", "translate(" + /*x*/ ctx[1] + "px," + /*y*/ ctx[2] + "px)");
+			traverse(render(), render_nodes);
+			set_style(render_nodes[0], "color", /*color*/ ctx[0]);
+			set_style(render_nodes[0], "transform", "translate(" + /*x*/ ctx[1] + "px," + /*y*/ ctx[2] + "px)");
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert(target, render_nodes[0], anchor); /* div */
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*color*/ 1) {
-				set_style(div, "color", /*color*/ ctx[0]);
+				set_style(render_nodes[0], "color", /*color*/ ctx[0]);
 			}
 
 			if (dirty & /*x, y*/ 6) {
-				set_style(div, "transform", "translate(" + /*x*/ ctx[1] + "px," + /*y*/ ctx[2] + "px)");
+				set_style(render_nodes[0], "transform", "translate(" + /*x*/ ctx[1] + "px," + /*y*/ ctx[2] + "px)");
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 		}
 	};
 }

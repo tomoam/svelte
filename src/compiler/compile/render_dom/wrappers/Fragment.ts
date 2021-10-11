@@ -1,6 +1,7 @@
 import Wrapper from './shared/Wrapper';
 import AwaitBlock from './AwaitBlock';
 import Body from './Body';
+import Comment from './Comment';
 import DebugTag from './DebugTag';
 import EachBlock from './EachBlock';
 import Element from './Element/index';
@@ -24,12 +25,12 @@ import { Identifier } from 'estree';
 import TemplateRenderer from '../../render_ssr/Renderer';
 import { is_static_keyblock } from './shared/is_static_keyblock';
 import { needs_svg_wrapper } from './shared/needs_svg_wrapper';
-import { b } from 'code-red';
+import { set_index_number_to_fragment } from './shared/set_index_number';
 
 const wrappers = {
 	AwaitBlock,
 	Body,
-	Comment: null,
+	Comment,
 	DebugTag,
 	EachBlock,
 	Element,
@@ -135,9 +136,12 @@ export default class FragmentWrapper {
 				link(last_child, last_child = wrapper);
 			} else {
 
-
 				const Wrapper = wrappers[child.type];
 				if (!Wrapper) continue;
+
+				if (!renderer.options.preserveComments && child.type === 'Comment') {
+					continue;
+				}
 
 				if (is_static_keyblock(child)) {
 					nodes.splice(i, 1, ...child.children);
@@ -145,7 +149,7 @@ export default class FragmentWrapper {
 					continue;
 				}
 
-				if (child.type === 'Element' && child.name === 'noscript') {
+				if (!renderer.options.hydratable && child.type === 'Element' && child.name === 'noscript') {
 					continue;
 				}
 
@@ -201,7 +205,7 @@ export default class FragmentWrapper {
 		}
 
 		const filter = (node: Wrapper) => {
-			if ((node.prev && !node.prev.is_dom_node()) || check_traverse_path(node)) {
+			if (check_traverse_path(node, parent)) {
 				return true;
 			}
 			return false;
@@ -218,20 +222,8 @@ export default class FragmentWrapper {
 
 		this.nodes = this.nodes.filter(filter);
 
-		if (!parent) {
-			const root_node = this.nodes[0];
-			this.nodes.forEach((child) => {
-				child.set_index_number(root_node);
-			});
-
-			root_node.node_name = block.get_unique_name('node');
-			// block.chunks.declarations.push(b`
-			// 	const ${root_node.node_name} = new Array(${root_node.sequence});
-			// `);
-			block.chunks.declarations.push(b`
-				let ${root_node.node_name} = [];
-			`);
-			// block.add_variable(root_node.node_name, x`[]`);
+		if (!parent && this.nodes.length) {
+			set_index_number_to_fragment(this.nodes[0], this.nodes, renderer, block);
 		}
 
 		if (body_wrapper) {
@@ -241,6 +233,9 @@ export default class FragmentWrapper {
 
 		head_wrappers.forEach((head_node) => {
 			const frag_nodes = head_node.fragment.nodes.filter(n => n.node.type !== 'Title');
+
+			set_index_number_to_fragment(head_node, frag_nodes, renderer, block);
+
 			if (frag_nodes.length) create_template(head_node, frag_nodes, renderer);
 			this.nodes.unshift(head_node);
 			link(last_child, last_child = head_node);
@@ -261,7 +256,8 @@ export default class FragmentWrapper {
 
 function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
 	node.template_name = renderer.component.get_unique_name('render').name;
-	node.routes_name = renderer.component.get_unique_name('routes').name;
+	node.node_path_var_name = renderer.component.get_unique_name('node_path').name;
+	// node.top_nodes_index_var = renderer.component.get_unique_name('top_nodes_idx');
 	const svg_wrap = nodes.some(n => needs_svg_wrapper(n));
 	node.template = to_template_literal(
 			nodes.map(n => n.node as INode),
@@ -293,15 +289,17 @@ function to_template_literal(nodes: INode[], name, locate, options, svg_wrap?: b
 	return templateLiteral;
 }
 
-function check_traverse_path(node: Wrapper) {
+function check_traverse_path(node: Wrapper, parent: Wrapper) {
 
-	if (!node.is_static_content || node.is_on_traverse_path) {
-		if (!node.is_on_traverse_path) node.mark_as_on_traverse_path();
+	if (!parent || (node.prev && (!node.prev.is_dom_node() || node.prev.node.type === 'MustacheTag')) || !node.is_static_content || node.is_on_traverse_path) {
+		if (!node.is_on_traverse_path || (node.prev && !node.prev.is_on_traverse_path)) {
+			node.mark_as_on_traverse_path();
+		}
 		return true;
 	}
 
 	if (node.next) {
-		return check_traverse_path(node.next);
+		return check_traverse_path(node.next, parent);
 	}
 
 	return false;

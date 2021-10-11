@@ -14,20 +14,20 @@ import {
 	mount_component,
 	safe_not_equal,
 	transition_in,
-	transition_out
+	transition_out,
+	traverse
 } from "svelte/internal";
 
 import Component from "./Component.svelte";
 const render = make_renderer(`<div></div> <!>`);
+const node_path = () => [0,1,2];
 
 function create_fragment(ctx) {
-	let div;
+	let render_nodes = [];
 	let div_class_value;
 	let div_style_value;
 	let div_other_value;
-	let t;
 	let component;
-	let component_anchor;
 	let current;
 
 	component = new Component({
@@ -40,32 +40,30 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			div = render().firstChild;
-			t = div.nextSibling;
+			traverse(render(), render_nodes, node_path());
 			create_component(component.$$.fragment);
-			component_anchor = t.nextSibling;
-			attr(div, "class", div_class_value = "button button--size--" + /*size*/ ctx[0] + " button--theme--" + /*theme*/ ctx[1] + " " + (/*$$restProps*/ ctx[2].class || ''));
-			attr(div, "style", div_style_value = "color: green; background: white; font-size: " + /*size*/ ctx[0] + "; transform: " + /*$$restProps*/ ctx[2].scale + " " + /*$$restProps*/ ctx[2].rotate + "; " + /*$$restProps*/ ctx[2].styles);
-			attr(div, "other", div_other_value = "\n\t\tbutton\n\t\tbutton--size--" + /*size*/ ctx[0] + "\n\t\tbutton--theme--" + /*theme*/ ctx[1] + "\n  \t" + (/*$$restProps*/ ctx[2].class || ''));
+			attr(render_nodes[0], "class", div_class_value = "button button--size--" + /*size*/ ctx[0] + " button--theme--" + /*theme*/ ctx[1] + " " + (/*$$restProps*/ ctx[2].class || ''));
+			attr(render_nodes[0], "style", div_style_value = "color: green; background: white; font-size: " + /*size*/ ctx[0] + "; transform: " + /*$$restProps*/ ctx[2].scale + " " + /*$$restProps*/ ctx[2].rotate + "; " + /*$$restProps*/ ctx[2].styles);
+			attr(render_nodes[0], "other", div_other_value = "\n\t\tbutton\n\t\tbutton--size--" + /*size*/ ctx[0] + "\n\t\tbutton--theme--" + /*theme*/ ctx[1] + "\n  \t" + (/*$$restProps*/ ctx[2].class || ''));
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
-			insert(target, t, anchor);
-			mount_component(component, target, anchor);
-			insert(target, component_anchor, anchor);
+			insert(target, render_nodes[0], anchor); /* div */
+			insert(target, render_nodes[1], anchor); /* t */
+			insert(target, render_nodes[2], anchor); /* component */
+			mount_component(component, target, render_nodes[2]);
 			current = true;
 		},
 		p(ctx, [dirty]) {
 			if (!current || dirty & /*size, theme, $$restProps*/ 7 && div_class_value !== (div_class_value = "button button--size--" + /*size*/ ctx[0] + " button--theme--" + /*theme*/ ctx[1] + " " + (/*$$restProps*/ ctx[2].class || ''))) {
-				attr(div, "class", div_class_value);
+				attr(render_nodes[0], "class", div_class_value);
 			}
 
 			if (!current || dirty & /*size, $$restProps*/ 5 && div_style_value !== (div_style_value = "color: green; background: white; font-size: " + /*size*/ ctx[0] + "; transform: " + /*$$restProps*/ ctx[2].scale + " " + /*$$restProps*/ ctx[2].rotate + "; " + /*$$restProps*/ ctx[2].styles)) {
-				attr(div, "style", div_style_value);
+				attr(render_nodes[0], "style", div_style_value);
 			}
 
 			if (!current || dirty & /*size, theme, $$restProps*/ 7 && div_other_value !== (div_other_value = "\n\t\tbutton\n\t\tbutton--size--" + /*size*/ ctx[0] + "\n\t\tbutton--theme--" + /*theme*/ ctx[1] + "\n  \t" + (/*$$restProps*/ ctx[2].class || ''))) {
-				attr(div, "other", div_other_value);
+				attr(render_nodes[0], "other", div_other_value);
 			}
 
 			const component_changes = {};
@@ -84,9 +82,9 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(div);
-			if (detaching) detach(t);
-			if (detaching) detach(component_anchor);
+			if (detaching) detach(render_nodes[0]); /* div */
+			if (detaching) detach(render_nodes[1]); /* t */
+			if (detaching) detach(render_nodes[2]); /* component */
 			destroy_component(component, detaching);
 		}
 	};

@@ -7,39 +7,37 @@ import {
 	make_renderer,
 	noop,
 	safe_not_equal,
-	select_option
+	select_option,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<select><option value="1">1</option><option value="2">2</option></select>`);
+const node_path = () => [0,0,2];
 
 function create_fragment(ctx) {
-	let select;
-	let option0;
-	let option1;
+	let render_nodes = [];
 
 	return {
 		c() {
-			select = render().firstChild;
-			option0 = select.firstChild;
-			option1 = option0.nextSibling;
-			option0.__value = "1";
-			option0.value = option0.__value;
-			option1.__value = "2";
-			option1.value = option1.__value;
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1].__value = "1";
+			render_nodes[1].value = render_nodes[1].__value;
+			render_nodes[2].__value = "2";
+			render_nodes[2].value = render_nodes[2].__value;
 		},
 		m(target, anchor) {
-			insert(target, select, anchor);
-			select_option(select, /*current*/ ctx[0]);
+			insert(target, render_nodes[0], anchor); /* select */
+			select_option(render_nodes[0], /*current*/ ctx[0]);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*current*/ 1) {
-				select_option(select, /*current*/ ctx[0]);
+				select_option(render_nodes[0], /*current*/ ctx[0]);
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(select);
+			if (detaching) detach(render_nodes[0]); /* select */
 		}
 	};
 }

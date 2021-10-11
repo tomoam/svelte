@@ -8,7 +8,8 @@ import {
 	make_renderer,
 	noop,
 	safe_not_equal,
-	set_data
+	set_data,
+	traverse
 } from "svelte/internal";
 
 function add_css(target) {
@@ -16,27 +17,26 @@ function add_css(target) {
 }
 
 const render = make_renderer(`<p class="svelte-1a7i8ec"> </p>`);
+const node_path = () => [0,0];
 
 function create_fragment(ctx) {
-	let p;
-	let t;
+	let render_nodes = [];
 
 	return {
 		c() {
-			p = render().firstChild;
-			t = p.firstChild;
-			t.data = /*foo*/ ctx[0];
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1].data = /*foo*/ ctx[0];
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*foo*/ 1) set_data(t, /*foo*/ ctx[0]);
+			if (dirty & /*foo*/ 1) set_data(render_nodes[1], /*foo*/ ctx[0]);
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 		}
 	};
 }

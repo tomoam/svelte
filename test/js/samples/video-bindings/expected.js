@@ -11,13 +11,14 @@ import {
 	noop,
 	raf,
 	run_all,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<video></video>`);
 
 function create_fragment(ctx) {
-	let video;
+	let render_nodes = [];
 	let video_updating = false;
 	let video_animationframe;
 	let video_resize_listener;
@@ -27,28 +28,29 @@ function create_fragment(ctx) {
 	function video_timeupdate_handler() {
 		cancelAnimationFrame(video_animationframe);
 
-		if (!video.paused) {
+		if (!render_nodes[0].paused) {
 			video_animationframe = raf(video_timeupdate_handler);
 			video_updating = true;
 		}
 
-		/*video_timeupdate_handler*/ ctx[4].call(video);
+		/*video_timeupdate_handler*/ ctx[4].call(render_nodes[0]);
 	}
 
 	return {
 		c() {
-			video = render().firstChild;
-			if (/*videoHeight*/ ctx[1] === void 0 || /*videoWidth*/ ctx[2] === void 0) add_render_callback(() => /*video_resize_handler*/ ctx[5].call(video));
-			add_render_callback(() => /*video_elementresize_handler*/ ctx[6].call(video));
+			traverse(render(), render_nodes);
+			if (/*videoHeight*/ ctx[1] === void 0 || /*videoWidth*/ ctx[2] === void 0) add_render_callback(() => /*video_resize_handler*/ ctx[5].call(render_nodes[0]));
+			add_render_callback(() => /*video_elementresize_handler*/ ctx[6].call(render_nodes[0]));
+			add_render_callback(() => /*video_elementresize_handler*/ ctx[6].call(render_nodes[0]));
 		},
 		m(target, anchor) {
-			insert(target, video, anchor);
-			video_resize_listener = add_resize_listener(video, /*video_elementresize_handler*/ ctx[6].bind(video));
+			insert(target, render_nodes[0], anchor); /* video */
+			video_resize_listener = add_resize_listener(render_nodes[0], /*video_elementresize_handler*/ ctx[6].bind(render_nodes[0]));
 
 			if (!mounted) {
 				dispose = [
-					listen(video, "timeupdate", video_timeupdate_handler),
-					listen(video, "resize", /*video_resize_handler*/ ctx[5])
+					listen(render_nodes[0], "timeupdate", video_timeupdate_handler),
+					listen(render_nodes[0], "resize", /*video_resize_handler*/ ctx[5])
 				];
 
 				mounted = true;
@@ -56,7 +58,7 @@ function create_fragment(ctx) {
 		},
 		p(ctx, [dirty]) {
 			if (!video_updating && dirty & /*currentTime*/ 1 && !isNaN(/*currentTime*/ ctx[0])) {
-				video.currentTime = /*currentTime*/ ctx[0];
+				render_nodes[0].currentTime = /*currentTime*/ ctx[0];
 			}
 
 			video_updating = false;
@@ -64,7 +66,7 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(video);
+			if (detaching) detach(render_nodes[0]); /* video */
 			video_resize_listener();
 			mounted = false;
 			run_all(dispose);

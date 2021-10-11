@@ -6,30 +6,30 @@ import {
 	init,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<meta name="twitter:creator" content="@sveltejs"><meta name="twitter:title" content="Svelte">`);
+const node_path = () => [0,1];
 
 function create_fragment(ctx) {
-	let meta0;
-	let meta1;
+	let render_nodes = [];
 
 	return {
 		c() {
-			meta0 = render().firstChild;
-			meta1 = meta0.nextSibling;
+			traverse(render(), render_nodes, node_path());
 		},
 		m(target, anchor) {
-			append(document.head, meta0);
-			append(document.head, meta1);
+			append(document.head, render_nodes[0]);
+			append(document.head, render_nodes[1]);
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			detach(meta0);
-			detach(meta1);
+			detach(render_nodes[0]); /* meta0 */
+			detach(render_nodes[1]); /* meta1 */
 		}
 	};
 }

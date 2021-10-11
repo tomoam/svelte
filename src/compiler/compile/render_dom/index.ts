@@ -337,9 +337,9 @@ export default function dom(
 				)
 			`);
 
-			if (node.sequence > 1 ) {
+			if (node.index_in_render_nodes_sequence > 1 || (node.index_in_render_nodes_sequence > 0 && renderer.options.hydratable)) {
 				body.push(b`
-					const ${node.routes_name} = () => [${node.routes.toString()}];
+					const ${node.node_path_var_name} = () => [${node.node_path.toString()}];
 				`);
 			}
 		});

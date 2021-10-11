@@ -11,25 +11,26 @@ import {
 	noop,
 	not_equal,
 	transition_in,
-	transition_out
+	transition_out,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<!>`);
 
 function create_fragment(ctx) {
+	let render_nodes = [];
 	let nested;
-	let nested_anchor;
 	let current;
 	nested = new /*Nested*/ ctx[0]({ props: { foo: "bar" } });
 
 	return {
 		c() {
+			traverse(render(), render_nodes);
 			create_component(nested.$$.fragment);
-			nested_anchor = render().firstChild;
 		},
 		m(target, anchor) {
-			mount_component(nested, target, anchor);
-			insert(target, nested_anchor, anchor);
+			insert(target, render_nodes[0], anchor); /* nested */
+			mount_component(nested, target, render_nodes[0]);
 			current = true;
 		},
 		p: noop,
@@ -43,7 +44,7 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(nested_anchor);
+			if (detaching) detach(render_nodes[0]); /* nested */
 			destroy_component(nested, detaching);
 		}
 	};

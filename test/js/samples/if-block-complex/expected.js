@@ -6,24 +6,25 @@ import {
 	insert,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<div class="divider"></div>`);
 
 // (7:0) {#if (item.divider && item.divider.includes(1))}
 function create_if_block(ctx) {
-	let div;
+	let render_nodes = [];
 
 	return {
 		c() {
-			div = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert(target, render_nodes[0], anchor); /* div */
 		},
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 		}
 	};
 }
@@ -31,24 +32,24 @@ function create_if_block(ctx) {
 const render_1 = make_renderer(`<!>`);
 
 function create_fragment(ctx) {
+	let render_nodes = [];
 	let show_if = /*item*/ ctx[0].divider && /*item*/ ctx[0].divider.includes(1);
-	let if_block_anchor;
 	let if_block = show_if && create_if_block(ctx);
 
 	return {
 		c() {
-			if_block_anchor = render_1().firstChild;
+			traverse(render_1(), render_nodes);
 			if (if_block) if_block.c();
 		},
 		m(target, anchor) {
-			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
+			insert(target, render_nodes[0], anchor); /* if_block */
+			if (if_block) if_block.m(target, render_nodes[0]);
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(if_block_anchor);
+			if (detaching) detach(render_nodes[0]); /* if_block */
 			if (if_block) if_block.d(detaching);
 		}
 	};

@@ -7,32 +7,32 @@ import {
 	make_renderer,
 	noop,
 	safe_not_equal,
-	set_data
+	set_data,
+	traverse
 } from "svelte/internal";
 
 import { onMount } from 'svelte';
 const render = make_renderer(`<p> </p>`);
+const node_path = () => [0,0];
 
 function create_fragment(ctx) {
-	let p;
-	let t;
+	let render_nodes = [];
 
 	return {
 		c() {
-			p = render().firstChild;
-			t = p.firstChild;
-			t.data = /*y*/ ctx[0];
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1].data = /*y*/ ctx[0];
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*y*/ 1) set_data(t, /*y*/ ctx[0]);
+			if (dirty & /*y*/ 1) set_data(render_nodes[1], /*y*/ ctx[0]);
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 		}
 	};
 }

@@ -11,9 +11,11 @@ import { is_reserved_keyword } from '../../utils/reserved_keywords';
 import is_dynamic from './shared/is_dynamic';
 import { Identifier, ObjectExpression } from 'estree';
 import create_debugging_comment from './shared/create_debugging_comment';
+import { set_index_number_to_fragment } from './shared/set_index_number';
 
 export default class SlotWrapper extends Wrapper {
 	node: Slot;
+	block: Block;
 	fragment: FragmentWrapper;
 	fallback: Block | null = null;
 	slot_block: Block;
@@ -60,6 +62,14 @@ export default class SlotWrapper extends Wrapper {
 		// we have to do this, just in case
 		block.add_intro();
 		block.add_outro();
+
+		this.block = block;
+	}
+
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.fallback || this.block);
 	}
 
 	render(
@@ -138,21 +148,28 @@ export default class SlotWrapper extends Wrapper {
 			b`if (${slot_or_fallback}) ${slot_or_fallback}.c();`
 		);
 
-		this.anchor = block.get_unique_name(`${this.var.name}_anchor`);
-		const render_statement = this.get_node_path(parent_node);
-
-		block.add_variable(this.anchor);
-		block.chunks.create.push(b`${this.anchor} = ${render_statement};`);
+		block.add_statement(
+			this.var,
+			this.get_var(),
+			this.get_create_statement(parent_node),
+			undefined,
+			parent_node,
+		);
 
 		if (renderer.options.hydratable) {
 			block.chunks.claim.push(
-				b`if (${slot_or_fallback}) ${slot_or_fallback}.l(${parent_nodes});`
+				b`if (${slot_or_fallback}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${slot_or_fallback}.l(n));`
 			);
+
+			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+			if (claim_statement) {
+				block.chunks.claim.push(claim_statement);
+			}
 		}
 
 		block.chunks.mount.push(b`
 			if (${slot_or_fallback}) {
-				${slot_or_fallback}.m(${parent_node || '#target'}, ${this.get_initial_anchor_node(parent_node)});
+				${slot_or_fallback}.m(${parent_node || '#target'}, ${this.get_var()});
 			}
 		`);
 

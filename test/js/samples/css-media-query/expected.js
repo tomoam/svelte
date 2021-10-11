@@ -7,7 +7,8 @@ import {
 	insert,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 function add_css(target) {
@@ -17,20 +18,20 @@ function add_css(target) {
 const render = make_renderer(`<div class="svelte-1slhpfn"></div>`);
 
 function create_fragment(ctx) {
-	let div;
+	let render_nodes = [];
 
 	return {
 		c() {
-			div = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert(target, render_nodes[0], anchor); /* div */
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 		}
 	};
 }

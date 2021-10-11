@@ -2,6 +2,7 @@ import Renderer, { RenderOptions } from '../Renderer';
 import EachBlock from '../../nodes/EachBlock';
 import { x } from 'code-red';
 import { is_static_only } from './utils/is_static_only';
+import remove_whitespace_children from './utils/remove_whitespace_children';
 
 export default function(node: EachBlock, renderer: Renderer, options: RenderOptions) {
 	if (is_static_only(options)) {
@@ -13,18 +14,19 @@ export default function(node: EachBlock, renderer: Renderer, options: RenderOpti
 	if (node.index) args.push({ type: 'Identifier', name: node.index });
 
 	renderer.push();
-	renderer.render(node.children, options);
+	renderer.render(remove_whitespace_children(node.children, node.next, options.preserveComments), options);
 	const result = renderer.pop();
 
 	const consequent = x`@each(${node.expression.node}, (${args}) => ${result})`;
 
 	if (node.else) {
 		renderer.push();
-		renderer.render(node.else.children, options);
+		renderer.render(remove_whitespace_children(node.else.children, node.next, options.preserveComments), options);
 		const alternate = renderer.pop();
 
 		renderer.add_expression(x`${node.expression.node}.length ? ${consequent} : ${alternate}`);
 	} else {
 		renderer.add_expression(consequent);
 	}
+	// renderer.add_string('<!---->');
 }

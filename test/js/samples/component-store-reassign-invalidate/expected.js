@@ -9,47 +9,43 @@ import {
 	noop,
 	safe_not_equal,
 	set_data,
-	subscribe
+	subscribe,
+	traverse
 } from "svelte/internal";
 
 import { writable } from 'svelte/store';
 const render = make_renderer(`<h1> </h1> <button>reset</button>`);
+const node_path = () => [0,0,1,3];
 
 function create_fragment(ctx) {
-	let h1;
-	let t0;
-	let t1;
-	let button;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			h1 = render().firstChild;
-			t0 = h1.firstChild;
-			t0.data = /*$foo*/ ctx[1];
-			t1 = h1.nextSibling;
-			button = t1.nextSibling;
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1].data = /*$foo*/ ctx[1];
 		},
 		m(target, anchor) {
-			insert(target, h1, anchor);
-			insert(target, t1, anchor);
-			insert(target, button, anchor);
+			insert(target, render_nodes[0], anchor); /* h1 */
+			insert(target, render_nodes[2], anchor); /* t1 */
+			insert(target, render_nodes[3], anchor); /* button */
 
 			if (!mounted) {
-				dispose = listen(button, "click", /*click_handler*/ ctx[2]);
+				dispose = listen(render_nodes[3], "click", /*click_handler*/ ctx[2]);
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*$foo*/ 2) set_data(t0, /*$foo*/ ctx[1]);
+			if (dirty & /*$foo*/ 2) set_data(render_nodes[1], /*$foo*/ ctx[1]);
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(h1);
-			if (detaching) detach(t1);
-			if (detaching) detach(button);
+			if (detaching) detach(render_nodes[0]); /* h1 */
+			if (detaching) detach(render_nodes[2]); /* t1 */
+			if (detaching) detach(render_nodes[3]); /* button */
 			mounted = false;
 			dispose();
 		}

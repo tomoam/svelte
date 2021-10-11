@@ -8,33 +8,31 @@ import {
 	make_renderer,
 	noop,
 	run_all,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<input type="file"> <input type="file">`);
+const node_path = () => [0,1,2];
 
 function create_fragment(ctx) {
-	let input0;
-	let t;
-	let input1;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			input0 = render().firstChild;
-			t = input0.nextSibling;
-			input1 = t.nextSibling;
+			traverse(render(), render_nodes, node_path());
 		},
 		m(target, anchor) {
-			insert(target, input0, anchor);
-			insert(target, t, anchor);
-			insert(target, input1, anchor);
+			insert(target, render_nodes[0], anchor); /* input0 */
+			insert(target, render_nodes[1], anchor); /* t */
+			insert(target, render_nodes[2], anchor); /* input1 */
 
 			if (!mounted) {
 				dispose = [
-					listen(input0, "change", /*input0_change_handler*/ ctx[1]),
-					listen(input1, "change", /*input1_change_handler*/ ctx[2])
+					listen(render_nodes[0], "change", /*input0_change_handler*/ ctx[1]),
+					listen(render_nodes[2], "change", /*input1_change_handler*/ ctx[2])
 				];
 
 				mounted = true;
@@ -44,9 +42,9 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(input0);
-			if (detaching) detach(t);
-			if (detaching) detach(input1);
+			if (detaching) detach(render_nodes[0]); /* input0 */
+			if (detaching) detach(render_nodes[1]); /* t */
+			if (detaching) detach(render_nodes[2]); /* input1 */
 			mounted = false;
 			run_all(dispose);
 		}

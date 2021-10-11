@@ -7,38 +7,39 @@ import {
 	listen,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<input type="checkbox">`);
 
 function create_fragment(ctx) {
-	let input;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			input = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, input, anchor);
-			input.checked = /*foo*/ ctx[0];
+			insert(target, render_nodes[0], anchor); /* input */
+			render_nodes[0].checked = /*foo*/ ctx[0];
 
 			if (!mounted) {
-				dispose = listen(input, "change", /*input_change_handler*/ ctx[1]);
+				dispose = listen(render_nodes[0], "change", /*input_change_handler*/ ctx[1]);
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*foo*/ 1) {
-				input.checked = /*foo*/ ctx[0];
+				render_nodes[0].checked = /*foo*/ ctx[0];
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(input);
+			if (detaching) detach(render_nodes[0]); /* input */
 			mounted = false;
 			dispose();
 		}

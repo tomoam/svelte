@@ -1,47 +1,30 @@
 import Renderer from '../Renderer';
 import Block from '../Block';
-import Text from '../../nodes/Text';
+import Comment from '../../nodes/Comment';
 import Wrapper from './shared/Wrapper';
 import { x } from 'code-red';
 import { Identifier } from 'estree';
 
-export default class TextWrapper extends Wrapper {
-	node: Text;
+export default class CommentWrapper extends Wrapper {
+	node: Comment;
 	data: string;
-	skip: boolean;
 	var: Identifier;
 
 	constructor(
 		renderer: Renderer,
 		block: Block,
 		parent: Wrapper,
-		node: Text,
-		data: string
+		node: Comment,
+		_strip_whitespace: boolean,
+		_next_sibling: Wrapper
 	) {
 		super(renderer, block, parent, node);
 
-		this.skip = this.node.should_skip();
-		this.data = data;
-		this.var = (this.skip ? null : x`t`) as unknown as Identifier;
-	}
-
-	use_space() {
-		if (this.renderer.component.component_options.preserveWhitespace) return false;
-		if (/[\S\u00A0]/.test(this.data)) return false;
-
-		let node = this.parent && this.parent.node;
-		while (node) {
-			if (node.type === 'Element' && node.name === 'pre') {
-				return false;
-			}
-			node = node.parent;
-		}
-
-		return true;
+		this.var = (!this.renderer.options.preserveComments ? null : x`comment`) as unknown as Identifier;
 	}
 
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
-		if (this.skip) return;
+		if (!this.renderer.options.preserveComments) return;
 
 		const render_statement = this.get_create_statement(parent_node);
 

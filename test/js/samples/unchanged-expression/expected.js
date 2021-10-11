@@ -8,60 +8,37 @@ import {
 	noop,
 	replace_text,
 	safe_not_equal,
-	set_data
+	set_data,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<div><p>Hello world</p> <p>Hello <!></p> <p>Hello <!></p></div> <div><p>Hello <!></p></div>`);
+const node_path = () => [0,0,2,3,0,5,4,7,0,9,1,11,0,0,14];
 
 function create_fragment(ctx) {
-	let div0;
-	let p0;
-	let t1;
-	let p1;
-	let t2;
-	let t3;
-	let t4;
-	let p2;
-	let t5;
-	let t6;
-	let t7;
-	let div1;
-	let p3;
-	let t8;
-	let t9;
+	let render_nodes = [];
 
 	return {
 		c() {
-			div0 = render().firstChild;
-			p0 = div0.firstChild;
-			t1 = p0.nextSibling;
-			p1 = t1.nextSibling;
-			t2 = p1.firstChild;
-			t3 = replace_text(t2.nextSibling, world1);
-			t4 = p1.nextSibling;
-			p2 = t4.nextSibling;
-			t5 = p2.firstChild;
-			t6 = replace_text(t5.nextSibling, world2);
-			t7 = div0.nextSibling;
-			div1 = t7.nextSibling;
-			p3 = div1.firstChild;
-			t8 = p3.firstChild;
-			t9 = replace_text(t8.nextSibling, /*world3*/ ctx[0]);
+			traverse(render(), render_nodes, node_path());
+			render_nodes[5] = replace_text(render_nodes[5], world1);
+			render_nodes[9] = replace_text(render_nodes[9], world2);
+			render_nodes[14] = replace_text(render_nodes[14], /*world3*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert(target, div0, anchor);
-			insert(target, t7, anchor);
-			insert(target, div1, anchor);
+			insert(target, render_nodes[0], anchor); /* div0 */
+			insert(target, render_nodes[10], anchor); /* t7 */
+			insert(target, render_nodes[11], anchor); /* div1 */
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*world3*/ 1) set_data(t9, /*world3*/ ctx[0]);
+			if (dirty & /*world3*/ 1) set_data(render_nodes[14], /*world3*/ ctx[0]);
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div0);
-			if (detaching) detach(t7);
-			if (detaching) detach(div1);
+			if (detaching) detach(render_nodes[0]); /* div0 */
+			if (detaching) detach(render_nodes[10]); /* t7 */
+			if (detaching) detach(render_nodes[11]); /* div1 */
 		}
 	};
 }

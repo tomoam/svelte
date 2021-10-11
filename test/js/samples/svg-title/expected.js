@@ -6,26 +6,27 @@ import {
 	insert,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<svg><title>a title</title></svg>`);
 
 function create_fragment(ctx) {
-	let svg;
+	let render_nodes = [];
 
 	return {
 		c() {
-			svg = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, svg, anchor);
+			insert(target, render_nodes[0], anchor); /* svg */
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(svg);
+			if (detaching) detach(render_nodes[0]); /* svg */
 		}
 	};
 }

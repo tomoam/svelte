@@ -10,28 +10,29 @@ import {
 	run_all,
 	safe_not_equal,
 	set_input_value,
-	to_number
+	to_number,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<input type="range">`);
 
 function create_fragment(ctx) {
-	let input;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			input = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, input, anchor);
-			set_input_value(input, /*value*/ ctx[0]);
+			insert(target, render_nodes[0], anchor); /* input */
+			set_input_value(render_nodes[0], /*value*/ ctx[0]);
 
 			if (!mounted) {
 				dispose = [
-					listen(input, "change", /*input_change_input_handler*/ ctx[1]),
-					listen(input, "input", /*input_change_input_handler*/ ctx[1])
+					listen(render_nodes[0], "change", /*input_change_input_handler*/ ctx[1]),
+					listen(render_nodes[0], "input", /*input_change_input_handler*/ ctx[1])
 				];
 
 				mounted = true;
@@ -39,13 +40,13 @@ function create_fragment(ctx) {
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*value*/ 1) {
-				set_input_value(input, /*value*/ ctx[0]);
+				set_input_value(render_nodes[0], /*value*/ ctx[0]);
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(input);
+			if (detaching) detach(render_nodes[0]); /* input */
 			mounted = false;
 			run_all(dispose);
 		}

@@ -12,6 +12,7 @@ import {
 	make_renderer,
 	noop,
 	safe_not_equal,
+	traverse,
 	validate_slots
 } from "svelte/internal";
 
@@ -20,25 +21,25 @@ const file = undefined;
 const render = make_renderer(`<div></div>`);
 
 function create_fragment(ctx) {
-	let div;
+	let render_nodes = [];
 
 	const block = {
 		c: function create() {
-			div = render().firstChild;
-			add_location(div, file, 22, 0, 288);
+			traverse(render(), render_nodes);
+			add_location(render_nodes[0], file, 22, 0, 288);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, div, anchor);
-			/*div_binding*/ ctx[1](div);
+			insert_dev(target, render_nodes[0], anchor); /* div */
+			/*div_binding*/ ctx[1](render_nodes[0]);
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d: function destroy(detaching) {
-			if (detaching) detach_dev(div);
+			if (detaching) detach_dev(render_nodes[0]); /* div */
 			/*div_binding*/ ctx[1](null);
 		}
 	};

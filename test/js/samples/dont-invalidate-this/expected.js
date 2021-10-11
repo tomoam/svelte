@@ -7,25 +7,26 @@ import {
 	listen,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<input>`);
 
 function create_fragment(ctx) {
-	let input;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			input = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, input, anchor);
+			insert(target, render_nodes[0], anchor); /* input */
 
 			if (!mounted) {
-				dispose = listen(input, "input", make_uppercase);
+				dispose = listen(render_nodes[0], "input", make_uppercase);
 				mounted = true;
 			}
 		},
@@ -33,7 +34,7 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(input);
+			if (detaching) detach(render_nodes[0]); /* input */
 			mounted = false;
 			dispose();
 		}

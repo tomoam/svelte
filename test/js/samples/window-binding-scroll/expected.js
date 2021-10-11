@@ -10,12 +10,15 @@ import {
 	noop,
 	replace_text,
 	safe_not_equal,
-	set_data
+	set_data,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<p>scrolled to <!></p>`);
+const node_path = () => [0,0,2];
 
 function create_fragment(ctx) {
+	let render_nodes = [];
 	let scrolling = false;
 
 	let clear_scrolling = () => {
@@ -23,21 +26,17 @@ function create_fragment(ctx) {
 	};
 
 	let scrolling_timeout;
-	let p;
-	let t0;
-	let t1;
 	let mounted;
 	let dispose;
 	add_render_callback(/*onwindowscroll*/ ctx[1]);
 
 	return {
 		c() {
-			p = render().firstChild;
-			t0 = p.firstChild;
-			t1 = replace_text(t0.nextSibling, /*y*/ ctx[0]);
+			traverse(render(), render_nodes, node_path());
+			render_nodes[2] = replace_text(render_nodes[2], /*y*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 
 			if (!mounted) {
 				dispose = listen(window, "scroll", () => {
@@ -58,12 +57,12 @@ function create_fragment(ctx) {
 				scrolling_timeout = setTimeout(clear_scrolling, 100);
 			}
 
-			if (dirty & /*y*/ 1) set_data(t1, /*y*/ ctx[0]);
+			if (dirty & /*y*/ 1) set_data(render_nodes[2], /*y*/ ctx[0]);
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 			mounted = false;
 			dispose();
 		}

@@ -1,4 +1,5 @@
 export default {
+	skip: true,
 	props: {
 		class: 'bar'
 	},

@@ -11,13 +11,14 @@ import {
 	raf,
 	run_all,
 	safe_not_equal,
-	time_ranges_to_array
+	time_ranges_to_array,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<audio></audio>`);
 
 function create_fragment(ctx) {
-	let audio;
+	let render_nodes = [];
 	let audio_updating = false;
 	let audio_animationframe;
 	let audio_is_paused = true;
@@ -27,50 +28,50 @@ function create_fragment(ctx) {
 	function audio_timeupdate_handler() {
 		cancelAnimationFrame(audio_animationframe);
 
-		if (!audio.paused) {
+		if (!render_nodes[0].paused) {
 			audio_animationframe = raf(audio_timeupdate_handler);
 			audio_updating = true;
 		}
 
-		/*audio_timeupdate_handler*/ ctx[13].call(audio);
+		/*audio_timeupdate_handler*/ ctx[13].call(render_nodes[0]);
 	}
 
 	return {
 		c() {
-			audio = render().firstChild;
-			if (/*buffered*/ ctx[0] === void 0) add_render_callback(() => /*audio_progress_handler*/ ctx[11].call(audio));
-			if (/*buffered*/ ctx[0] === void 0 || /*seekable*/ ctx[1] === void 0) add_render_callback(() => /*audio_loadedmetadata_handler*/ ctx[12].call(audio));
+			traverse(render(), render_nodes);
+			if (/*buffered*/ ctx[0] === void 0) add_render_callback(() => /*audio_progress_handler*/ ctx[11].call(render_nodes[0]));
+			if (/*buffered*/ ctx[0] === void 0 || /*seekable*/ ctx[1] === void 0) add_render_callback(() => /*audio_loadedmetadata_handler*/ ctx[12].call(render_nodes[0]));
 			if (/*played*/ ctx[2] === void 0 || /*currentTime*/ ctx[3] === void 0 || /*ended*/ ctx[10] === void 0) add_render_callback(audio_timeupdate_handler);
-			if (/*duration*/ ctx[4] === void 0) add_render_callback(() => /*audio_durationchange_handler*/ ctx[14].call(audio));
-			if (/*seeking*/ ctx[9] === void 0) add_render_callback(() => /*audio_seeking_seeked_handler*/ ctx[18].call(audio));
-			if (/*ended*/ ctx[10] === void 0) add_render_callback(() => /*audio_ended_handler*/ ctx[19].call(audio));
+			if (/*duration*/ ctx[4] === void 0) add_render_callback(() => /*audio_durationchange_handler*/ ctx[14].call(render_nodes[0]));
+			if (/*seeking*/ ctx[9] === void 0) add_render_callback(() => /*audio_seeking_seeked_handler*/ ctx[18].call(render_nodes[0]));
+			if (/*ended*/ ctx[10] === void 0) add_render_callback(() => /*audio_ended_handler*/ ctx[19].call(render_nodes[0]));
 		},
 		m(target, anchor) {
-			insert(target, audio, anchor);
+			insert(target, render_nodes[0], anchor); /* audio */
 
 			if (!isNaN(/*volume*/ ctx[6])) {
-				audio.volume = /*volume*/ ctx[6];
+				render_nodes[0].volume = /*volume*/ ctx[6];
 			}
 
-			audio.muted = /*muted*/ ctx[7];
+			render_nodes[0].muted = /*muted*/ ctx[7];
 
 			if (!isNaN(/*playbackRate*/ ctx[8])) {
-				audio.playbackRate = /*playbackRate*/ ctx[8];
+				render_nodes[0].playbackRate = /*playbackRate*/ ctx[8];
 			}
 
 			if (!mounted) {
 				dispose = [
-					listen(audio, "progress", /*audio_progress_handler*/ ctx[11]),
-					listen(audio, "loadedmetadata", /*audio_loadedmetadata_handler*/ ctx[12]),
-					listen(audio, "timeupdate", audio_timeupdate_handler),
-					listen(audio, "durationchange", /*audio_durationchange_handler*/ ctx[14]),
-					listen(audio, "play", /*audio_play_pause_handler*/ ctx[15]),
-					listen(audio, "pause", /*audio_play_pause_handler*/ ctx[15]),
-					listen(audio, "volumechange", /*audio_volumechange_handler*/ ctx[16]),
-					listen(audio, "ratechange", /*audio_ratechange_handler*/ ctx[17]),
-					listen(audio, "seeking", /*audio_seeking_seeked_handler*/ ctx[18]),
-					listen(audio, "seeked", /*audio_seeking_seeked_handler*/ ctx[18]),
-					listen(audio, "ended", /*audio_ended_handler*/ ctx[19])
+					listen(render_nodes[0], "progress", /*audio_progress_handler*/ ctx[11]),
+					listen(render_nodes[0], "loadedmetadata", /*audio_loadedmetadata_handler*/ ctx[12]),
+					listen(render_nodes[0], "timeupdate", audio_timeupdate_handler),
+					listen(render_nodes[0], "durationchange", /*audio_durationchange_handler*/ ctx[14]),
+					listen(render_nodes[0], "play", /*audio_play_pause_handler*/ ctx[15]),
+					listen(render_nodes[0], "pause", /*audio_play_pause_handler*/ ctx[15]),
+					listen(render_nodes[0], "volumechange", /*audio_volumechange_handler*/ ctx[16]),
+					listen(render_nodes[0], "ratechange", /*audio_ratechange_handler*/ ctx[17]),
+					listen(render_nodes[0], "seeking", /*audio_seeking_seeked_handler*/ ctx[18]),
+					listen(render_nodes[0], "seeked", /*audio_seeking_seeked_handler*/ ctx[18]),
+					listen(render_nodes[0], "ended", /*audio_ended_handler*/ ctx[19])
 				];
 
 				mounted = true;
@@ -78,7 +79,7 @@ function create_fragment(ctx) {
 		},
 		p(ctx, [dirty]) {
 			if (!audio_updating && dirty & /*currentTime*/ 8 && !isNaN(/*currentTime*/ ctx[3])) {
-				audio.currentTime = /*currentTime*/ ctx[3];
+				render_nodes[0].currentTime = /*currentTime*/ ctx[3];
 			}
 
 			audio_updating = false;
@@ -88,21 +89,21 @@ function create_fragment(ctx) {
 			}
 
 			if (dirty & /*volume*/ 64 && !isNaN(/*volume*/ ctx[6])) {
-				audio.volume = /*volume*/ ctx[6];
+				render_nodes[0].volume = /*volume*/ ctx[6];
 			}
 
 			if (dirty & /*muted*/ 128) {
-				audio.muted = /*muted*/ ctx[7];
+				render_nodes[0].muted = /*muted*/ ctx[7];
 			}
 
 			if (dirty & /*playbackRate*/ 256 && !isNaN(/*playbackRate*/ ctx[8])) {
-				audio.playbackRate = /*playbackRate*/ ctx[8];
+				render_nodes[0].playbackRate = /*playbackRate*/ ctx[8];
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(audio);
+			if (detaching) detach(render_nodes[0]); /* audio */
 			mounted = false;
 			run_all(dispose);
 		}

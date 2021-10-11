@@ -7,26 +7,27 @@ import {
 	insert,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<a href="#">Test</a>`);
 
 function create_fragment(ctx) {
-	let a;
+	let render_nodes = [];
 	let link_action;
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			a = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, a, anchor);
+			insert(target, render_nodes[0], anchor); /* a */
 
 			if (!mounted) {
-				dispose = action_destroyer(link_action = link.call(null, a));
+				dispose = action_destroyer(link_action = link.call(null, render_nodes[0]));
 				mounted = true;
 			}
 		},
@@ -34,7 +35,7 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(a);
+			if (detaching) detach(render_nodes[0]); /* a */
 			mounted = false;
 			dispose();
 		}

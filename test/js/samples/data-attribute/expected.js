@@ -7,39 +7,37 @@ import {
 	insert,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<div data-foo="bar"></div> <div></div>`);
+const node_path = () => [0,1,2];
 
 function create_fragment(ctx) {
-	let div0;
-	let t;
-	let div1;
+	let render_nodes = [];
 
 	return {
 		c() {
-			div0 = render().firstChild;
-			t = div0.nextSibling;
-			div1 = t.nextSibling;
-			attr(div1, "data-foo", /*bar*/ ctx[0]);
+			traverse(render(), render_nodes, node_path());
+			attr(render_nodes[2], "data-foo", /*bar*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert(target, div0, anchor);
-			insert(target, t, anchor);
-			insert(target, div1, anchor);
+			insert(target, render_nodes[0], anchor); /* div0 */
+			insert(target, render_nodes[1], anchor); /* t */
+			insert(target, render_nodes[2], anchor); /* div1 */
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*bar*/ 1) {
-				attr(div1, "data-foo", /*bar*/ ctx[0]);
+				attr(render_nodes[2], "data-foo", /*bar*/ ctx[0]);
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div0);
-			if (detaching) detach(t);
-			if (detaching) detach(div1);
+			if (detaching) detach(render_nodes[0]); /* div0 */
+			if (detaching) detach(render_nodes[1]); /* t */
+			if (detaching) detach(render_nodes[2]); /* div1 */
 		}
 	};
 }

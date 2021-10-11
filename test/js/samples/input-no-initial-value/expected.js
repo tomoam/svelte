@@ -9,45 +9,45 @@ import {
 	noop,
 	run_all,
 	safe_not_equal,
-	set_input_value
+	set_input_value,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<form><input type="text" required> <button>Store</button></form>`);
+const node_path = () => [0,0];
 
 function create_fragment(ctx) {
-	let form;
-	let input;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			form = render().firstChild;
-			input = form.firstChild;
-			input.required = true;
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1].required = true;
 		},
 		m(target, anchor) {
-			insert(target, form, anchor);
-			set_input_value(input, /*test*/ ctx[0]);
+			insert(target, render_nodes[0], anchor); /* form */
+			set_input_value(render_nodes[1], /*test*/ ctx[0]);
 
 			if (!mounted) {
 				dispose = [
-					listen(input, "input", /*input_input_handler*/ ctx[2]),
-					listen(form, "submit", /*handleSubmit*/ ctx[1])
+					listen(render_nodes[1], "input", /*input_input_handler*/ ctx[2]),
+					listen(render_nodes[0], "submit", /*handleSubmit*/ ctx[1])
 				];
 
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*test*/ 1 && input.value !== /*test*/ ctx[0]) {
-				set_input_value(input, /*test*/ ctx[0]);
+			if (dirty & /*test*/ 1 && render_nodes[1].value !== /*test*/ ctx[0]) {
+				set_input_value(render_nodes[1], /*test*/ ctx[0]);
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(form);
+			if (detaching) detach(render_nodes[0]); /* form */
 			mounted = false;
 			run_all(dispose);
 		}

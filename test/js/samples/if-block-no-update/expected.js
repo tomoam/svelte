@@ -6,24 +6,25 @@ import {
 	insert,
 	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render_1 = make_renderer(`<p>not foo!</p>`);
 
 // (7:0) {:else}
 function create_else_block(ctx) {
-	let p;
+	let render_nodes = [];
 
 	return {
 		c() {
-			p = render_1().firstChild;
+			traverse(render_1(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 		},
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 		}
 	};
 }
@@ -32,17 +33,17 @@ const render = make_renderer(`<p>foo!</p>`);
 
 // (5:0) {#if foo}
 function create_if_block(ctx) {
-	let p;
+	let render_nodes = [];
 
 	return {
 		c() {
-			p = render().firstChild;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, p, anchor);
+			insert(target, render_nodes[0], anchor); /* p */
 		},
 		d(detaching) {
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[0]); /* p */
 		}
 	};
 }
@@ -50,7 +51,7 @@ function create_if_block(ctx) {
 const render_2 = make_renderer(`<!>`);
 
 function create_fragment(ctx) {
-	let if_block_anchor;
+	let render_nodes = [];
 
 	function select_block_type(ctx, dirty) {
 		if (/*foo*/ ctx[0]) return create_if_block;
@@ -62,12 +63,12 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			if_block_anchor = render_2().firstChild;
+			traverse(render_2(), render_nodes);
 			if_block.c();
 		},
 		m(target, anchor) {
-			if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
+			insert(target, render_nodes[0], anchor); /* if_block */
+			if_block.m(target, render_nodes[0]);
 		},
 		p(ctx, [dirty]) {
 			if (current_block_type !== (current_block_type = select_block_type(ctx, dirty))) {
@@ -76,14 +77,14 @@ function create_fragment(ctx) {
 
 				if (if_block) {
 					if_block.c();
-					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+					if_block.m(render_nodes[0].parentNode, render_nodes[0]);
 				}
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(if_block_anchor);
+			if (detaching) detach(render_nodes[0]); /* if_block */
 			if_block.d(detaching);
 		}
 	};

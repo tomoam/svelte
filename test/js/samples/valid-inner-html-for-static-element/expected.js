@@ -8,30 +8,30 @@ import {
 	make_renderer,
 	noop,
 	safe_not_equal,
-	src_url_equal
+	src_url_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<div><img alt="Star" width="100" height="100" src="http://mdn.mozillademos.org/files/12676/star.svg"></div>`);
+const node_path = () => [0,0];
 
 function create_fragment(ctx) {
-	let div;
-	let img;
+	let render_nodes = [];
 	let img_src_value;
 
 	return {
 		c() {
-			div = render().firstChild;
-			img = div.firstChild;
-			if (!src_url_equal(img.src, img_src_value = "http://mdn.mozillademos.org/files/12676/star.svg")) attr(img, "src", img_src_value);
+			traverse(render(), render_nodes, node_path());
+			if (!src_url_equal(render_nodes[1].src, img_src_value = "http://mdn.mozillademos.org/files/12676/star.svg")) attr(render_nodes[1], "src", img_src_value);
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert(target, render_nodes[0], anchor); /* div */
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 		}
 	};
 }

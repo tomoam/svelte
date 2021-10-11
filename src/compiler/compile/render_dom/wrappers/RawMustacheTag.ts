@@ -48,14 +48,24 @@ export default class RawMustacheTagWrapper extends Tag {
 
 			block.chunks.create.push(b`${html_tag} = new @HtmlTag();`);
 			if (this.renderer.options.hydratable) {
-				block.chunks.claim.push(b`${html_tag} = @claim_html_tag(${parent_nodes});`);
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
+						${html_tag} = @claim_html_tag(n);
+					});
+				`);
 			}
 
-			const insert_anchor = this.get_initial_anchor_node(parent_node);
-			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${insert_anchor});`);
+			block.add_statement(
+				this.var,
+				this.get_var(),
+				this.get_create_statement(parent_node),
+				this.get_claim_statement(block, parent_node, parent_nodes),
+				parent_node,
+			);
 
-			const update_anchor = this.get_or_create_anchor(block, parent_node, parent_nodes, 'html_anchor');
-			block.chunks.hydrate.push(b`${html_tag}.a = ${update_anchor};`);
+			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${this.get_var()});`);
+
+			block.chunks.hydrate.push(b`${html_tag}.a = ${this.get_var()};`);
 
 			if (!parent_node || in_head) {
 				block.chunks.destroy.push(b`if (detaching) ${html_tag}.d();`);

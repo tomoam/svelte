@@ -8,32 +8,32 @@ import {
 	make_renderer,
 	noop,
 	safe_not_equal,
-	set_data
+	set_data,
+	traverse
 } from "svelte/internal";
 
 import { writable } from 'svelte/store';
 const render = make_renderer(`<h1> </h1>`);
+const node_path = () => [0,0];
 
 function create_fragment(ctx) {
-	let h1;
-	let t;
+	let render_nodes = [];
 
 	return {
 		c() {
-			h1 = render().firstChild;
-			t = h1.firstChild;
-			t.data = /*$foo*/ ctx[0];
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1].data = /*$foo*/ ctx[0];
 		},
 		m(target, anchor) {
-			insert(target, h1, anchor);
+			insert(target, render_nodes[0], anchor); /* h1 */
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*$foo*/ 1) set_data(t, /*$foo*/ ctx[0]);
+			if (dirty & /*$foo*/ 1) set_data(render_nodes[1], /*$foo*/ ctx[0]);
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(h1);
+			if (detaching) detach(render_nodes[0]); /* h1 */
 		}
 	};
 }

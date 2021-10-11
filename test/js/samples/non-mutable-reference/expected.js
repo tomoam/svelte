@@ -7,30 +7,29 @@ import {
 	make_renderer,
 	noop,
 	replace_text,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<h1>Hello <!>!</h1>`);
+const node_path = () => [0,0,2,3];
 
 function create_fragment(ctx) {
-	let h1;
-	let t0;
-	let t1;
+	let render_nodes = [];
 
 	return {
 		c() {
-			h1 = render().firstChild;
-			t0 = h1.firstChild;
-			t1 = replace_text(t0.nextSibling, name);
+			traverse(render(), render_nodes, node_path());
+			render_nodes[2] = replace_text(render_nodes[2], name);
 		},
 		m(target, anchor) {
-			insert(target, h1, anchor);
+			insert(target, render_nodes[0], anchor); /* h1 */
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(h1);
+			if (detaching) detach(render_nodes[0]); /* h1 */
 		}
 	};
 }

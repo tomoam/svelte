@@ -4,6 +4,7 @@ import { x } from 'code-red';
 import get_slot_data from '../../utils/get_slot_data';
 import { get_slot_scope } from './shared/get_slot_scope';
 import { is_static_only } from './utils/is_static_only';
+import remove_whitespace_children from './utils/remove_whitespace_children';
 
 export default function(node: Slot, renderer: Renderer, options: RenderOptions & {
 	slot_scopes: Map<any, any>;
@@ -22,7 +23,7 @@ export default function(node: Slot, renderer: Renderer, options: RenderOptions &
 	}
 
 	renderer.push();
-	renderer.render(node.children, options);
+	renderer.render(remove_whitespace_children(node.children, node.next, options.preserveComments), options);
 	const result = renderer.pop();
 
 	renderer.add_expression(x`

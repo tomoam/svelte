@@ -5,7 +5,7 @@ export default {
 
 	test({ assert, component, target }) {
 		const span = target.querySelector('span');
-		assert.ok(!span.nextSibling);
+		assert.ok(!span.nextSibling.nextSibling);
 
 		component.raw = '<span>bar</span>';
 	}

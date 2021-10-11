@@ -7,31 +7,32 @@ import {
 	make_renderer,
 	noop,
 	safe_not_equal,
-	set_style
+	set_style,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<div></div>`);
 
 function create_fragment(ctx) {
-	let div;
+	let render_nodes = [];
 
 	return {
 		c() {
-			div = render().firstChild;
-			set_style(div, "background", "url(data:image/png;base64," + /*data*/ ctx[0] + ")");
+			traverse(render(), render_nodes);
+			set_style(render_nodes[0], "background", "url(data:image/png;base64," + /*data*/ ctx[0] + ")");
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert(target, render_nodes[0], anchor); /* div */
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*data*/ 1) {
-				set_style(div, "background", "url(data:image/png;base64," + /*data*/ ctx[0] + ")");
+				set_style(render_nodes[0], "background", "url(data:image/png;base64," + /*data*/ ctx[0] + ")");
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 		}
 	};
 }

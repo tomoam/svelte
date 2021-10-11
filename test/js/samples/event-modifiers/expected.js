@@ -10,44 +10,32 @@ import {
 	prevent_default,
 	run_all,
 	safe_not_equal,
-	stop_propagation
+	stop_propagation,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<div><div>touch me</div> <button>click me</button> <button>or me</button> <button>or me!</button></div>`);
+const node_path = () => [0,0,2,3,4,5,6,7];
 
 function create_fragment(ctx) {
-	let div1;
-	let div0;
-	let t1;
-	let button0;
-	let t3;
-	let button1;
-	let t5;
-	let button2;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			div1 = render().firstChild;
-			div0 = div1.firstChild;
-			t1 = div0.nextSibling;
-			button0 = t1.nextSibling;
-			t3 = button0.nextSibling;
-			button1 = t3.nextSibling;
-			t5 = button1.nextSibling;
-			button2 = t5.nextSibling;
+			traverse(render(), render_nodes, node_path());
 		},
 		m(target, anchor) {
-			insert(target, div1, anchor);
+			insert(target, render_nodes[0], anchor); /* div1 */
 
 			if (!mounted) {
 				dispose = [
-					listen(div0, "touchstart", handleTouchstart, { passive: false }),
-					listen(button0, "click", stop_propagation(prevent_default(handleClick))),
-					listen(button1, "click", handleClick, { once: true, capture: true }),
-					listen(button2, "click", handleClick, true),
-					listen(div1, "touchstart", handleTouchstart, { passive: true })
+					listen(render_nodes[1], "touchstart", handleTouchstart, { passive: false }),
+					listen(render_nodes[3], "click", stop_propagation(prevent_default(handleClick))),
+					listen(render_nodes[5], "click", handleClick, { once: true, capture: true }),
+					listen(render_nodes[7], "click", handleClick, true),
+					listen(render_nodes[0], "touchstart", handleTouchstart, { passive: true })
 				];
 
 				mounted = true;
@@ -57,7 +45,7 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div1);
+			if (detaching) detach(render_nodes[0]); /* div1 */
 			mounted = false;
 			run_all(dispose);
 		}

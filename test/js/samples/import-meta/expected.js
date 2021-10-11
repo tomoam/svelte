@@ -7,35 +7,35 @@ import {
 	make_renderer,
 	noop,
 	replace_text,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<!> <!>`);
+const node_path = () => [0,1,2];
 
 function create_fragment(ctx) {
-	let t0;
-	let t1;
+	let render_nodes = [];
 	let t2_value = import.meta.url + "";
-	let t2;
 
 	return {
 		c() {
-			t0 = replace_text(render().firstChild, /*url*/ ctx[0]);
-			t1 = t0.nextSibling;
-			t2 = replace_text(t1.nextSibling, t2_value);
+			traverse(render(), render_nodes, node_path());
+			render_nodes[0] = replace_text(render_nodes[0], /*url*/ ctx[0]);
+			render_nodes[2] = replace_text(render_nodes[2], t2_value);
 		},
 		m(target, anchor) {
-			insert(target, t0, anchor);
-			insert(target, t1, anchor);
-			insert(target, t2, anchor);
+			insert(target, render_nodes[0], anchor); /* t0 */
+			insert(target, render_nodes[1], anchor); /* t1 */
+			insert(target, render_nodes[2], anchor); /* t2 */
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(t0);
-			if (detaching) detach(t1);
-			if (detaching) detach(t2);
+			if (detaching) detach(render_nodes[0]); /* t0 */
+			if (detaching) detach(render_nodes[1]); /* t1 */
+			if (detaching) detach(render_nodes[2]); /* t2 */
 		}
 	};
 }

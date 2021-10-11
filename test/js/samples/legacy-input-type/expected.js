@@ -7,27 +7,28 @@ import {
 	make_renderer,
 	noop,
 	safe_not_equal,
-	set_input_type
+	set_input_type,
+	traverse
 } from "svelte/internal";
 
 const render = make_renderer(`<input type="search">`);
 
 function create_fragment(ctx) {
-	let input;
+	let render_nodes = [];
 
 	return {
 		c() {
-			input = render().firstChild;
-			set_input_type(input, "search");
+			traverse(render(), render_nodes);
+			set_input_type(render_nodes[0], "search");
 		},
 		m(target, anchor) {
-			insert(target, input, anchor);
+			insert(target, render_nodes[0], anchor); /* input */
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(input);
+			if (detaching) detach(render_nodes[0]); /* input */
 		}
 	};
 }

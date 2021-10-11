@@ -13,9 +13,9 @@ import { is_static_only } from './utils/is_static_only';
 export default function(node: Element, renderer: Renderer, options: RenderOptions) {
 	const static_only = is_static_only(options);
 
-	if (static_only && node.name === 'noscript') return;
+	if (!options.hydratable && static_only && node.name === 'noscript') return;
 
-	const children = remove_whitespace_children(node.children, node.next);
+	const children = remove_whitespace_children(node.children, node.next, options.preserveComments);
 
 	// awkward special case
 	let node_contents;
@@ -161,7 +161,7 @@ export default function(node: Element, renderer: Renderer, options: RenderOption
 		}
 	});
 
-	if (options.hydratable && options.head_id) {
+	if (options.head_id) {
 		renderer.add_string(` data-svelte="${options.head_id}"`);
 	}
 
