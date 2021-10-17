@@ -281,7 +281,11 @@ export default class ElementWrapper extends Wrapper {
 				block.chunks.mount.push(append);
 
 				if (is_head(parent_node)) {
-					block.chunks.destroy.push(b`@detach(${node}); /* ${this.var.name} */`);
+					if (this.node.name === 'noscript') {
+						block.chunks.destroy.push(b`${node}.parentNode && @detach(${node}); /* ${this.var.name} */`);
+					} else {
+						block.chunks.destroy.push(b`@detach(${node}); /* ${this.var.name} */`);
+					}
 				}
 			}
 		} else {
@@ -294,7 +298,11 @@ export default class ElementWrapper extends Wrapper {
 
 			// TODO we eventually need to consider what happens to elements
 			// that belong to the same outgroup as an outroing element...
-			block.chunks.destroy.push(b`if (detaching) @detach(${node}); /* ${this.var.name} */`);
+			if (this.node.name === 'noscript') {
+				block.chunks.destroy.push(b`if (detaching && ${node}.parentNode) @detach(${node}); /* ${this.var.name} */`);
+			} else {
+				block.chunks.destroy.push(b`if (detaching) @detach(${node}); /* ${this.var.name} */`);
+			}
 		}
 
 		this.fragment.nodes.forEach((child: Wrapper) => {
@@ -342,6 +350,25 @@ export default class ElementWrapper extends Wrapper {
 
 	set_index_number(root_node: Wrapper) {
 		super.set_index_number(root_node);
+
+		if (
+			this.index_in_render_nodes !== 0 && ( 
+			!this.parent || 
+			!this.parent.is_dom_node() ||
+			this.attributes.some(n => !n.node.is_static) ||
+			this.bindings.length > 0 ||
+			this.event_handlers.length ||
+			this.node.intro ||
+			this.node.outro ||
+			this.node.animation ||
+			this.node.actions.length ||
+			this.node.name === 'option' ||
+			this.fragment.nodes.some(n => !n.is_dom_node())
+		)) {
+			this.push_to_node_path(true);
+		} else {
+			this.push_to_node_path(false);
+		}
 
 		this.fragment.nodes.forEach((child) => {
 			child.set_index_number(root_node);

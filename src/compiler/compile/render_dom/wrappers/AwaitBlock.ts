@@ -175,6 +175,8 @@ export default class AwaitBlockWrapper extends Wrapper {
 	set_index_number(root_node: Wrapper) {
 		super.set_index_number(root_node);
 
+		this.push_to_node_path(true);
+
 		[this.pending, this.then, this.catch].forEach(branch => {
 			branch.set_index_number(root_node);
 		});
@@ -185,7 +187,6 @@ export default class AwaitBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		parent_nodes: Identifier
 	) {
-		// const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
 		const anchor = this.get_var() as Identifier;
 		const update_mount_node = this.get_update_mount_node(anchor);
 

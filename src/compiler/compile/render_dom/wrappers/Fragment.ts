@@ -257,7 +257,6 @@ export default class FragmentWrapper {
 function create_template(node: Wrapper, nodes: Wrapper[], renderer: Renderer) {
 	node.template_name = renderer.component.get_unique_name('render').name;
 	node.node_path_var_name = renderer.component.get_unique_name('node_path').name;
-	// node.top_nodes_index_var = renderer.component.get_unique_name('top_nodes_idx');
 	const svg_wrap = nodes.some(n => needs_svg_wrapper(n));
 	node.template = to_template_literal(
 			nodes.map(n => n.node as INode),

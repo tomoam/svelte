@@ -16,6 +16,12 @@ export default class MustacheTagWrapper extends Tag {
 		this.mark_as_on_traverse_path();
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		this.push_to_node_path(true);
+	}
+
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		const { init } = this.rename_this_method(
 			block,

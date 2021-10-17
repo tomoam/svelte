@@ -20,7 +20,7 @@ import {
 
 import Component from "./Component.svelte";
 const render = make_renderer(`<div></div> <!>`);
-const node_path = () => [0,1,2];
+const node_path = () => [,-1,-1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

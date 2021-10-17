@@ -4,6 +4,7 @@ import {
 	destroy_block,
 	detach,
 	init,
+	init_each_block,
 	insert,
 	make_renderer,
 	noop,
@@ -20,7 +21,7 @@ function get_each_context(ctx, list, i) {
 }
 
 const render = make_renderer(`<div> </div>`);
-const node_path = () => [0,0];
+const node_path = () => [,0];
 
 // (5:0) {#each things as thing (thing.id)}
 function create_each_block(key_1, ctx) {
@@ -56,12 +57,7 @@ function create_fragment(ctx) {
 	let each_1_lookup = new Map();
 	let each_value = /*things*/ ctx[0];
 	const get_key = ctx => /*thing*/ ctx[1].id;
-
-	for (let i = 0; i < each_value.length; i += 1) {
-		let child_ctx = get_each_context(ctx, each_value, i);
-		let key = get_key(child_ctx);
-		each_1_lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
-	}
+	init_each_block(get_each_context, ctx, each_value, get_key, each_1_lookup, each_blocks, create_each_block);
 
 	return {
 		c() {
@@ -73,7 +69,10 @@ function create_fragment(ctx) {
 		},
 		m(target, anchor) {
 			insert(target, render_nodes[0], anchor); /* each_1 */
-			each_blocks.forEach(block => block.m(target, render_nodes[0]));
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(target, render_nodes[0]);
+			}
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*things*/ 1) {
@@ -85,7 +84,10 @@ function create_fragment(ctx) {
 		o: noop,
 		d(detaching) {
 			if (detaching) detach(render_nodes[0]); /* each_1 */
-			each_blocks.forEach(block => block.d(detaching));
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].d(detaching);
+			}
 		}
 	};
 }

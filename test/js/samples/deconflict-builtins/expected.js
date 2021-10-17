@@ -19,7 +19,7 @@ function get_each_context(ctx, list, i) {
 }
 
 const render = make_renderer(`<span> </span>`);
-const node_path = () => [0,0];
+const node_path = () => [,0];
 
 // (5:0) {#each createElement as node}
 function create_each_block(ctx) {

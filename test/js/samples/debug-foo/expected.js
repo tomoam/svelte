@@ -26,7 +26,7 @@ function get_each_context(ctx, list, i) {
 }
 
 const render = make_renderer(`<span> </span>`);
-const node_path = () => [0,0,0];
+const node_path = () => [,0];
 
 // (6:0) {#each things as thing}
 function create_each_block(ctx) {
@@ -75,7 +75,7 @@ function create_each_block(ctx) {
 }
 
 const render_1 = make_renderer(`<!> <p>foo: <!></p>`);
-const node_path_1 = () => [0,1,2,0,4];
+const node_path_1 = () => [0,-1,-1,,-1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

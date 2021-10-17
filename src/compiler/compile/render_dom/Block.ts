@@ -504,6 +504,7 @@ export default class Block {
 			`);
 
 			if (node.index_in_render_nodes_sequence > 1 || (node.index_in_render_nodes_sequence > 0 && this.renderer.options.hydratable)) {
+				node.node_path[node.node_path.length - 1] = node.node_path[node.node_path.length - 1] || 0 ;
 				body.push(b`
 					const ${node.node_path_var_name} = () => [${node.node_path.toString()}];
 				`);

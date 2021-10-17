@@ -70,7 +70,7 @@ export function insert_hydration(target: NodeEx, node: NodeEx, anchor?: NodeEx) 
 }
 
 export function detach(node: Node) {
-	if (node.parentNode) node.parentNode.removeChild(node);
+	node.parentNode.removeChild(node);
 }
 
 export function destroy_each(iterations, detaching) {
@@ -110,22 +110,30 @@ export function text(data: string) {
 	return document.createTextNode(data);
 }
 
-export function init_each_block(get_each_context, ctx, each_value, get_key, lookup, each_blocks, create_each_block, length: number = each_blocks.length) {
-	for (let i = 0; i < length; i = i + 1) {
-		let child_ctx = get_each_context(ctx, each_value, i);
-		let key = get_key(child_ctx);
-		lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
-	}
-}
-
-export function traverse(fragment: Node, node: ChildNode[], routes: Array<number> = []) {
+export function traverse(fragment: Node, node: ChildNode[], node_path: Array<number> = []) {
 	node[0] = fragment.firstChild;
-	for (let i = 1 ; i < routes.length ; i = i + 1) {
-		node[i] = routes[i] === 0 ? node[i - 1].firstChild : node[routes[i] - 1].nextSibling;
+	let temp = [];
+	if (is_hydrating) {
+		temp = node;
+	} else {
+		temp[0] = node[0]
+	}
+	for (let i = 1 ; i < node_path.length ; i = i + 1) {
+		const path_number = node_path[i];
+		if (path_number) {
+			const abs = path_number > 0 ? path_number : path_number * -1;
+			const path = abs === 1 ? i - 1 : abs - 2;
+			temp[i] = temp[path].nextSibling
+		} else {
+			temp[i] = temp[i - 1].firstChild
+		}
+		if (!is_hydrating && path_number <= 0) {
+			node[i] = temp[i]
+		}
 	}
 }
 
-export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[], routes: Array<number>, claim_func_map: Map<number, Function>, start: number, first_parent_node?) {
+export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[], node_path: Array<number>, claim_func_map: Map<number, Function>, start: number, first_parent_node?) {
 	let point = start;
 	const point_stack = [];
 
@@ -135,7 +143,9 @@ export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[]
 	let nodes = ssr_nodes;
 	const nodes_stack = [];
 	nodes_stack.push(nodes);
-	for (let i = start ; i < routes.length ; i = i + 1) {
+
+	const temp_nodes = [];
+	for (let i = start ; i < node_path.length ; i = i + 1) {
 
 		let ssr_node;
 
@@ -145,7 +155,7 @@ export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[]
 				func(nodes);
 			}
 			ssr_node = nodes[0];
-		} else if (routes[i] === 0) {
+		} else if (!node_path[i]) {
 			const base_node = render_nodes[i - 1];
 
 			parent_node_stack.push(parent_node);
@@ -165,13 +175,15 @@ export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[]
 			}
 
 		} else {
-			while (point !== routes[i] - 1) {
+			const abs = node_path[i] > 0 ? node_path[i] : node_path[i] * -1;
+			const path = abs === 1 ? i - 1 : abs - 2;
+			while (point !== path) {
 				point = point_stack.pop();
 				nodes = nodes_stack.pop();
 				parent_node = parent_node_stack.pop();
 			}
 			point = i;
-			const base_node = render_nodes[routes[i] - 1];
+			const base_node = render_nodes[path];
 
 			if (claim_func_map.has(i)) {
 				const func = claim_func_map.get(i);
@@ -237,7 +249,13 @@ export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[]
 		}
 
 		render_nodes[i] = ssr_node;
+
+		if (i === 0 || node_path[i] <= 0) {
+			temp_nodes[i] = render_nodes[i];
+		}
 	}
+
+	render_nodes = temp_nodes;
 }
 
 export function replace_text(elm: ChildNode, data: string) {

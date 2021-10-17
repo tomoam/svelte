@@ -22,6 +22,12 @@ export default class RawMustacheTagWrapper extends Tag {
 		this.not_static_content();
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		this.push_to_node_path(true);
+	}
+
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		const in_head = is_head(parent_node);
 

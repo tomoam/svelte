@@ -106,7 +106,7 @@ function create_if_block(ctx) {
 }
 
 const render_5 = make_renderer(`<div><!> <p>this can be used as an anchor</p> <!> <!> <p>so can this</p> <!></div> <!>`);
-const node_path_5 = () => [0,0,2,3,4,5,6,7,8,9,10,11,1,13];
+const node_path_5 = () => [,0,-1,1,1,-1,-1,-1,-1,1,1,-1,-2,-1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

@@ -28,5 +28,4 @@ export default function(node: EachBlock, renderer: Renderer, options: RenderOpti
 	} else {
 		renderer.add_expression(consequent);
 	}
-	// renderer.add_string('<!---->');
 }

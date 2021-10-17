@@ -19,7 +19,7 @@ import {
 import Foo from './Foo.svelte';
 import Bar from './Bar.svelte';
 const render = make_renderer(`<!> <!> <input>`);
-const node_path = () => [0,1,2,3,4];
+const node_path = () => [0,-1,-1,-1,-1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

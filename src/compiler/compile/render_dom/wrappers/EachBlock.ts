@@ -195,6 +195,8 @@ export default class EachBlockWrapper extends Wrapper {
 	set_index_number(root_node: Wrapper) {
 		super.set_index_number(root_node);
 
+		this.push_to_node_path(true);
+
 		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
 
 		if (this.else) {
@@ -380,7 +382,6 @@ export default class EachBlockWrapper extends Wrapper {
 		const {
 			create_each_block,
 			iterations,
-			data_length,
 			view_length
 		} = this.vars;
 
@@ -406,11 +407,7 @@ export default class EachBlockWrapper extends Wrapper {
 			const ${get_key} = #ctx => ${this.node.key.manipulate(block)};
 
 			${this.renderer.options.dev && b`@validate_each_keys(#ctx, ${this.vars.each_block_value}, ${this.vars.get_each_context}, ${get_key});`}
-			for (let #i = 0; #i < ${data_length}; #i += 1) {
-				let child_ctx = ${this.vars.get_each_context}(#ctx, ${this.vars.each_block_value}, #i);
-				let key = ${get_key}(child_ctx);
-				${lookup}.set(key, ${iterations}[#i] = ${create_each_block}(key, child_ctx));
-			}
+			@init_each_block(${this.vars.get_each_context}, #ctx, ${this.vars.each_block_value}, ${get_key}, ${lookup}, ${iterations}, ${create_each_block}, ${this.vars.fixed_length});
 		`);
 
 		block.chunks.create.push(b`
@@ -447,15 +444,11 @@ export default class EachBlockWrapper extends Wrapper {
 			}
 		}
 
-		if (this.vars.fixed_length) {
-			block.chunks.mount.push(b`
-				${iterations}.slice(0, ${view_length}).forEach((block) => block.m(${initial_mount_node}, ${initial_anchor_node}));
-			`);
-		} else {
-			block.chunks.mount.push(b`
-				${iterations}.forEach((block) => block.m(${initial_mount_node}, ${initial_anchor_node}));
-			`);
-		}
+		block.chunks.mount.push(b`
+			for (let #i = 0; #i < ${view_length}; #i += 1) {
+				${iterations}[#i].m(${initial_mount_node}, ${initial_anchor_node});
+			}
+		`);
 
 		this.update_mount_node = this.get_update_mount_node(this.get_var() as Identifier);
 
@@ -493,15 +486,11 @@ export default class EachBlockWrapper extends Wrapper {
 			`);
 		}
 
-		if (this.vars.fixed_length) {
-			block.chunks.destroy.push(b`
-				${iterations}.slice(0, ${view_length}).forEach((block) => block.d(${parent_node ? null : 'detaching'}));
-			`);
-		} else {
-			block.chunks.destroy.push(b`
-				${iterations}.forEach((block) => block.d(${parent_node ? null : 'detaching'}));
-			`);
-		}
+		block.chunks.destroy.push(b`
+			for (let #i = 0; #i < ${view_length}; #i += 1) {
+				${iterations}[#i].d(${parent_node ? null : 'detaching'});
+			}
+		`);
 	}
 
 	render_unkeyed({

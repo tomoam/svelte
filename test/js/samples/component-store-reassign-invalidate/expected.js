@@ -15,7 +15,7 @@ import {
 
 import { writable } from 'svelte/store';
 const render = make_renderer(`<h1> </h1> <button>reset</button>`);
-const node_path = () => [0,0,1,3];
+const node_path = () => [,0,-2,-1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

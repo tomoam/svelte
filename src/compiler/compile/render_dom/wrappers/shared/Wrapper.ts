@@ -2,7 +2,7 @@ import Renderer from '../../Renderer';
 import Block from '../../Block';
 import { b, x } from 'code-red';
 import { TemplateNode } from '../../../../interfaces';
-import { Node, Identifier, TemplateLiteral } from 'estree';
+import { Identifier, TemplateLiteral } from 'estree';
 import { is_head } from './is_head';
 import { needs_svg_wrapper } from './needs_svg_wrapper';
 
@@ -30,7 +30,7 @@ export default class Wrapper {
 	index_in_render_nodes: number;
 
 	node_path_var_name: string;
-	node_path: Array<number | Node> = [];
+	node_path: Array<number | string> = [];
 
 	claim_func_map_var: Identifier;
 
@@ -89,13 +89,20 @@ export default class Wrapper {
 		this.root_node = root_node;
 		this.index_in_render_nodes = this.root_node.index_in_render_nodes_sequence++;
 
-		if (this.prev && this.prev.index_in_render_nodes !== undefined) {
-			this.root_node.node_path.push(this.prev.index_in_render_nodes + 1);
-		} else {
-			this.root_node.node_path.push(0);
-		}
-
 		this.root_node.render_nodes.push(this);
+	}
+
+	push_to_node_path(use_in_fragment: boolean = false) {
+		if (this.prev && this.prev.index_in_render_nodes !== undefined) {
+			const base = this.index_in_render_nodes - this.prev.index_in_render_nodes === 1
+				? 1
+				: this.prev.index_in_render_nodes + 2;
+			const path = use_in_fragment ? (base * -1) : base;
+			this.root_node.node_path.push(path);
+		} else {
+			const path = use_in_fragment ? 0 : "";
+			this.root_node.node_path.push(path);
+		}
 	}
 
 	get_render_nodes_var() {

@@ -40,6 +40,21 @@ export default class TextWrapper extends Wrapper {
 		return true;
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		if (
+			!this.template_name && (
+			!this.parent ||
+			!this.parent.is_dom_node() ||
+			this.prev && !this.prev.is_dom_node()
+		)) {
+			this.push_to_node_path(true);
+		} else {
+			this.push_to_node_path(false);
+		}
+	}
+
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.skip) return;
 

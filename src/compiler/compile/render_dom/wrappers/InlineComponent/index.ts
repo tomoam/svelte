@@ -26,8 +26,6 @@ export default class InlineComponentWrapper extends Wrapper {
 	var: Identifier;
 	slots: Map<string, SlotDefinition> = new Map();
 	node: InlineComponent;
-	// fragment: FragmentWrapper;
-	// children: Array<Wrapper | FragmentWrapper> = [];
 	children: Array<SlotTemplateWrapper> = [];
 
 	constructor(
@@ -103,6 +101,8 @@ export default class InlineComponentWrapper extends Wrapper {
 
 	set_index_number(root_node: Wrapper) {
 		super.set_index_number(root_node);
+
+		this.push_to_node_path(true);
 
 		this.children.forEach(child => {
 			child.set_index_number(root_node);

@@ -13,7 +13,7 @@ import {
 } from "svelte/internal";
 
 const render = make_renderer(`<div><p>Hello world</p> <p>Hello <!></p> <p>Hello <!></p></div> <div><p>Hello <!></p></div>`);
-const node_path = () => [0,0,2,3,0,5,4,7,0,9,1,11,0,0,14];
+const node_path = () => [,,1,1,,-1,5,1,,-1,-2,-1,,,-1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

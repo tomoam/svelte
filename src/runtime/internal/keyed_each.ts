@@ -21,13 +21,25 @@ export function fix_and_outro_and_destroy_block(block, lookup) {
 	outro_and_destroy_block(block, lookup);
 }
 
+export function init_each_block(get_each_context, ctx, each_value, get_key, lookup, each_blocks, create_each_block, length: number = each_value.length) {
+	for (let i = 0; i < length; i = i + 1) {
+		let child_ctx = get_each_context(ctx, each_value, i);
+		let key = get_key(child_ctx);
+		lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
+	}
+}
+
 export function update_keyed_each(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block, next, get_context) {
 	let o = old_blocks.length;
 	let n = list.length;
 
 	let i = o;
 	const old_indexes = {};
-	while (i--) old_indexes[old_blocks[i].key] = i;
+	if (n) {
+		while (i--) {
+			old_indexes[old_blocks[i].key] = i;
+		} 
+	}
 
 	const new_blocks = [];
 	const new_lookup = new Map();

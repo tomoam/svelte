@@ -17,7 +17,7 @@ function add_css(target) {
 }
 
 const render = make_renderer(`<p class="svelte-1a7i8ec"> </p>`);
-const node_path = () => [0,0];
+const node_path = () => [,0];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

@@ -22,7 +22,7 @@ function get_each_context(ctx, list, i) {
 }
 
 const render = make_renderer(`<div class="comment"><strong> </strong> <span class="meta"><!> wrote <!> ago:</span> <!></div>`);
-const node_path = () => [0,0,0,2,4,0,6,7,8,5,10];
+const node_path = () => [,,0,3,1,0,1,-1,1,6,-1];
 
 // (8:0) {#each comments as comment, i}
 function create_each_block(ctx) {
@@ -57,7 +57,7 @@ function create_each_block(ctx) {
 }
 
 const render_1 = make_renderer(`<!> <p> </p>`);
-const node_path_1 = () => [0,1,2,0];
+const node_path_1 = () => [0,-1,-1,0];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

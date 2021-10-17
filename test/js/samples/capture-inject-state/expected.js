@@ -19,7 +19,7 @@ import {
 
 const file = undefined;
 const render = make_renderer(`<p><!> <!> <!> <!> <!> <!></p>`);
-const node_path = () => [0,0,2,3,4,5,6,7,8,9,10,11];
+const node_path = () => [,0,1,-1,1,-1,1,-1,1,-1,1,-1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

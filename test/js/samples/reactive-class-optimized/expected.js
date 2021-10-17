@@ -15,7 +15,7 @@ import {
 
 import { reactiveStoreVal, unreactiveExport } from './store';
 const render = make_renderer(`<div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div>`);
-const node_path = () => [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16];
+const node_path = () => [,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
