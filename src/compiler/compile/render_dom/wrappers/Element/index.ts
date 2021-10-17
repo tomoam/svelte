@@ -357,12 +357,15 @@ export default class ElementWrapper extends Wrapper {
 			!this.parent.is_dom_node() ||
 			this.attributes.some(n => !n.node.is_static) ||
 			this.bindings.length > 0 ||
-			this.event_handlers.length ||
+			this.event_handlers.length > 0 ||
+			this.node.classes.length > 0 ||
 			this.node.intro ||
 			this.node.outro ||
 			this.node.animation ||
-			this.node.actions.length ||
+			this.node.actions.length > 0 ||
 			this.node.name === 'option' ||
+			this.node.attributes.some(attr => attr.is_spread) ||
+			this.node.needs_manual_style_scoping || 
 			this.fragment.nodes.some(n => !n.is_dom_node())
 		)) {
 			this.push_to_node_path(true);
