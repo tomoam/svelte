@@ -12,6 +12,7 @@ import { extract_names } from 'periscopic';
 import { INode } from '../../nodes/interfaces';
 import Let from '../../nodes/Let';
 import TemplateScope from '../../nodes/shared/TemplateScope';
+import { set_index_number_to_fragment } from './shared/set_index_number';
 
 type NodeWithLets = INode & {
 	scope: TemplateScope;
@@ -72,6 +73,10 @@ export default class SlotTemplateWrapper extends Wrapper {
 		);
 
 		this.block.parent.add_dependencies(this.block.dependencies);
+	}
+
+	set_index_number(_root_node: Wrapper) {
+		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
 	}
 
 	render() {

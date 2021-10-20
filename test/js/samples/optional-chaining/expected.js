@@ -5,42 +5,35 @@ import {
 	create_component,
 	destroy_component,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	mount_component,
+	replace_text,
 	safe_not_equal,
 	set_data,
-	space,
-	text,
 	transition_in,
-	transition_out
+	transition_out,
+	traverse
 } from "svelte/internal";
 
+const render = make_renderer(`<!><!> <!><!> <!><!> <div></div> <!>`);
+const node_path = () => [0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
+
 function create_fragment(ctx) {
+	let render_nodes = [];
 	let t0_value = /*a*/ ctx[0].normal + "";
-	let t0;
 	let t1_value = /*b*/ ctx[1]?.optional + "";
-	let t1;
-	let t2;
 	let t3_value = /*c*/ ctx[2]['computed'] + "";
-	let t3;
 	let t4_value = /*d*/ ctx[3]?.['computed_optional'] + "";
-	let t4;
-	let t5;
 	let t6_value = /*e*/ ctx[4]() + "";
-	let t6;
 	let t7_value = /*f*/ ctx[5]?.() + "";
-	let t7;
-	let t8;
-	let div;
 	let div_a_value;
 	let div_b_value;
 	let div_c_value;
 	let div_d_value;
 	let div_e_value;
 	let div_f_value;
-	let t9;
 	let component;
 	let current;
 
@@ -57,70 +50,67 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			t0 = text(t0_value);
-			t1 = text(t1_value);
-			t2 = space();
-			t3 = text(t3_value);
-			t4 = text(t4_value);
-			t5 = space();
-			t6 = text(t6_value);
-			t7 = text(t7_value);
-			t8 = space();
-			div = element("div");
-			t9 = space();
+			traverse(render(), render_nodes, node_path());
+			render_nodes[0] = replace_text(render_nodes[0], t0_value);
+			render_nodes[1] = replace_text(render_nodes[1], t1_value);
+			render_nodes[3] = replace_text(render_nodes[3], t3_value);
+			render_nodes[4] = replace_text(render_nodes[4], t4_value);
+			render_nodes[6] = replace_text(render_nodes[6], t6_value);
+			render_nodes[7] = replace_text(render_nodes[7], t7_value);
 			create_component(component.$$.fragment);
-			attr(div, "a", div_a_value = /*a*/ ctx[0].normal);
-			attr(div, "b", div_b_value = /*b*/ ctx[1]?.optional);
-			attr(div, "c", div_c_value = /*c*/ ctx[2]['computed']);
-			attr(div, "d", div_d_value = /*d*/ ctx[3]?.['computed_optional']);
-			attr(div, "e", div_e_value = /*e*/ ctx[4]());
-			attr(div, "f", div_f_value = /*f*/ ctx[5]?.());
+			attr(render_nodes[9], "a", div_a_value = /*a*/ ctx[0].normal);
+			attr(render_nodes[9], "b", div_b_value = /*b*/ ctx[1]?.optional);
+			attr(render_nodes[9], "c", div_c_value = /*c*/ ctx[2]['computed']);
+			attr(render_nodes[9], "d", div_d_value = /*d*/ ctx[3]?.['computed_optional']);
+			attr(render_nodes[9], "e", div_e_value = /*e*/ ctx[4]());
+			attr(render_nodes[9], "f", div_f_value = /*f*/ ctx[5]?.());
 		},
 		m(target, anchor) {
-			insert(target, t0, anchor);
-			insert(target, t1, anchor);
-			insert(target, t2, anchor);
-			insert(target, t3, anchor);
-			insert(target, t4, anchor);
-			insert(target, t5, anchor);
-			insert(target, t6, anchor);
-			insert(target, t7, anchor);
-			insert(target, t8, anchor);
-			insert(target, div, anchor);
-			insert(target, t9, anchor);
-			mount_component(component, target, anchor);
+			insert(target, render_nodes[0], anchor); /* t0 */
+			insert(target, render_nodes[1], anchor); /* t1 */
+			insert(target, render_nodes[2], anchor); /* t2 */
+			insert(target, render_nodes[3], anchor); /* t3 */
+			insert(target, render_nodes[4], anchor); /* t4 */
+			insert(target, render_nodes[5], anchor); /* t5 */
+			insert(target, render_nodes[6], anchor); /* t6 */
+			insert(target, render_nodes[7], anchor); /* t7 */
+			insert(target, render_nodes[8], anchor); /* t8 */
+			insert(target, render_nodes[9], anchor); /* div */
+			insert(target, render_nodes[10], anchor); /* t9 */
+			insert(target, render_nodes[11], anchor); /* component */
+			mount_component(component, target, render_nodes[11]);
 			current = true;
 		},
 		p(ctx, [dirty]) {
-			if ((!current || dirty & /*a*/ 1) && t0_value !== (t0_value = /*a*/ ctx[0].normal + "")) set_data(t0, t0_value);
-			if ((!current || dirty & /*b*/ 2) && t1_value !== (t1_value = /*b*/ ctx[1]?.optional + "")) set_data(t1, t1_value);
-			if ((!current || dirty & /*c*/ 4) && t3_value !== (t3_value = /*c*/ ctx[2]['computed'] + "")) set_data(t3, t3_value);
-			if ((!current || dirty & /*d*/ 8) && t4_value !== (t4_value = /*d*/ ctx[3]?.['computed_optional'] + "")) set_data(t4, t4_value);
-			if ((!current || dirty & /*e*/ 16) && t6_value !== (t6_value = /*e*/ ctx[4]() + "")) set_data(t6, t6_value);
-			if ((!current || dirty & /*f*/ 32) && t7_value !== (t7_value = /*f*/ ctx[5]?.() + "")) set_data(t7, t7_value);
+			if ((!current || dirty & /*a*/ 1) && t0_value !== (t0_value = /*a*/ ctx[0].normal + "")) set_data(render_nodes[0], t0_value);
+			if ((!current || dirty & /*b*/ 2) && t1_value !== (t1_value = /*b*/ ctx[1]?.optional + "")) set_data(render_nodes[1], t1_value);
+			if ((!current || dirty & /*c*/ 4) && t3_value !== (t3_value = /*c*/ ctx[2]['computed'] + "")) set_data(render_nodes[3], t3_value);
+			if ((!current || dirty & /*d*/ 8) && t4_value !== (t4_value = /*d*/ ctx[3]?.['computed_optional'] + "")) set_data(render_nodes[4], t4_value);
+			if ((!current || dirty & /*e*/ 16) && t6_value !== (t6_value = /*e*/ ctx[4]() + "")) set_data(render_nodes[6], t6_value);
+			if ((!current || dirty & /*f*/ 32) && t7_value !== (t7_value = /*f*/ ctx[5]?.() + "")) set_data(render_nodes[7], t7_value);
 
 			if (!current || dirty & /*a*/ 1 && div_a_value !== (div_a_value = /*a*/ ctx[0].normal)) {
-				attr(div, "a", div_a_value);
+				attr(render_nodes[9], "a", div_a_value);
 			}
 
 			if (!current || dirty & /*b*/ 2 && div_b_value !== (div_b_value = /*b*/ ctx[1]?.optional)) {
-				attr(div, "b", div_b_value);
+				attr(render_nodes[9], "b", div_b_value);
 			}
 
 			if (!current || dirty & /*c*/ 4 && div_c_value !== (div_c_value = /*c*/ ctx[2]['computed'])) {
-				attr(div, "c", div_c_value);
+				attr(render_nodes[9], "c", div_c_value);
 			}
 
 			if (!current || dirty & /*d*/ 8 && div_d_value !== (div_d_value = /*d*/ ctx[3]?.['computed_optional'])) {
-				attr(div, "d", div_d_value);
+				attr(render_nodes[9], "d", div_d_value);
 			}
 
 			if (!current || dirty & /*e*/ 16 && div_e_value !== (div_e_value = /*e*/ ctx[4]())) {
-				attr(div, "e", div_e_value);
+				attr(render_nodes[9], "e", div_e_value);
 			}
 
 			if (!current || dirty & /*f*/ 32 && div_f_value !== (div_f_value = /*f*/ ctx[5]?.())) {
-				attr(div, "f", div_f_value);
+				attr(render_nodes[9], "f", div_f_value);
 			}
 
 			const component_changes = {};
@@ -142,17 +132,18 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(t0);
-			if (detaching) detach(t1);
-			if (detaching) detach(t2);
-			if (detaching) detach(t3);
-			if (detaching) detach(t4);
-			if (detaching) detach(t5);
-			if (detaching) detach(t6);
-			if (detaching) detach(t7);
-			if (detaching) detach(t8);
-			if (detaching) detach(div);
-			if (detaching) detach(t9);
+			if (detaching) detach(render_nodes[0]); /* t0 */
+			if (detaching) detach(render_nodes[1]); /* t1 */
+			if (detaching) detach(render_nodes[2]); /* t2 */
+			if (detaching) detach(render_nodes[3]); /* t3 */
+			if (detaching) detach(render_nodes[4]); /* t4 */
+			if (detaching) detach(render_nodes[5]); /* t5 */
+			if (detaching) detach(render_nodes[6]); /* t6 */
+			if (detaching) detach(render_nodes[7]); /* t7 */
+			if (detaching) detach(render_nodes[8]); /* t8 */
+			if (detaching) detach(render_nodes[9]); /* div */
+			if (detaching) detach(render_nodes[10]); /* t9 */
+			if (detaching) detach(render_nodes[11]); /* component */
 			destroy_component(component, detaching);
 		}
 	};

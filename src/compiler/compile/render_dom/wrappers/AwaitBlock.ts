@@ -10,6 +10,8 @@ import ThenBlock from '../../nodes/ThenBlock';
 import CatchBlock from '../../nodes/CatchBlock';
 import { Context } from '../../nodes/shared/Context';
 import { Identifier, Literal, Node } from 'estree';
+import { set_index_number_to_fragment } from './shared/set_index_number';
+import { is_head } from './shared/is_head';
 
 type Status = 'pending' | 'then' | 'catch';
 
@@ -58,6 +60,10 @@ class AwaitBlockBranch extends Wrapper {
 		);
 
 		this.is_dynamic = this.block.dependencies.size > 0;
+	}
+
+	set_index_number(_root_node: Wrapper) {
+		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
 	}
 
 	add_context(node: Node | null, contexts: Context[]) {
@@ -167,12 +173,22 @@ export default class AwaitBlockWrapper extends Wrapper {
 		}
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		this.push_to_node_path(true);
+
+		[this.pending, this.then, this.catch].forEach(branch => {
+			branch.set_index_number(root_node);
+		});
+	}
+
 	render(
 		block: Block,
 		parent_node: Identifier,
 		parent_nodes: Identifier
 	) {
-		const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
+		const anchor = this.get_var() as Identifier;
 		const update_mount_node = this.get_update_mount_node(anchor);
 
 		const snippet = this.node.expression.manipulate(block);
@@ -205,18 +221,35 @@ export default class AwaitBlockWrapper extends Wrapper {
 			@handle_promise(${promise} = ${snippet}, ${info});
 		`);
 
+		block.add_statement(
+			this.var,
+			this.get_var(),
+			this.get_create_statement(parent_node),
+			undefined,
+			parent_node
+		);
+
 		block.chunks.create.push(b`
 			${info}.block.c();
 		`);
 
 		if (parent_nodes && this.renderer.options.hydratable) {
 			block.chunks.claim.push(b`
-				${info}.block.l(${parent_nodes});
+				${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${info}.block.l(n));
 			`);
+
+			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+			if (claim_statement) {
+				block.chunks.claim.push(claim_statement);
+			}
 		}
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = parent_node ? 'null' : '#anchor';
+		const anchor_node = !parent_node
+			? { type: 'Identifier', name: '#anchor' }
+			: !is_head(parent_node) && this.next && this.next.is_dom_node()
+				? this.next.get_var() as Identifier
+				: { type: 'Identifier', name: 'null' };
 
 		const has_transitions = this.pending.block.has_intro_method || this.pending.block.has_outro_method;
 

@@ -3,126 +3,96 @@ import {
 	SvelteComponent,
 	component_subscribe,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
 	safe_not_equal,
-	space,
 	subscribe,
-	toggle_class
+	toggle_class,
+	traverse
 } from "svelte/internal";
 
 import { reactiveStoreVal, unreactiveExport } from './store';
+const render = make_renderer(`<div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div>`);
+const node_path = () => [,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
 
 function create_fragment(ctx) {
-	let div0;
-	let t0;
-	let div1;
-	let t1;
-	let div2;
-	let t2;
-	let div3;
-	let t3;
-	let div4;
-	let t4;
-	let div5;
-	let t5;
-	let div6;
-	let t6;
-	let div7;
-	let t7;
-	let div8;
+	let render_nodes = [];
 
 	return {
 		c() {
-			div0 = element("div");
-			t0 = space();
-			div1 = element("div");
-			t1 = space();
-			div2 = element("div");
-			t2 = space();
-			div3 = element("div");
-			t3 = space();
-			div4 = element("div");
-			t4 = space();
-			div5 = element("div");
-			t5 = space();
-			div6 = element("div");
-			t6 = space();
-			div7 = element("div");
-			t7 = space();
-			div8 = element("div");
-			toggle_class(div0, "update1", reactiveModuleVar);
-			toggle_class(div1, "update2", /*reactiveConst*/ ctx[0].x);
-			toggle_class(div2, "update3", nonReactiveGlobal && /*reactiveConst*/ ctx[0].x);
-			toggle_class(div3, "update4", /*$reactiveStoreVal*/ ctx[2]);
-			toggle_class(div4, "update5", /*$reactiveDeclaration*/ ctx[3]);
-			toggle_class(div5, "static1", nonReactiveModuleVar);
-			toggle_class(div6, "static2", nonReactiveGlobal);
-			toggle_class(div7, "static3", nonReactiveModuleVar && nonReactiveGlobal);
-			toggle_class(div8, "static4", unreactiveExport);
+			traverse(render(), render_nodes, node_path());
+			toggle_class(render_nodes[0], "update1", reactiveModuleVar);
+			toggle_class(render_nodes[2], "update2", /*reactiveConst*/ ctx[0].x);
+			toggle_class(render_nodes[4], "update3", nonReactiveGlobal && /*reactiveConst*/ ctx[0].x);
+			toggle_class(render_nodes[6], "update4", /*$reactiveStoreVal*/ ctx[2]);
+			toggle_class(render_nodes[8], "update5", /*$reactiveDeclaration*/ ctx[3]);
+			toggle_class(render_nodes[10], "static1", nonReactiveModuleVar);
+			toggle_class(render_nodes[12], "static2", nonReactiveGlobal);
+			toggle_class(render_nodes[14], "static3", nonReactiveModuleVar && nonReactiveGlobal);
+			toggle_class(render_nodes[16], "static4", unreactiveExport);
 		},
 		m(target, anchor) {
-			insert(target, div0, anchor);
-			insert(target, t0, anchor);
-			insert(target, div1, anchor);
-			insert(target, t1, anchor);
-			insert(target, div2, anchor);
-			insert(target, t2, anchor);
-			insert(target, div3, anchor);
-			insert(target, t3, anchor);
-			insert(target, div4, anchor);
-			insert(target, t4, anchor);
-			insert(target, div5, anchor);
-			insert(target, t5, anchor);
-			insert(target, div6, anchor);
-			insert(target, t6, anchor);
-			insert(target, div7, anchor);
-			insert(target, t7, anchor);
-			insert(target, div8, anchor);
+			insert(target, render_nodes[0], anchor); /* div0 */
+			insert(target, render_nodes[1], anchor); /* t0 */
+			insert(target, render_nodes[2], anchor); /* div1 */
+			insert(target, render_nodes[3], anchor); /* t1 */
+			insert(target, render_nodes[4], anchor); /* div2 */
+			insert(target, render_nodes[5], anchor); /* t2 */
+			insert(target, render_nodes[6], anchor); /* div3 */
+			insert(target, render_nodes[7], anchor); /* t3 */
+			insert(target, render_nodes[8], anchor); /* div4 */
+			insert(target, render_nodes[9], anchor); /* t4 */
+			insert(target, render_nodes[10], anchor); /* div5 */
+			insert(target, render_nodes[11], anchor); /* t5 */
+			insert(target, render_nodes[12], anchor); /* div6 */
+			insert(target, render_nodes[13], anchor); /* t6 */
+			insert(target, render_nodes[14], anchor); /* div7 */
+			insert(target, render_nodes[15], anchor); /* t7 */
+			insert(target, render_nodes[16], anchor); /* div8 */
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*reactiveModuleVar*/ 0) {
-				toggle_class(div0, "update1", reactiveModuleVar);
+				toggle_class(render_nodes[0], "update1", reactiveModuleVar);
 			}
 
 			if (dirty & /*reactiveConst*/ 1) {
-				toggle_class(div1, "update2", /*reactiveConst*/ ctx[0].x);
+				toggle_class(render_nodes[2], "update2", /*reactiveConst*/ ctx[0].x);
 			}
 
 			if (dirty & /*nonReactiveGlobal, reactiveConst*/ 1) {
-				toggle_class(div2, "update3", nonReactiveGlobal && /*reactiveConst*/ ctx[0].x);
+				toggle_class(render_nodes[4], "update3", nonReactiveGlobal && /*reactiveConst*/ ctx[0].x);
 			}
 
 			if (dirty & /*$reactiveStoreVal*/ 4) {
-				toggle_class(div3, "update4", /*$reactiveStoreVal*/ ctx[2]);
+				toggle_class(render_nodes[6], "update4", /*$reactiveStoreVal*/ ctx[2]);
 			}
 
 			if (dirty & /*$reactiveDeclaration*/ 8) {
-				toggle_class(div4, "update5", /*$reactiveDeclaration*/ ctx[3]);
+				toggle_class(render_nodes[8], "update5", /*$reactiveDeclaration*/ ctx[3]);
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div0);
-			if (detaching) detach(t0);
-			if (detaching) detach(div1);
-			if (detaching) detach(t1);
-			if (detaching) detach(div2);
-			if (detaching) detach(t2);
-			if (detaching) detach(div3);
-			if (detaching) detach(t3);
-			if (detaching) detach(div4);
-			if (detaching) detach(t4);
-			if (detaching) detach(div5);
-			if (detaching) detach(t5);
-			if (detaching) detach(div6);
-			if (detaching) detach(t6);
-			if (detaching) detach(div7);
-			if (detaching) detach(t7);
-			if (detaching) detach(div8);
+			if (detaching) detach(render_nodes[0]); /* div0 */
+			if (detaching) detach(render_nodes[1]); /* t0 */
+			if (detaching) detach(render_nodes[2]); /* div1 */
+			if (detaching) detach(render_nodes[3]); /* t1 */
+			if (detaching) detach(render_nodes[4]); /* div2 */
+			if (detaching) detach(render_nodes[5]); /* t2 */
+			if (detaching) detach(render_nodes[6]); /* div3 */
+			if (detaching) detach(render_nodes[7]); /* t3 */
+			if (detaching) detach(render_nodes[8]); /* div4 */
+			if (detaching) detach(render_nodes[9]); /* t4 */
+			if (detaching) detach(render_nodes[10]); /* div5 */
+			if (detaching) detach(render_nodes[11]); /* t5 */
+			if (detaching) detach(render_nodes[12]); /* div6 */
+			if (detaching) detach(render_nodes[13]); /* t6 */
+			if (detaching) detach(render_nodes[14]); /* div7 */
+			if (detaching) detach(render_nodes[15]); /* t7 */
+			if (detaching) detach(render_nodes[16]); /* div8 */
 		}
 	};
 }

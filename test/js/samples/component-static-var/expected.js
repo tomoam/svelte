@@ -4,27 +4,27 @@ import {
 	create_component,
 	destroy_component,
 	detach,
-	element,
 	init,
 	insert,
 	listen,
+	make_renderer,
 	mount_component,
 	safe_not_equal,
 	set_input_value,
-	space,
 	transition_in,
-	transition_out
+	transition_out,
+	traverse
 } from "svelte/internal";
 
 import Foo from './Foo.svelte';
 import Bar from './Bar.svelte';
+const render = make_renderer(`<!> <!> <input>`);
+const node_path = () => [0,-1,-1,-1,-1];
 
 function create_fragment(ctx) {
+	let render_nodes = [];
 	let foo;
-	let t0;
 	let bar;
-	let t1;
-	let input;
 	let current;
 	let mounted;
 	let dispose;
@@ -33,23 +33,23 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
+			traverse(render(), render_nodes, node_path());
 			create_component(foo.$$.fragment);
-			t0 = space();
 			create_component(bar.$$.fragment);
-			t1 = space();
-			input = element("input");
 		},
 		m(target, anchor) {
-			mount_component(foo, target, anchor);
-			insert(target, t0, anchor);
-			mount_component(bar, target, anchor);
-			insert(target, t1, anchor);
-			insert(target, input, anchor);
-			set_input_value(input, /*z*/ ctx[0]);
+			insert(target, render_nodes[0], anchor); /* foo */
+			mount_component(foo, target, render_nodes[0]);
+			insert(target, render_nodes[1], anchor); /* t0 */
+			insert(target, render_nodes[2], anchor); /* bar */
+			mount_component(bar, target, render_nodes[2]);
+			insert(target, render_nodes[3], anchor); /* t1 */
+			insert(target, render_nodes[4], anchor); /* input */
+			set_input_value(render_nodes[4], /*z*/ ctx[0]);
 			current = true;
 
 			if (!mounted) {
-				dispose = listen(input, "input", /*input_input_handler*/ ctx[1]);
+				dispose = listen(render_nodes[4], "input", /*input_input_handler*/ ctx[1]);
 				mounted = true;
 			}
 		},
@@ -58,8 +58,8 @@ function create_fragment(ctx) {
 			if (dirty & /*z*/ 1) bar_changes.x = /*z*/ ctx[0];
 			bar.$set(bar_changes);
 
-			if (dirty & /*z*/ 1 && input.value !== /*z*/ ctx[0]) {
-				set_input_value(input, /*z*/ ctx[0]);
+			if (dirty & /*z*/ 1 && render_nodes[4].value !== /*z*/ ctx[0]) {
+				set_input_value(render_nodes[4], /*z*/ ctx[0]);
 			}
 		},
 		i(local) {
@@ -74,11 +74,13 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
+			if (detaching) detach(render_nodes[0]); /* foo */
 			destroy_component(foo, detaching);
-			if (detaching) detach(t0);
+			if (detaching) detach(render_nodes[1]); /* t0 */
+			if (detaching) detach(render_nodes[2]); /* bar */
 			destroy_component(bar, detaching);
-			if (detaching) detach(t1);
-			if (detaching) detach(input);
+			if (detaching) detach(render_nodes[3]); /* t1 */
+			if (detaching) detach(render_nodes[4]); /* input */
 			mounted = false;
 			dispose();
 		}

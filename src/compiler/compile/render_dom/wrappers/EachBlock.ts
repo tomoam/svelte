@@ -8,6 +8,7 @@ import { b, x } from 'code-red';
 import ElseBlock from '../../nodes/ElseBlock';
 import { Identifier, Node } from 'estree';
 import get_object from '../../utils/get_object';
+import { set_index_number_to_fragment } from './shared/set_index_number';
 
 export class ElseBlockWrapper extends Wrapper {
 	node: ElseBlock;
@@ -44,6 +45,10 @@ export class ElseBlockWrapper extends Wrapper {
 
 		this.is_dynamic = this.block.dependencies.size > 0;
 	}
+
+	set_index_number(_root_node: Wrapper) {
+		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
+	}
 }
 
 export default class EachBlockWrapper extends Wrapper {
@@ -67,6 +72,8 @@ export default class EachBlockWrapper extends Wrapper {
 	dependencies: Set<string>;
 
 	var: Identifier = { type: 'Identifier', name: 'each' };
+
+	update_mount_node: Identifier;
 
 	constructor(
 		renderer: Renderer,
@@ -185,15 +192,23 @@ export default class EachBlockWrapper extends Wrapper {
 		}
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		this.push_to_node_path(true);
+
+		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
+
+		if (this.else) {
+			this.else.set_index_number(root_node);
+		}
+	}
+
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.fragment.nodes.length === 0) return;
 
 		const { renderer } = this;
 		const { component } = renderer;
-
-		const needs_anchor = this.next
-			? !this.next.is_dom_node() :
-			!parent_node || !this.parent.is_dom_node();
 
 		const snippet = this.node.expression.manipulate(block);
 
@@ -202,12 +217,10 @@ export default class EachBlockWrapper extends Wrapper {
 			block.chunks.init.push(b`@validate_each_argument(${this.vars.each_block_value});`);
 		}
 
-		const initial_anchor_node: Identifier = { type: 'Identifier', name: parent_node ? 'null' : '#anchor' };
+		const initial_anchor_node: Identifier = this.get_var() as Identifier;
 		const initial_mount_node: Identifier = parent_node || { type: 'Identifier', name: '#target' };
-		const update_anchor_node = needs_anchor
-			? block.get_unique_name(`${this.var.name}_anchor`)
-			: (this.next && this.next.var) || { type: 'Identifier', name: 'null' };
-		const update_mount_node: Identifier = this.get_update_mount_node((update_anchor_node as Identifier));
+
+		const each_block_else = this.else && component.get_unique_name(`${this.var.name}_else`);
 
 		const args = {
 			block,
@@ -216,8 +229,7 @@ export default class EachBlockWrapper extends Wrapper {
 			snippet,
 			initial_anchor_node,
 			initial_mount_node,
-			update_anchor_node,
-			update_mount_node
+			each_block_else
 		};
 
 		const all_dependencies = new Set(this.block.dependencies); // TODO should be dynamic deps only
@@ -230,6 +242,14 @@ export default class EachBlockWrapper extends Wrapper {
 			});
 		}
 		this.dependencies = all_dependencies;
+
+		block.add_statement(
+			this.var,
+			this.get_var(),
+			this.get_create_statement(parent_node),
+			undefined,
+			parent_node
+		);
 
 		if (this.node.key) {
 			this.render_keyed(args);
@@ -245,17 +265,7 @@ export default class EachBlockWrapper extends Wrapper {
 			`);
 		}
 
-		if (needs_anchor) {
-			block.add_element(
-				update_anchor_node as Identifier,
-				x`@empty()`,
-				parent_nodes && x`@empty()`,
-				parent_node
-			);
-		}
-
 		if (this.else) {
-			const each_block_else = component.get_unique_name(`${this.var.name}_else`);
 
 			block.chunks.init.push(b`let ${each_block_else} = null;`);
 
@@ -271,14 +281,6 @@ export default class EachBlockWrapper extends Wrapper {
 					${each_block_else}.c();
 				}
 			`);
-
-			if (this.renderer.options.hydratable) {
-				block.chunks.claim.push(b`
-					if (${each_block_else}) {
-						${each_block_else}.l(${parent_nodes});
-					}
-				`);
-			}
 
 			block.chunks.mount.push(b`
 				if (${each_block_else}) {
@@ -307,7 +309,7 @@ export default class EachBlockWrapper extends Wrapper {
 						${each_block_else} = ${this.else.block.name}(#ctx);
 						${each_block_else}.c();
 						${has_transitions && b`@transition_in(${each_block_else}, 1);`}
-						${each_block_else}.m(${update_mount_node}, ${update_anchor_node});
+						${each_block_else}.m(${this.update_mount_node}, ${this.get_var()});
 					} else if (${each_block_else}) {
 						${destroy_block_else};
 					}
@@ -322,7 +324,7 @@ export default class EachBlockWrapper extends Wrapper {
 						${each_block_else} = ${this.else.block.name}(#ctx);
 						${each_block_else}.c();
 						${has_transitions && b`@transition_in(${each_block_else}, 1);`}
-						${each_block_else}.m(${update_mount_node}, ${update_anchor_node});
+						${each_block_else}.m(${this.update_mount_node}, ${this.get_var()});
 					}
 				`);
 			}
@@ -367,8 +369,7 @@ export default class EachBlockWrapper extends Wrapper {
 		snippet,
 		initial_anchor_node,
 		initial_mount_node,
-		update_anchor_node,
-		update_mount_node
+		each_block_else
 	}: {
 		block: Block;
 		parent_node: Identifier;
@@ -376,13 +377,11 @@ export default class EachBlockWrapper extends Wrapper {
 		snippet: Node;
 		initial_anchor_node: Identifier;
 		initial_mount_node: Identifier;
-		update_anchor_node: Identifier;
-		update_mount_node: Identifier;
+		each_block_else: Identifier;
 	}) {
 		const {
 			create_each_block,
 			iterations,
-			data_length,
 			view_length
 		} = this.vars;
 
@@ -393,7 +392,7 @@ export default class EachBlockWrapper extends Wrapper {
 		block.add_variable(lookup, x`new @_Map()`);
 
 		if (this.fragment.nodes[0].is_dom_node()) {
-			this.block.first = this.fragment.nodes[0].var;
+			this.block.first = this.fragment.nodes[0].get_var() as Identifier;
 		} else {
 			this.block.first = this.block.get_unique_name('first');
 			this.block.add_element(
@@ -408,11 +407,7 @@ export default class EachBlockWrapper extends Wrapper {
 			const ${get_key} = #ctx => ${this.node.key.manipulate(block)};
 
 			${this.renderer.options.dev && b`@validate_each_keys(#ctx, ${this.vars.each_block_value}, ${this.vars.get_each_context}, ${get_key});`}
-			for (let #i = 0; #i < ${data_length}; #i += 1) {
-				let child_ctx = ${this.vars.get_each_context}(#ctx, ${this.vars.each_block_value}, #i);
-				let key = ${get_key}(child_ctx);
-				${lookup}.set(key, ${iterations}[#i] = ${create_each_block}(key, child_ctx));
-			}
+			@init_each_block(${this.vars.get_each_context}, #ctx, ${this.vars.each_block_value}, ${get_key}, ${lookup}, ${iterations}, ${create_each_block}, ${this.vars.fixed_length});
 		`);
 
 		block.chunks.create.push(b`
@@ -422,11 +417,31 @@ export default class EachBlockWrapper extends Wrapper {
 		`);
 
 		if (parent_nodes && this.renderer.options.hydratable) {
-			block.chunks.claim.push(b`
-				for (let #i = 0; #i < ${view_length}; #i += 1) {
-					${iterations}[#i].l(${parent_nodes});
-				}
-			`);
+			if (each_block_else) {
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
+						for (let #i = 0; #i < ${view_length}; #i += 1) {
+							${iterations}[#i].l(n);
+						}
+						if (${each_block_else}) {
+							${each_block_else}.l(n);
+						}
+					});
+				`);
+			} else {
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
+						for (let #i = 0; #i < ${view_length}; #i += 1) {
+							${iterations}[#i].l(n);
+						}
+					});
+				`);
+			}
+
+			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+			if (claim_statement) {
+				block.chunks.claim.push(claim_statement);
+			}
 		}
 
 		block.chunks.mount.push(b`
@@ -434,6 +449,8 @@ export default class EachBlockWrapper extends Wrapper {
 				${iterations}[#i].m(${initial_mount_node}, ${initial_anchor_node});
 			}
 		`);
+
+		this.update_mount_node = this.get_update_mount_node(this.get_var() as Identifier);
 
 		const dynamic = this.block.has_update_method;
 
@@ -455,7 +472,7 @@ export default class EachBlockWrapper extends Wrapper {
 				${this.block.has_outros && b`@group_outros();`}
 				${this.node.has_animation && b`for (let #i = 0; #i < ${view_length}; #i += 1) ${iterations}[#i].r();`}
 				${this.renderer.options.dev && b`@validate_each_keys(#ctx, ${this.vars.each_block_value}, ${this.vars.get_each_context}, ${get_key});`}
-				${iterations} = @update_keyed_each(${iterations}, #dirty, ${get_key}, ${dynamic ? 1 : 0}, #ctx, ${this.vars.each_block_value}, ${lookup}, ${update_mount_node}, ${destroy}, ${create_each_block}, ${update_anchor_node}, ${this.vars.get_each_context});
+				${iterations} = @update_keyed_each(${iterations}, #dirty, ${get_key}, ${dynamic ? 1 : 0}, #ctx, ${this.vars.each_block_value}, ${lookup}, ${this.update_mount_node}, ${destroy}, ${create_each_block}, ${this.get_var()}, ${this.vars.get_each_context});
 				${this.node.has_animation && b`for (let #i = 0; #i < ${view_length}; #i += 1) ${iterations}[#i].a();`}
 				${this.block.has_outros && b`@check_outros();`}
 			`);
@@ -478,20 +495,20 @@ export default class EachBlockWrapper extends Wrapper {
 
 	render_unkeyed({
 		block,
+		parent_node,
 		parent_nodes,
 		snippet,
 		initial_anchor_node,
 		initial_mount_node,
-		update_anchor_node,
-		update_mount_node
+		each_block_else
 	}: {
 		block: Block;
+		parent_node: Identifier;
 		parent_nodes: Identifier;
 		snippet: Node;
 		initial_anchor_node: Identifier;
 		initial_mount_node: Identifier;
-		update_anchor_node: Identifier;
-		update_mount_node: Identifier;
+		each_block_else: Identifier;
 	}) {
 		const {
 			create_each_block,
@@ -516,11 +533,31 @@ export default class EachBlockWrapper extends Wrapper {
 		`);
 
 		if (parent_nodes && this.renderer.options.hydratable) {
-			block.chunks.claim.push(b`
-				for (let #i = 0; #i < ${view_length}; #i += 1) {
-					${iterations}[#i].l(${parent_nodes});
-				}
-			`);
+			if (each_block_else) {
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
+						for (let #i = 0; #i < ${view_length}; #i += 1) {
+							${iterations}[#i].l(n);
+						}
+						if (${each_block_else}) {
+							${each_block_else}.l(n);
+						}
+					});
+				`);
+			} else {
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
+						for (let #i = 0; #i < ${view_length}; #i += 1) {
+							${iterations}[#i].l(n);
+						}
+					});
+				`);
+			}
+
+			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+			if (claim_statement) {
+				block.chunks.claim.push(claim_statement);
+			}
 		}
 
 		block.chunks.mount.push(b`
@@ -528,6 +565,8 @@ export default class EachBlockWrapper extends Wrapper {
 				${iterations}[#i].m(${initial_mount_node}, ${initial_anchor_node});
 			}
 		`);
+
+		this.update_mount_node = this.get_update_mount_node(this.get_var() as Identifier);
 
 		if (this.dependencies.size) {
 			const has_transitions = !!(this.block.has_intro_method || this.block.has_outro_method);
@@ -541,7 +580,7 @@ export default class EachBlockWrapper extends Wrapper {
 						${iterations}[#i] = ${create_each_block}(child_ctx);
 						${iterations}[#i].c();
 						${has_transitions && b`@transition_in(${this.vars.iterations}[#i], 1);`}
-						${iterations}[#i].m(${update_mount_node}, ${update_anchor_node});
+						${iterations}[#i].m(${this.update_mount_node}, ${this.get_var()});
 					}
 				`
 				: has_transitions
@@ -552,14 +591,14 @@ export default class EachBlockWrapper extends Wrapper {
 							${iterations}[#i] = ${create_each_block}(child_ctx);
 							${iterations}[#i].c();
 							@transition_in(${this.vars.iterations}[#i], 1);
-							${iterations}[#i].m(${update_mount_node}, ${update_anchor_node});
+							${iterations}[#i].m(${this.update_mount_node}, ${this.get_var()});
 						}
 					`
 					: b`
 						if (!${iterations}[#i]) {
 							${iterations}[#i] = ${create_each_block}(child_ctx);
 							${iterations}[#i].c();
-							${iterations}[#i].m(${update_mount_node}, ${update_anchor_node});
+							${iterations}[#i].m(${this.update_mount_node}, ${this.get_var()});
 						}
 					`;
 

@@ -2,29 +2,34 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
+const render = make_renderer(`<b> </b>`);
+const node_path = () => [,0];
+
 function create_fragment(ctx) {
-	let b;
+	let render_nodes = [];
+	let t_value = get_answer() + "";
 
 	return {
 		c() {
-			b = element("b");
-			b.textContent = `${get_answer()}`;
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1].data = t_value;
 		},
 		m(target, anchor) {
-			insert(target, b, anchor);
+			insert(target, render_nodes[0], anchor); /* b */
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(b);
+			if (detaching) detach(render_nodes[0]); /* b */
 		}
 	};
 }

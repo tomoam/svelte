@@ -4,32 +4,34 @@ import {
 	add_render_callback,
 	add_resize_listener,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
+const render = make_renderer(`<div>some content</div>`);
+
 function create_fragment(ctx) {
-	let div;
+	let render_nodes = [];
 	let div_resize_listener;
 
 	return {
 		c() {
-			div = element("div");
-			div.textContent = "some content";
-			add_render_callback(() => /*div_elementresize_handler*/ ctx[2].call(div));
+			traverse(render(), render_nodes);
+			add_render_callback(() => /*div_elementresize_handler*/ ctx[2].call(render_nodes[0]));
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
-			div_resize_listener = add_resize_listener(div, /*div_elementresize_handler*/ ctx[2].bind(div));
+			insert(target, render_nodes[0], anchor); /* div */
+			div_resize_listener = add_resize_listener(render_nodes[0], /*div_elementresize_handler*/ ctx[2].bind(render_nodes[0]));
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 			div_resize_listener();
 		}
 	};

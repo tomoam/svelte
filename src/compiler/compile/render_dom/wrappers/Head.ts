@@ -34,17 +34,24 @@ export default class HeadWrapper extends Wrapper {
 
 	render(block: Block, _parent_node: Identifier, _parent_nodes: Identifier) {
 		let nodes;
-		if (this.renderer.options.hydratable && this.fragment.nodes.length) {
+		if (this.renderer.options.hydratable && this.fragment.nodes.filter(n => n.node.type !== 'Title').length) {
 			nodes = block.get_unique_name('head_nodes');
 			block.chunks.claim.push(b`const ${nodes} = @query_selector_all('[data-svelte="${this.node.id}"]', @_document.head);`);
 		}
 
 		this.fragment.render(block, x`@_document.head` as unknown as Identifier, nodes);
 
-		if (nodes && this.renderer.options.hydratable) {
-			block.chunks.claim.push(
-				b`${nodes}.forEach(@detach);`
-			);
+		if (this.renderer.options.hydratable && this.next) {
+			if (block.chunks.hydrate.length > 0) {
+				block.chunks.claim.push(b`
+					if (!#nodes.length) {
+						this.h();
+						return;
+					}
+				`);
+			} else {
+				block.chunks.claim.push(b`if (!#nodes.length) return;`);
+			}
 		}
 	}
 }

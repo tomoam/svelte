@@ -6,19 +6,22 @@ import {
 	detach,
 	init,
 	insert,
+	make_renderer,
 	mount_component,
 	noop,
 	safe_not_equal,
-	space,
 	transition_in,
-	transition_out
+	transition_out,
+	traverse
 } from "svelte/internal";
 
 import Imported from 'Imported.svelte';
+const render = make_renderer(`<!> <!>`);
+const node_path = () => [0,-1,-1];
 
 function create_fragment(ctx) {
+	let render_nodes = [];
 	let imported;
-	let t;
 	let nonimported;
 	let current;
 	imported = new Imported({});
@@ -26,14 +29,16 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
+			traverse(render(), render_nodes, node_path());
 			create_component(imported.$$.fragment);
-			t = space();
 			create_component(nonimported.$$.fragment);
 		},
 		m(target, anchor) {
-			mount_component(imported, target, anchor);
-			insert(target, t, anchor);
-			mount_component(nonimported, target, anchor);
+			insert(target, render_nodes[0], anchor); /* imported */
+			mount_component(imported, target, render_nodes[0]);
+			insert(target, render_nodes[1], anchor); /* t */
+			insert(target, render_nodes[2], anchor); /* nonimported */
+			mount_component(nonimported, target, render_nodes[2]);
 			current = true;
 		},
 		p: noop,
@@ -49,8 +54,10 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
+			if (detaching) detach(render_nodes[0]); /* imported */
 			destroy_component(imported, detaching);
-			if (detaching) detach(t);
+			if (detaching) detach(render_nodes[1]); /* t */
+			if (detaching) detach(render_nodes[2]); /* nonimported */
 			destroy_component(nonimported, detaching);
 		}
 	};

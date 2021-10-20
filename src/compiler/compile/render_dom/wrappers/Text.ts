@@ -40,23 +40,33 @@ export default class TextWrapper extends Wrapper {
 		return true;
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		if (
+			!this.template_name && (
+			!this.parent ||
+			!this.parent.is_dom_node() ||
+			this.prev && !this.prev.is_dom_node()
+		)) {
+			this.push_to_node_path(true);
+		} else {
+			this.push_to_node_path(false);
+		}
+	}
+
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.skip) return;
-		const use_space = this.use_space();
 
-		const string_literal = {
-			type: 'Literal',
-			value: this.data,
-			loc: {
-				start: this.renderer.locate(this.node.start),
-				end: this.renderer.locate(this.node.end)
-			}
-		};
+		const render_statement = this.get_create_statement(parent_node);
 
-		block.add_element(
+		const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+
+		block.add_statement(
 			this.var,
-			use_space ? x`@space()` : x`@text(${string_literal})`,
-			parent_nodes && (use_space ? x`@claim_space(${parent_nodes})` : x`@claim_text(${parent_nodes}, ${string_literal})`),
+			this.get_var(),
+			render_statement,
+			claim_statement,
 			parent_node as Identifier
 		);
 	}

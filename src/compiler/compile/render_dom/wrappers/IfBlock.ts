@@ -10,6 +10,7 @@ import { b, x } from 'code-red';
 import { walk } from 'estree-walker';
 import { is_head } from './shared/is_head';
 import { Identifier, Node } from 'estree';
+import { set_index_number_to_fragment } from './shared/set_index_number';
 
 function is_else_if(node: ElseBlock) {
 	return (
@@ -73,6 +74,10 @@ class IfBlockBranch extends Wrapper {
 		this.fragment = new FragmentWrapper(renderer, this.block, node.children, parent, strip_whitespace, next_sibling);
 
 		this.is_dynamic = this.block.dependencies.size > 0;
+	}
+
+	set_index_number(_root_node: Wrapper) {
+		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
 	}
 }
 
@@ -169,17 +174,22 @@ export default class IfBlockWrapper extends Wrapper {
 		renderer.blocks.push(...blocks);
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		this.push_to_node_path(true);
+
+		this.branches.forEach(branch => {
+			branch.set_index_number(root_node);
+		});
+	}
+
 	render(
 		block: Block,
 		parent_node: Identifier,
 		parent_nodes: Identifier
 	) {
 		const name = this.var;
-
-		const needs_anchor = this.next ? !this.next.is_dom_node() : !parent_node || !this.parent.is_dom_node();
-		const anchor = needs_anchor
-			? block.get_unique_name(`${this.var.name}_anchor`)
-			: (this.next && this.next.var) || 'null';
 
 		const has_else = !(this.branches[this.branches.length - 1].condition);
 		const if_exists_condition = has_else ? null : name;
@@ -189,9 +199,17 @@ export default class IfBlockWrapper extends Wrapper {
 		const has_outros = this.branches[0].block.has_outro_method;
 		const has_transitions = has_intros || has_outros;
 
-		const vars = { name, anchor, if_exists_condition, has_else, has_transitions };
+		const vars = { name, if_exists_condition, has_else, has_transitions };
 
 		const detaching = parent_node && !is_head(parent_node) ? null : 'detaching';
+
+		block.add_statement(
+			this.var,
+			this.get_var(),
+			this.get_create_statement(parent_node),
+			undefined,
+			parent_node
+		);
 
 		if (this.node.else) {
 			this.branches.forEach(branch => {
@@ -219,29 +237,25 @@ export default class IfBlockWrapper extends Wrapper {
 			block.chunks.create.push(b`${name}.c();`);
 		}
 
-		if (parent_nodes && this.renderer.options.hydratable) {
+		if (this.renderer.options.hydratable) {
 			if (if_exists_condition) {
-				block.chunks.claim.push(
-					b`if (${if_exists_condition}) ${name}.l(${parent_nodes});`
-				);
+				block.chunks.claim.push(b`
+					if (${if_exists_condition}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${name}.l(n));
+				`);
 			} else {
-				block.chunks.claim.push(
-					b`${name}.l(${parent_nodes});`
-				);
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${name}.l(n));
+				`);
+			}
+
+			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+			if (claim_statement) {
+				block.chunks.claim.push(claim_statement);
 			}
 		}
 
 		if (has_intros || has_outros) {
 			block.chunks.intro.push(b`@transition_in(${name});`);
-		}
-
-		if (needs_anchor) {
-			block.add_element(
-				anchor as Identifier,
-				x`@empty()`,
-				parent_nodes && x`@empty()`,
-				parent_node
-			);
 		}
 
 		this.branches.forEach(branch => {
@@ -254,7 +268,7 @@ export default class IfBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		_parent_nodes: Identifier,
 		dynamic,
-		{ name, anchor, has_else, if_exists_condition, has_transitions },
+		{ name, has_else, if_exists_condition, has_transitions },
 		detaching
 	) {
 		const select_block_type = this.renderer.component.get_unique_name('select_block_type');
@@ -293,7 +307,7 @@ export default class IfBlockWrapper extends Wrapper {
 		`);
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = parent_node ? 'null' : '#anchor';
+		const anchor_node = this.get_var();
 
 		if (if_exists_condition) {
 			block.chunks.mount.push(
@@ -306,7 +320,7 @@ export default class IfBlockWrapper extends Wrapper {
 		}
 
 		if (this.needs_update) {
-			const update_mount_node = this.get_update_mount_node(anchor);
+			const update_mount_node = this.get_update_mount_node(anchor_node as Identifier);
 
 			const change_block = b`
 				${if_exists_condition ? b`if (${if_exists_condition}) ${name}.d(1)` : b`${name}.d(1)`};
@@ -314,7 +328,7 @@ export default class IfBlockWrapper extends Wrapper {
 				if (${name}) {
 					${name}.c();
 					${has_transitions && b`@transition_in(${name}, 1);`}
-					${name}.m(${update_mount_node}, ${anchor});
+					${name}.m(${update_mount_node}, ${anchor_node});
 				}
 			`;
 
@@ -361,7 +375,7 @@ export default class IfBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		_parent_nodes: Identifier,
 		dynamic,
-		{ name, anchor, has_else, has_transitions, if_exists_condition },
+		{ name, has_else, has_transitions, if_exists_condition },
 		detaching
 	) {
 		const select_block_type = this.renderer.component.get_unique_name('select_block_type');
@@ -423,7 +437,7 @@ export default class IfBlockWrapper extends Wrapper {
 		}
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = parent_node ? 'null' : '#anchor';
+		const anchor_node = this.get_var();
 
 		block.chunks.mount.push(
 			if_current_block_type_index(
@@ -432,7 +446,7 @@ export default class IfBlockWrapper extends Wrapper {
 		);
 
 		if (this.needs_update) {
-			const update_mount_node = this.get_update_mount_node(anchor);
+			const update_mount_node = this.get_update_mount_node(anchor_node as Identifier);
 
 			const destroy_old_block = b`
 				@group_outros();
@@ -451,7 +465,7 @@ export default class IfBlockWrapper extends Wrapper {
 					${dynamic && b`${name}.p(#ctx, #dirty);`}
 				}
 				${has_transitions && b`@transition_in(${name}, 1);`}
-				${name}.m(${update_mount_node}, ${anchor});
+				${name}.m(${update_mount_node}, ${anchor_node});
 			`;
 
 			const change_block = has_else
@@ -510,7 +524,7 @@ export default class IfBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		_parent_nodes: Identifier,
 		dynamic,
-		{ name, anchor, if_exists_condition, has_transitions },
+		{ name, if_exists_condition, has_transitions },
 		detaching
 	) {
 		const branch = this.branches[0];
@@ -522,14 +536,14 @@ export default class IfBlockWrapper extends Wrapper {
 		`);
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = parent_node ? 'null' : '#anchor';
+		const anchor_node = this.get_var();
 
 		block.chunks.mount.push(
 			b`if (${name}) ${name}.m(${initial_mount_node}, ${anchor_node});`
 		);
 
 		if (branch.dependencies.length > 0) {
-			const update_mount_node = this.get_update_mount_node(anchor);
+			const update_mount_node = this.get_update_mount_node(anchor_node as Identifier);
 
 			const enter = b`
 				if (${name}) {
@@ -544,7 +558,7 @@ export default class IfBlockWrapper extends Wrapper {
 					${name} = ${branch.block.name}(#ctx);
 					${name}.c();
 					${has_transitions && b`@transition_in(${name}, 1);`}
-					${name}.m(${update_mount_node}, ${anchor});
+					${name}.m(${update_mount_node}, ${anchor_node});
 				}
 			`;
 

@@ -2,80 +2,54 @@
 import {
 	SvelteComponentDev,
 	add_location,
-	append_dev,
 	detach_dev,
 	dispatch_dev,
-	element,
 	init,
 	insert_dev,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data_dev,
-	space,
 	subscribe,
-	text,
+	traverse,
 	validate_slots,
 	validate_store
 } from "svelte/internal";
 
 const file = undefined;
+const render = make_renderer(`<p><!> <!> <!> <!> <!> <!></p>`);
+const node_path = () => [,0,1,-1,1,-1,1,-1,1,-1,1,-1];
 
 function create_fragment(ctx) {
-	let p;
-	let t0;
-	let t1;
-	let t2;
-	let t3;
-	let t4;
-	let t5;
-	let t6;
-	let t7;
-	let t8;
-	let t9;
-	let t10;
+	let render_nodes = [];
 
 	const block = {
 		c: function create() {
-			p = element("p");
-			t0 = text(/*prop*/ ctx[0]);
-			t1 = space();
-			t2 = text(/*realName*/ ctx[1]);
-			t3 = space();
-			t4 = text(/*local*/ ctx[3]);
-			t5 = space();
-			t6 = text(priv);
-			t7 = space();
-			t8 = text(/*$prop*/ ctx[2]);
-			t9 = space();
-			t10 = text(/*shadowedByModule*/ ctx[4]);
-			add_location(p, file, 22, 0, 430);
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1] = replace_text(render_nodes[1], /*prop*/ ctx[0]);
+			render_nodes[3] = replace_text(render_nodes[3], /*realName*/ ctx[1]);
+			render_nodes[5] = replace_text(render_nodes[5], /*local*/ ctx[3]);
+			render_nodes[7] = replace_text(render_nodes[7], priv);
+			render_nodes[9] = replace_text(render_nodes[9], /*$prop*/ ctx[2]);
+			render_nodes[11] = replace_text(render_nodes[11], /*shadowedByModule*/ ctx[4]);
+			add_location(render_nodes[0], file, 22, 0, 430);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, p, anchor);
-			append_dev(p, t0);
-			append_dev(p, t1);
-			append_dev(p, t2);
-			append_dev(p, t3);
-			append_dev(p, t4);
-			append_dev(p, t5);
-			append_dev(p, t6);
-			append_dev(p, t7);
-			append_dev(p, t8);
-			append_dev(p, t9);
-			append_dev(p, t10);
+			insert_dev(target, render_nodes[0], anchor); /* p */
 		},
 		p: function update(ctx, [dirty]) {
-			if (dirty & /*prop*/ 1) set_data_dev(t0, /*prop*/ ctx[0]);
-			if (dirty & /*realName*/ 2) set_data_dev(t2, /*realName*/ ctx[1]);
-			if (dirty & /*$prop*/ 4) set_data_dev(t8, /*$prop*/ ctx[2]);
+			if (dirty & /*prop*/ 1) set_data_dev(render_nodes[1], /*prop*/ ctx[0]);
+			if (dirty & /*realName*/ 2) set_data_dev(render_nodes[3], /*realName*/ ctx[1]);
+			if (dirty & /*$prop*/ 4) set_data_dev(render_nodes[9], /*$prop*/ ctx[2]);
 		},
 		i: noop,
 		o: noop,
 		d: function destroy(detaching) {
-			if (detaching) detach_dev(p);
+			if (detaching) detach_dev(render_nodes[0]); /* p */
 		}
 	};
 

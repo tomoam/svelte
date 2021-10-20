@@ -2,18 +2,16 @@
 import {
 	HtmlTag,
 	SvelteComponent,
-	append,
-	attr,
 	destroy_each,
 	detach,
-	element,
 	init,
 	insert,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data,
-	space,
-	text
+	traverse
 } from "svelte/internal";
 
 function get_each_context(ctx, list, i) {
@@ -23,68 +21,46 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
+const render = make_renderer(`<div class="comment"><strong> </strong> <span class="meta"><!> wrote <!> ago:</span> <!></div>`);
+const node_path = () => [,,0,3,1,0,1,-1,1,6,-1];
+
 // (8:0) {#each comments as comment, i}
 function create_each_block(ctx) {
-	let div;
-	let strong;
-	let t0;
-	let t1;
-	let span;
+	let render_nodes = [];
 	let t2_value = /*comment*/ ctx[4].author + "";
-	let t2;
-	let t3;
 	let t4_value = /*elapsed*/ ctx[1](/*comment*/ ctx[4].time, /*time*/ ctx[2]) + "";
-	let t4;
-	let t5;
-	let t6;
 	let html_tag;
 	let raw_value = /*comment*/ ctx[4].html + "";
 
 	return {
 		c() {
-			div = element("div");
-			strong = element("strong");
-			t0 = text(/*i*/ ctx[6]);
-			t1 = space();
-			span = element("span");
-			t2 = text(t2_value);
-			t3 = text(" wrote ");
-			t4 = text(t4_value);
-			t5 = text(" ago:");
-			t6 = space();
+			traverse(render(), render_nodes, node_path());
+			render_nodes[2].data = /*i*/ ctx[6];
+			render_nodes[5] = replace_text(render_nodes[5], t2_value);
+			render_nodes[7] = replace_text(render_nodes[7], t4_value);
 			html_tag = new HtmlTag();
-			attr(span, "class", "meta");
-			html_tag.a = null;
-			attr(div, "class", "comment");
+			html_tag.a = render_nodes[10];
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
-			append(div, strong);
-			append(strong, t0);
-			append(div, t1);
-			append(div, span);
-			append(span, t2);
-			append(span, t3);
-			append(span, t4);
-			append(span, t5);
-			append(div, t6);
-			html_tag.m(raw_value, div);
+			insert(target, render_nodes[0], anchor); /* div */
+			html_tag.m(raw_value, render_nodes[0], render_nodes[10]);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*comments*/ 1 && t2_value !== (t2_value = /*comment*/ ctx[4].author + "")) set_data(t2, t2_value);
-			if (dirty & /*elapsed, comments, time*/ 7 && t4_value !== (t4_value = /*elapsed*/ ctx[1](/*comment*/ ctx[4].time, /*time*/ ctx[2]) + "")) set_data(t4, t4_value);
+			if (dirty & /*comments*/ 1 && t2_value !== (t2_value = /*comment*/ ctx[4].author + "")) set_data(render_nodes[5], t2_value);
+			if (dirty & /*elapsed, comments, time*/ 7 && t4_value !== (t4_value = /*elapsed*/ ctx[1](/*comment*/ ctx[4].time, /*time*/ ctx[2]) + "")) set_data(render_nodes[7], t4_value);
 			if (dirty & /*comments*/ 1 && raw_value !== (raw_value = /*comment*/ ctx[4].html + "")) html_tag.p(raw_value);
 		},
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 		}
 	};
 }
 
+const render_1 = make_renderer(`<!> <p> </p>`);
+const node_path_1 = () => [0,-1,-1,0];
+
 function create_fragment(ctx) {
-	let t0;
-	let p;
-	let t1;
+	let render_nodes = [];
 	let each_value = /*comments*/ ctx[0];
 	let each_blocks = [];
 
@@ -94,22 +70,23 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
+			traverse(render_1(), render_nodes, node_path_1());
+
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
-			t0 = space();
-			p = element("p");
-			t1 = text(/*foo*/ ctx[3]);
+			render_nodes[3].data = /*foo*/ ctx[3];
 		},
 		m(target, anchor) {
+			insert(target, render_nodes[0], anchor); /* each_1 */
+
 			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(target, anchor);
+				each_blocks[i].m(target, render_nodes[0]);
 			}
 
-			insert(target, t0, anchor);
-			insert(target, p, anchor);
-			append(p, t1);
+			insert(target, render_nodes[1], anchor); /* t0 */
+			insert(target, render_nodes[2], anchor); /* p */
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*comments, elapsed, time*/ 7) {
@@ -124,7 +101,7 @@ function create_fragment(ctx) {
 					} else {
 						each_blocks[i] = create_each_block(child_ctx);
 						each_blocks[i].c();
-						each_blocks[i].m(t0.parentNode, t0);
+						each_blocks[i].m(render_nodes[0].parentNode, render_nodes[0]);
 					}
 				}
 
@@ -135,14 +112,15 @@ function create_fragment(ctx) {
 				each_blocks.length = each_value.length;
 			}
 
-			if (dirty & /*foo*/ 8) set_data(t1, /*foo*/ ctx[3]);
+			if (dirty & /*foo*/ 8) set_data(render_nodes[3], /*foo*/ ctx[3]);
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
+			if (detaching) detach(render_nodes[0]); /* each_1 */
 			destroy_each(each_blocks, detaching);
-			if (detaching) detach(t0);
-			if (detaching) detach(p);
+			if (detaching) detach(render_nodes[1]); /* t0 */
+			if (detaching) detach(render_nodes[2]); /* p */
 		}
 	};
 }

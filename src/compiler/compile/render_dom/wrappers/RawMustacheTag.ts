@@ -22,7 +22,13 @@ export default class RawMustacheTagWrapper extends Tag {
 		this.not_static_content();
 	}
 
-	render(block: Block, parent_node: Identifier, _parent_nodes: Identifier) {
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		this.push_to_node_path(true);
+	}
+
+	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		const in_head = is_head(parent_node);
 
 		const can_use_innerhtml = !in_head && parent_node && !this.prev && !this.next;
@@ -37,10 +43,7 @@ export default class RawMustacheTagWrapper extends Tag {
 
 			block.chunks.mount.push(insert(init));
 		} else {
-			const needs_anchor = in_head || (this.next ? !this.next.is_dom_node() : (!this.parent || !this.parent.is_dom_node()));
-
 			const html_tag = block.get_unique_name('html_tag');
-			const html_anchor = needs_anchor && block.get_unique_name('html_anchor');
 
 			block.add_variable(html_tag);
 
@@ -49,18 +52,26 @@ export default class RawMustacheTagWrapper extends Tag {
 				content => x`${html_tag}.p(${content})`
 			);
 
-			const update_anchor = needs_anchor ? html_anchor : this.next ? this.next.var : 'null';
-
 			block.chunks.create.push(b`${html_tag} = new @HtmlTag();`);
 			if (this.renderer.options.hydratable) {
-				block.chunks.claim.push(b`${html_tag} = @claim_html_tag(${_parent_nodes});`);
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
+						${html_tag} = @claim_html_tag(n);
+					});
+				`);
 			}
-			block.chunks.hydrate.push(b`${html_tag}.a = ${update_anchor};`);
-			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${parent_node ? null : '#anchor'});`);
 
-			if (needs_anchor) {
-				block.add_element(html_anchor, x`@empty()`, x`@empty()`, parent_node);
-			}
+			block.add_statement(
+				this.var,
+				this.get_var(),
+				this.get_create_statement(parent_node),
+				this.get_claim_statement(block, parent_node, parent_nodes),
+				parent_node
+			);
+
+			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${this.get_var()});`);
+
+			block.chunks.hydrate.push(b`${html_tag}.a = ${this.get_var()};`);
 
 			if (!parent_node || in_head) {
 				block.chunks.destroy.push(b`if (detaching) ${html_tag}.d();`);
