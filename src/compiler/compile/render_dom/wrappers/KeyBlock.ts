@@ -6,6 +6,7 @@ import create_debugging_comment from './shared/create_debugging_comment';
 import FragmentWrapper from './Fragment';
 import { b, x } from 'code-red';
 import { Identifier } from 'estree';
+import { set_index_number_to_fragment } from './shared/set_index_number';
 
 export default class KeyBlockWrapper extends Wrapper {
 	node: KeyBlock;
@@ -50,6 +51,14 @@ export default class KeyBlockWrapper extends Wrapper {
 		);
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		this.push_to_node_path(true);
+
+		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
+	}
+
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.dependencies.length === 0) {
 			this.render_static_key(block, parent_node, parent_nodes);
@@ -81,6 +90,14 @@ export default class KeyBlockWrapper extends Wrapper {
 		const not_equal = this.renderer.component.component_options.immutable ? x`@not_equal` : x`@safe_not_equal`;
 		const condition = x`${this.renderer.dirty(this.dependencies)} && ${not_equal}(${previous_key}, ${previous_key} = ${snippet})`;
 
+		block.add_statement(
+			this.var,
+			this.get_var(),
+			this.get_create_statement(parent_node),
+			undefined,
+			parent_node
+		);
+
 		block.chunks.init.push(b`
 			let ${this.var} = ${this.block.name}(#ctx);
 		`);
@@ -89,11 +106,9 @@ export default class KeyBlockWrapper extends Wrapper {
 			block.chunks.claim.push(b`${this.var}.l(${parent_nodes});`);
 		}
 		block.chunks.mount.push(
-			b`${this.var}.m(${parent_node || '#target'}, ${
-				parent_node ? 'null' : '#anchor'
-			});`
+			b`${this.var}.m(${parent_node || '#target'}, ${this.get_var()});`
 		);
-		const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
+		const anchor = this.get_var() as Identifier;
 		const body = b`
 			${
 				has_transitions

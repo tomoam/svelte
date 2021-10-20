@@ -123,11 +123,11 @@ export default class BindingWrapper {
 				type === 'password'
 			) {
 				update_conditions.push(
-					x`${parent.var}.${this.node.name} !== ${this.snippet}`
+					x`${parent.get_var()}.${this.node.name} !== ${this.snippet}`
 				);
 			} else if (type === 'number') {
 				update_conditions.push(
-					x`@to_number(${parent.var}.${this.node.name}) !== ${this.snippet}`
+					x`@to_number(${parent.get_var()}.${this.node.name}) !== ${this.snippet}`
 				);
 			}
 		}
@@ -161,22 +161,22 @@ export default class BindingWrapper {
 				}
 
 				block.chunks.hydrate.push(
-					b`${binding_group(true)}.push(${parent.var});`
+					b`${binding_group(true)}.push(${parent.get_var()});`
 				);
 
 				block.chunks.destroy.push(
-					b`${binding_group(true)}.splice(${binding_group(true)}.indexOf(${parent.var}), 1);`
+					b`${binding_group(true)}.splice(${binding_group(true)}.indexOf(${parent.get_var()}), 1);`
 				);
 				break;
 			}
 
 			case 'textContent':
-				update_conditions.push(x`${this.snippet} !== ${parent.var}.textContent`);
+				update_conditions.push(x`${this.snippet} !== ${parent.get_var()}.textContent`);
 				mount_conditions.push(x`${this.snippet} !== void 0`);
 				break;
 
 			case 'innerHTML':
-				update_conditions.push(x`${this.snippet} !== ${parent.var}.innerHTML`);
+				update_conditions.push(x`${this.snippet} !== ${parent.get_var()}.innerHTML`);
 				mount_conditions.push(x`${this.snippet} !== void 0`);
 				break;
 
@@ -256,25 +256,25 @@ function get_dom_updater(
 
 	if (node.name === 'select') {
 		return node.get_static_attribute_value('multiple') === true ?
-			b`@select_options(${element.var}, ${binding.snippet})` :
-			b`@select_option(${element.var}, ${binding.snippet})`;
+			b`@select_options(${element.get_var()}, ${binding.snippet})` :
+			b`@select_option(${element.get_var()}, ${binding.snippet})`;
 	}
 
 	if (binding.node.name === 'group') {
 		const type = node.get_static_attribute_value('type');
 
 		const condition = type === 'checkbox'
-			? x`~${binding.snippet}.indexOf(${element.var}.__value)`
-			: x`${element.var}.__value === ${binding.snippet}`;
+			? x`~${binding.snippet}.indexOf(${element.get_var()}.__value)`
+			: x`${element.get_var()}.__value === ${binding.snippet}`;
 
-		return b`${element.var}.checked = ${condition};`;
+		return b`${element.get_var()}.checked = ${condition};`;
 	}
 
 	if (binding.node.name === 'value') {
-		return b`@set_input_value(${element.var}, ${binding.snippet});`;
+		return b`@set_input_value(${element.get_var()}, ${binding.snippet});`;
 	}
 
-	return b`${element.var}.${binding.node.name} = ${binding.snippet};`;
+	return b`${element.get_var()}.${binding.node.name} = ${binding.snippet};`;
 }
 
 function get_binding_group(renderer: Renderer, value: Binding, block: Block) {

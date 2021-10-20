@@ -5,12 +5,30 @@ import { link } from '../../../../utils/link';
 // similar logic from `compile/render_dom/wrappers/Fragment`
 // We want to remove trailing whitespace inside an element/component/block,
 // *unless* there is no whitespace between this node and its next sibling
-export default function remove_whitespace_children(children: INode[], next?: INode): INode[] {
+export default function remove_whitespace_children(children: INode[], next?: INode, preserve_comments?: boolean): INode[] {
 	const nodes: INode[] = [];
 	let last_child: INode;
+	let window_node: INode;
+	const head_nodes: INode[] = [];
+	let body_node: INode;
 	let i = children.length;
 	while (i--) {
 		const child = children[i];
+
+		if (child.type === 'Window') {
+			window_node = child;
+			continue;
+		}
+
+		if (child.type === 'Head') {
+			head_nodes.push(child);
+			continue;
+		}
+
+		if (child.type === 'Body') {
+			body_node = child;
+			continue;
+		}
 
 		if (child.type === 'Text') {
 			if (child.should_skip()) {
@@ -28,6 +46,7 @@ export default function remove_whitespace_children(children: INode[], next?: INo
 
 				if (should_trim && !child.keep_space()) {
 					data = trim_end(data);
+					child.data = data;
 					if (!data) continue;
 				}
 			}
@@ -35,12 +54,21 @@ export default function remove_whitespace_children(children: INode[], next?: INo
 			// glue text nodes (which could e.g. be separated by comments) together
 			if (last_child && last_child.type === 'Text') {
 				last_child.data = data + last_child.data;
+				child.data = '';
 				continue;
 			}
 
 			nodes.unshift(child);
 			link(last_child, last_child = child);
 		} else {
+			if (!preserve_comments && child.type === 'Comment') {
+				continue;
+			}
+
+			if (child.type === 'Options') {
+				continue;
+			}
+
 			nodes.unshift(child);
 			link(last_child, last_child = child);
 		}
@@ -57,6 +85,21 @@ export default function remove_whitespace_children(children: INode[], next?: INo
 				nodes[0].prev = null;
 			}
 		}
+	}
+
+	if (body_node) {
+		nodes.unshift(body_node);
+		link(last_child, last_child = body_node);
+	}
+
+	head_nodes.forEach((head_node) => {
+		nodes.unshift(head_node);
+		link(last_child, last_child = head_node);
+	});
+
+	if (window_node) {
+		nodes.unshift(window_node);
+		link(last_child, window_node);
 	}
 
 	return nodes;

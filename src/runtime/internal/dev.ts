@@ -1,4 +1,4 @@
-import { custom_event, append, append_hydration, insert, insert_hydration, detach, listen, attr } from './dom';
+import { custom_event, append, insert, insert_hydration, detach, listen, attr } from './dom';
 import { SvelteComponent } from './Component';
 import { is_void } from '../../shared/utils/names';
 
@@ -9,11 +9,6 @@ export function dispatch_dev<T=any>(type: string, detail?: T) {
 export function append_dev(target: Node, node: Node) {
 	dispatch_dev('SvelteDOMInsert', { target, node });
 	append(target, node);
-}
-
-export function append_hydration_dev(target: Node, node: Node) {
-	dispatch_dev('SvelteDOMInsert', { target, node });
-	append_hydration(target, node);
 }
 
 export function insert_dev(target: Node, node: Node, anchor?: Node) {

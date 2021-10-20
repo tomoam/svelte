@@ -4,13 +4,13 @@ import {
 	destroy_each,
 	detach_dev,
 	dispatch_dev,
-	empty,
 	init,
 	insert_dev,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
-	space,
-	text,
+	traverse,
 	validate_each_argument,
 	validate_slots
 } from "svelte/internal";
@@ -24,11 +24,12 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
+const render = make_renderer(`<!>`);
+
 // (4:0) {#each things as thing, index}
 function create_each_block(ctx) {
-	let t0;
-	let t1_value = /*thing*/ ctx[0] + "";
-	let t1;
+	let render_nodes = [];
+	let t_value = /*thing*/ ctx[0] + "";
 
 	const block = {
 		c: function create() {
@@ -38,17 +39,15 @@ function create_each_block(ctx) {
 				debugger;
 			}
 
-			t0 = space();
-			t1 = text(t1_value);
+			traverse(render());
+			render_nodes[1] = replace_text(render_nodes[1], t_value);
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, t0, anchor);
-			insert_dev(target, t1, anchor);
+			insert_dev(target, render_nodes[1], anchor); /* t */
 		},
 		p: noop,
 		d: function destroy(detaching) {
-			if (detaching) detach_dev(t0);
-			if (detaching) detach_dev(t1);
+			if (detaching) detach_dev(render_nodes[1]); /* t */
 		}
 	};
 
@@ -63,8 +62,10 @@ function create_each_block(ctx) {
 	return block;
 }
 
+const render_1 = make_renderer(`<!>`);
+
 function create_fragment(ctx) {
-	let each_1_anchor;
+	let render_nodes = [];
 	let each_value = things;
 	validate_each_argument(each_value);
 	let each_blocks = [];
@@ -75,21 +76,21 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
+			traverse(render_1(), render_nodes);
+
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
-
-			each_1_anchor = empty();
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(target, anchor);
-			}
+			insert_dev(target, render_nodes[0], anchor); /* each_1 */
 
-			insert_dev(target, each_1_anchor, anchor);
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(target, render_nodes[0]);
+			}
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*things*/ 0) {
@@ -105,7 +106,7 @@ function create_fragment(ctx) {
 					} else {
 						each_blocks[i] = create_each_block(child_ctx);
 						each_blocks[i].c();
-						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
+						each_blocks[i].m(render_nodes[0].parentNode, render_nodes[0]);
 					}
 				}
 
@@ -119,8 +120,8 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d: function destroy(detaching) {
+			if (detaching) detach_dev(render_nodes[0]); /* each_1 */
 			destroy_each(each_blocks, detaching);
-			if (detaching) detach_dev(each_1_anchor);
 		}
 	};
 

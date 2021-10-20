@@ -7,6 +7,8 @@ import { Node, Identifier, MemberExpression, Literal, Expression, BinaryExpressi
 import flatten_reference from '../utils/flatten_reference';
 import { reserved_keywords } from '../utils/reserved_keywords';
 import { renderer_invalidate } from './invalidate';
+import { INode as TemplateNode } from '../nodes/interfaces';
+import Text from '../nodes/Text';
 
 interface ContextMember {
 	name: string;
@@ -85,7 +87,7 @@ export default class Renderer {
 		this.fragment = new FragmentWrapper(
 			this,
 			this.block,
-			component.fragment.children,
+			trim(component.fragment.children),
 			null,
 			true,
 			null
@@ -282,4 +284,26 @@ export default class Renderer {
 	remove_block(block: Block | Node | Node[]) {
 		this.blocks.splice(this.blocks.indexOf(block), 1);
 	}
+}
+
+function trim(nodes: TemplateNode[]) {
+	let start = 0;
+	for (; start < nodes.length; start += 1) {
+		const node = nodes[start] as Text;
+		if (node.type !== 'Text') break;
+
+		node.data = node.data.replace(/^\s+/, '');
+		if (node.data) break;
+	}
+
+	let end = nodes.length;
+	for (; end > start; end -= 1) {
+		const node = nodes[end - 1] as Text;
+		if (node.type !== 'Text') break;
+
+		node.data = node.data.replace(/\s+$/, '');
+		if (node.data) break;
+	}
+
+	return nodes.slice(start, end);
 }

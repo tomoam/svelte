@@ -3,27 +3,35 @@ import {
 	SvelteComponent,
 	create_component,
 	destroy_component,
+	detach,
 	init,
+	insert,
+	make_renderer,
 	mount_component,
 	noop,
 	safe_not_equal,
 	transition_in,
-	transition_out
+	transition_out,
+	traverse
 } from "svelte/internal";
 
 import LazyLoad from './LazyLoad.svelte';
+const render = make_renderer(`<!>`);
 
 function create_fragment(ctx) {
+	let render_nodes = [];
 	let lazyload;
 	let current;
 	lazyload = new LazyLoad({ props: { load: func } });
 
 	return {
 		c() {
+			traverse(render(), render_nodes);
 			create_component(lazyload.$$.fragment);
 		},
 		m(target, anchor) {
-			mount_component(lazyload, target, anchor);
+			insert(target, render_nodes[0], anchor); /* lazyload */
+			mount_component(lazyload, target, render_nodes[0]);
 			current = true;
 		},
 		p: noop,
@@ -37,6 +45,7 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
+			if (detaching) detach(render_nodes[0]); /* lazyload */
 			destroy_component(lazyload, detaching);
 		}
 	};

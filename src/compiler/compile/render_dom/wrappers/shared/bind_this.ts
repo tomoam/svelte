@@ -5,7 +5,7 @@ import BindingWrapper from '../Element/Binding';
 import { Identifier } from 'estree';
 import { compare_node } from '../../../utils/compare_node';
 
-export default function bind_this(component: Component, block: Block, binding: BindingWrapper, variable: Identifier) {
+export default function bind_this(component: Component, block: Block, binding: BindingWrapper, variable: Identifier, render_node?: Identifier) {
 	const fn = component.get_unique_name(`${variable.name}_binding`);
 
 	block.renderer.add_to_context(fn.name);
@@ -61,7 +61,7 @@ export default function bind_this(component: Component, block: Block, binding: B
 		const unassign = block.get_unique_name(`unassign_${variable.name}`);
 
 		block.chunks.init.push(b`
-			const ${assign} = () => ${callee}(${variable}, ${args});
+			const ${assign} = () => ${callee}(${render_node || variable}, ${args});
 			const ${unassign} = () => ${callee}(null, ${args});
 		`);
 
@@ -93,5 +93,5 @@ export default function bind_this(component: Component, block: Block, binding: B
 	`);
 
 	block.chunks.destroy.push(b`${callee}(null);`);
-	return b`${callee}(${variable});`;
+	return b`${callee}(${render_node || variable});`;
 }

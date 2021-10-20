@@ -10,10 +10,14 @@ import fix_attribute_casing from '../../render_dom/wrappers/Element/fix_attribut
 import { namespaces } from '../../../utils/namespaces';
 import { start_newline } from '../../../utils/patterns';
 import { Node, Expression as ESExpression } from 'estree';
+import { is_static_only } from './utils/is_static_only';
 
 export default function (node: Element, renderer: Renderer, options: RenderOptions) {
+	const static_only = is_static_only(options);
 
-	const children = remove_whitespace_children(node.children, node.next);
+	if (!options.hydratable && static_only && node.name === 'noscript') return;
+
+	const children = remove_whitespace_children(node.children, node.next, options.preserveComments);
 
 	// awkward special case
 	let node_contents;
@@ -52,7 +56,30 @@ export default function (node: Element, renderer: Renderer, options: RenderOptio
 		style_expression_list.length > 0 &&
 		x`{ ${style_expression_list} }`;
 
-	if (node.attributes.some(attr => attr.is_spread)) {
+	if (static_only) {
+		node.attributes.forEach(attribute => {
+			if (attribute.is_spread) {
+				// TODO
+			} else {
+				const attr_name = node.namespace === namespaces.foreign ? attribute.name : fix_attribute_casing(attribute.name);
+				if (attribute.is_true) {
+					if (/-/.test(node.name)) {
+						renderer.add_string(` ${attr_name}=true`);
+					} else {
+						renderer.add_string(` ${attr_name}`);
+					}
+				} else if (attribute.is_static) {
+					renderer.add_string(` ${attr_name}="`);
+					attribute.chunks.forEach((chunk) => {
+						if (chunk.type === 'Text') {
+							renderer.add_string(chunk.data.replace(/"/g, '&quot;'));
+						}
+					});
+					renderer.add_string('"');
+				}
+			}
+		});
+	} else if (node.attributes.some(attr => attr.is_spread)) {
 		// TODO dry this out
 		const args = [];
 		node.attributes.forEach(attribute => {
@@ -125,7 +152,7 @@ export default function (node: Element, renderer: Renderer, options: RenderOptio
 		}
 	}
 
-	node.bindings.forEach(binding => {
+	!static_only && node.bindings.forEach(binding => {
 		const { name, expression } = binding;
 
 		if (binding.is_readonly) {
@@ -157,7 +184,7 @@ export default function (node: Element, renderer: Renderer, options: RenderOptio
 		}
 	});
 
-	if (options.hydratable && options.head_id) {
+	if (options.head_id) {
 		renderer.add_string(` data-svelte="${options.head_id}"`);
 	}
 

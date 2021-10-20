@@ -145,6 +145,7 @@ export function normalizeHtml(window, html, preserveComments = false) {
 		const node = window.document.createElement('div');
 		node.innerHTML = html
 			.replace(/(<!--.*?-->)/g, preserveComments ? '$1' : '')
+			.replace(/<!---->/g, '')
 			.replace(/>[\s\r\n]+</g, '><')
 			.trim();
 		cleanChildren(node);

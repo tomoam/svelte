@@ -45,6 +45,7 @@ export default class Block {
 		init: Array<Node | Node[]>;
 		create: Array<Node | Node[]>;
 		claim: Array<Node | Node[]>;
+		claim_tail: Array<Node | Node[]>;
 		hydrate: Array<Node | Node[]>;
 		mount: Array<Node | Node[]>;
 		measure: Array<Node | Node[]>;
@@ -72,7 +73,7 @@ export default class Block {
 	get_unique_name: (name: string) => Identifier;
 
 	has_update_method = false;
-	autofocus?: { element_var: string, condition_expression?: any };
+	autofocus?: { element_var: string | Identifier, condition_expression?: any };
 
 	constructor(options: BlockOptions) {
 		this.parent = options.parent;
@@ -94,6 +95,7 @@ export default class Block {
 			init: [],
 			create: [],
 			claim: [],
+			claim_tail: [],
 			hydrate: [],
 			mount: [],
 			measure: [],
@@ -179,11 +181,42 @@ export default class Block {
 		}
 
 		if (parent_node) {
-			this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
-			if (is_head(parent_node) && !no_detach) this.chunks.destroy.push(b`@detach(${id});`);
+			if (is_head(parent_node)) {
+				this.chunks.mount.push(b`@append(${parent_node}, ${id});`);
+
+				if (!no_detach) this.chunks.destroy.push(b`@detach(${id});`);
+			} 
 		} else {
 			this.chunks.mount.push(b`@insert(#target, ${id}, #anchor);`);
 			if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(${id});`);
+		}
+	}
+
+	add_statement(
+		id: Identifier,
+		node_name: Node,
+		render_statement: Node[],
+		claim_statement: Node[],
+		parent_node: Node,
+		no_detach?: boolean
+	) {
+		if (render_statement) {
+			this.chunks.create.push(render_statement);
+		}
+
+		if (this.renderer.options.hydratable && claim_statement) {
+			this.chunks.claim.push(claim_statement);
+		}
+
+		if (parent_node) {
+			if (is_head(parent_node)) {
+				this.chunks.mount.push(b`@append(${parent_node}, /* ${id.name} */ ${node_name});`);
+
+				if (!no_detach) this.chunks.destroy.push(b`@detach(${node_name}); /* ${id.name} */`);
+			} 
+		} else {
+			this.chunks.mount.push(b`@insert(#target, /* ${id.name} */ ${node_name}, #anchor);`);
+			if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(${node_name}); /* ${id.name} */`);
 		}
 	}
 
@@ -276,12 +309,33 @@ export default class Block {
 			}`;
 		}
 
-		if (this.renderer.options.hydratable || this.chunks.claim.length > 0) {
-			if (this.chunks.claim.length === 0 && this.chunks.hydrate.length === 0) {
+		if (this.renderer.options.hydratable || this.chunks.claim.length > 0 || this.chunks.claim_tail.length > 0) {
+			if (this.chunks.create.length === 0 && this.chunks.claim.length === 0 && this.chunks.claim_tail.length === 0 && this.chunks.hydrate.length === 0) {
 				properties.claim = noop;
 			} else {
+				const prefix = [];
+				if (this.renderer.options.hydratable) {
+					if (this.chunks.create.length > 0) {
+						prefix.push(b`this.c();`);
+					}
+
+					if (!this.wrappers.some((n) => n.node.type === 'Head')) {
+						prefix.push(b`if (!#nodes.length) return;`);
+					}
+
+					this.wrappers.filter(node => node.template).forEach((node) => {
+						if (node.claim_func_map_var) {
+							this.chunks.claim.unshift(b`
+								const ${node.claim_func_map_var} = new @_Map();
+							`);
+						}
+					});
+				}
+
 				properties.claim = x`function #claim(#nodes) {
+					${prefix.length > 0 && prefix}
 					${this.chunks.claim}
+					${this.chunks.claim_tail}
 					${this.renderer.options.hydratable && this.chunks.hydrate.length > 0 && b`this.h();`}
 				}`;
 			}
@@ -435,6 +489,7 @@ export default class Block {
 			this.chunks.create.length > 0 ||
 			this.chunks.hydrate.length > 0 ||
 			this.chunks.claim.length > 0 ||
+			this.chunks.claim_tail.length > 0 ||
 			this.chunks.mount.length > 0 ||
 			this.chunks.update.length > 0 ||
 			this.chunks.destroy.length > 0 ||
@@ -447,15 +502,35 @@ export default class Block {
 		const args: any[] = [x`#ctx`];
 		if (key) args.unshift(key);
 
+		const body = [];
+
+		this.wrappers.filter(node => node.template).forEach((node) => {
+			const make_renderer = /-/.test(node.node.name) ? '@make_custom_renderer' : '@make_renderer';
+			body.push(b`
+				const ${node.template_name} = ${make_renderer}(
+					${node.template}
+				)
+			`);
+
+			if (node.index_in_render_nodes_sequence > 1 || (node.index_in_render_nodes_sequence > 0 && this.renderer.options.hydratable)) {
+				node.node_path[node.node_path.length - 1] = node.node_path[node.node_path.length - 1] || 0 ;
+				body.push(b`
+					const ${node.node_path_var_name} = () => [${node.node_path.toString()}];
+				`);
+			}
+		});
+
 		const fn = b`function ${this.name}(${args}) {
 			${this.get_contents(key)}
 		}`;
 
-		return this.comment
+		body.push(this.comment
 			? b`
 				// ${this.comment}
 				${fn}`
-			: fn;
+			: fn);
+
+		return body;
 	}
 
 	render_listeners(chunk: string = '') {

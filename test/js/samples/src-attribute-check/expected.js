@@ -2,64 +2,61 @@
 import {
 	SvelteComponent,
 	attr,
-	claim_element,
-	claim_space,
 	detach,
-	element,
 	init,
 	insert_hydration,
+	make_renderer,
 	noop,
 	safe_not_equal,
-	space,
-	src_url_equal
+	src_url_equal,
+	traverse,
+	traverse_claim
 } from "svelte/internal";
 
+const render = make_renderer(`<img alt="potato"> <img alt="potato">`);
+const node_path = () => [,-1,-1];
+
 function create_fragment(ctx) {
-	let img0;
+	let render_nodes = [];
 	let img0_src_value;
-	let t;
-	let img1;
 	let img1_src_value;
 
 	return {
 		c() {
-			img0 = element("img");
-			t = space();
-			img1 = element("img");
+			traverse(render(), render_nodes, node_path());
 			this.h();
 		},
 		l(nodes) {
-			img0 = claim_element(nodes, "IMG", { alt: true, src: true });
-			t = claim_space(nodes);
-			img1 = claim_element(nodes, "IMG", { alt: true, src: true });
+			this.c();
+			if (!nodes.length) return;
+			const claim_func_var = new Map();
+			traverse_claim(nodes, render_nodes, node_path(), claim_func_var, 0);
 			this.h();
 		},
 		h() {
-			attr(img0, "alt", "potato");
-			if (!src_url_equal(img0.src, img0_src_value = /*url*/ ctx[0])) attr(img0, "src", img0_src_value);
-			attr(img1, "alt", "potato");
-			if (!src_url_equal(img1.src, img1_src_value = "" + (/*slug*/ ctx[1] + ".jpg"))) attr(img1, "src", img1_src_value);
+			if (!src_url_equal(render_nodes[0].src, img0_src_value = /*url*/ ctx[0])) attr(render_nodes[0], "src", img0_src_value);
+			if (!src_url_equal(render_nodes[2].src, img1_src_value = "" + (/*slug*/ ctx[1] + ".jpg"))) attr(render_nodes[2], "src", img1_src_value);
 		},
 		m(target, anchor) {
-			insert_hydration(target, img0, anchor);
-			insert_hydration(target, t, anchor);
-			insert_hydration(target, img1, anchor);
+			insert_hydration(target, render_nodes[0], anchor); /* img0 */
+			insert_hydration(target, render_nodes[1], anchor); /* t */
+			insert_hydration(target, render_nodes[2], anchor); /* img1 */
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*url*/ 1 && !src_url_equal(img0.src, img0_src_value = /*url*/ ctx[0])) {
-				attr(img0, "src", img0_src_value);
+			if (dirty & /*url*/ 1 && !src_url_equal(render_nodes[0].src, img0_src_value = /*url*/ ctx[0])) {
+				attr(render_nodes[0], "src", img0_src_value);
 			}
 
-			if (dirty & /*slug*/ 2 && !src_url_equal(img1.src, img1_src_value = "" + (/*slug*/ ctx[1] + ".jpg"))) {
-				attr(img1, "src", img1_src_value);
+			if (dirty & /*slug*/ 2 && !src_url_equal(render_nodes[2].src, img1_src_value = "" + (/*slug*/ ctx[1] + ".jpg"))) {
+				attr(render_nodes[2], "src", img1_src_value);
 			}
 		},
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(img0);
-			if (detaching) detach(t);
-			if (detaching) detach(img1);
+			if (detaching) detach(render_nodes[0]); /* img0 */
+			if (detaching) detach(render_nodes[1]); /* t */
+			if (detaching) detach(render_nodes[2]); /* img1 */
 		}
 	};
 }

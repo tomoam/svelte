@@ -1,4 +1,5 @@
 export default {
+	skip:true, // unlikely case
 	props: {
 		class: 'bar'
 	},

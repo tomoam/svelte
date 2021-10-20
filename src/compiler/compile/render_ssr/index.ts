@@ -11,6 +11,7 @@ import { walk } from 'estree-walker';
 
 import { invalidate } from '../render_dom/invalidate';
 import check_enable_sourcemap from '../utils/check_enable_sourcemap';
+import remove_whitespace_children from './handlers/utils/remove_whitespace_children';
 
 export default function ssr(
 	component: Component,
@@ -23,7 +24,7 @@ export default function ssr(
 	const { name } = component;
 
 	// create $$render function
-	renderer.render(trim(component.fragment.children), Object.assign({
+	renderer.render(remove_whitespace_children(trim(component.fragment.children), null, options.preserveComments), Object.assign({
 		locate: component.locate
 	}, options));
 

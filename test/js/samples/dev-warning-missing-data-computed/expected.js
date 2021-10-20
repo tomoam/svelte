@@ -2,54 +2,48 @@
 import {
 	SvelteComponentDev,
 	add_location,
-	append_dev,
 	detach_dev,
 	dispatch_dev,
-	element,
 	init,
 	insert_dev,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data_dev,
-	space,
-	text,
+	traverse,
 	validate_slots
 } from "svelte/internal";
 
 const file = undefined;
+const render = make_renderer(`<p><!> <!></p>`);
+const node_path = () => [,0,1,-1];
 
 function create_fragment(ctx) {
-	let p;
+	let render_nodes = [];
 	let t0_value = Math.max(0, /*foo*/ ctx[0]) + "";
-	let t0;
-	let t1;
-	let t2;
 
 	const block = {
 		c: function create() {
-			p = element("p");
-			t0 = text(t0_value);
-			t1 = space();
-			t2 = text(/*bar*/ ctx[1]);
-			add_location(p, file, 7, 0, 67);
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1] = replace_text(render_nodes[1], t0_value);
+			render_nodes[3] = replace_text(render_nodes[3], /*bar*/ ctx[1]);
+			add_location(render_nodes[0], file, 7, 0, 67);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, p, anchor);
-			append_dev(p, t0);
-			append_dev(p, t1);
-			append_dev(p, t2);
+			insert_dev(target, render_nodes[0], anchor); /* p */
 		},
 		p: function update(ctx, [dirty]) {
-			if (dirty & /*foo*/ 1 && t0_value !== (t0_value = Math.max(0, /*foo*/ ctx[0]) + "")) set_data_dev(t0, t0_value);
-			if (dirty & /*bar*/ 2) set_data_dev(t2, /*bar*/ ctx[1]);
+			if (dirty & /*foo*/ 1 && t0_value !== (t0_value = Math.max(0, /*foo*/ ctx[0]) + "")) set_data_dev(render_nodes[1], t0_value);
+			if (dirty & /*bar*/ 2) set_data_dev(render_nodes[3], /*bar*/ ctx[1]);
 		},
 		i: noop,
 		o: noop,
 		d: function destroy(detaching) {
-			if (detaching) detach_dev(p);
+			if (detaching) detach_dev(render_nodes[0]); /* p */
 		}
 	};
 

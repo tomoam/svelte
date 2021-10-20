@@ -2,28 +2,31 @@
 import {
 	SvelteComponent,
 	detach,
-	element,
 	init,
 	insert,
 	listen,
+	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
+const render = make_renderer(`<button></button>`);
+
 function create_fragment(ctx) {
-	let button;
+	let render_nodes = [];
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			button = element("button");
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, button, anchor);
+			insert(target, render_nodes[0], anchor); /* button */
 
 			if (!mounted) {
-				dispose = listen(button, "click", /*click_handler*/ ctx[1]);
+				dispose = listen(render_nodes[0], "click", /*click_handler*/ ctx[1]);
 				mounted = true;
 			}
 		},
@@ -31,7 +34,7 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(button);
+			if (detaching) detach(render_nodes[0]); /* button */
 			mounted = false;
 			dispose();
 		}

@@ -8,7 +8,8 @@ import {
 	loadSvelte,
 	env,
 	setupHtmlEqual,
-	shouldUpdateExpected
+	shouldUpdateExpected,
+	normalizeHtml
 } from '../helpers';
 
 let compileOptions = null;
@@ -64,12 +65,12 @@ describe('hydration', () => {
 				const target = window.document.body;
 				const head = window.document.head;
 
-				target.innerHTML = fs.readFileSync(`${cwd}/_before.html`, 'utf-8');
+				target.innerHTML = normalizeHtml(window, fs.readFileSync(`${cwd}/_before.html`, 'utf-8'));
 
 				let before_head;
 				try {
 					before_head = fs.readFileSync(`${cwd}/_before_head.html`, 'utf-8');
-					head.innerHTML = before_head;
+					head.innerHTML = normalizeHtml(window, before_head);
 				} catch (err) {
 					// continue regardless of error
 				}
@@ -83,7 +84,7 @@ describe('hydration', () => {
 				});
 
 				try {
-					assert.htmlEqual(target.innerHTML, fs.readFileSync(`${cwd}/_after.html`, 'utf-8'));
+					assert.htmlEqual(target.innerHTML, normalizeHtml(window, fs.readFileSync(`${cwd}/_after.html`, 'utf-8')));
 				} catch (error) {
 					if (shouldUpdateExpected()) {
 						fs.writeFileSync(`${cwd}/_after.html`, target.innerHTML);
@@ -95,7 +96,7 @@ describe('hydration', () => {
 
 				if (before_head) {
 					try {
-						assert.htmlEqual(head.innerHTML, fs.readFileSync(`${cwd}/_after_head.html`, 'utf-8'));
+						assert.htmlEqual(head.innerHTML, normalizeHtml(window, fs.readFileSync(`${cwd}/_after_head.html`, 'utf-8')));
 					} catch (error) {
 						if (shouldUpdateExpected()) {
 							fs.writeFileSync(`${cwd}/_after_head.html`, head.innerHTML);

@@ -2,18 +2,17 @@
 import {
 	SvelteComponentDev,
 	add_location,
-	append_dev,
 	destroy_each,
 	detach_dev,
 	dispatch_dev,
-	element,
 	init,
 	insert_dev,
+	make_renderer,
 	noop,
+	replace_text,
 	safe_not_equal,
 	set_data_dev,
-	space,
-	text,
+	traverse,
 	validate_each_argument,
 	validate_slots
 } from "svelte/internal";
@@ -26,18 +25,18 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
+const render = make_renderer(`<span> </span>`);
+const node_path = () => [,0];
+
 // (6:0) {#each things as thing}
 function create_each_block(ctx) {
-	let span;
-	let t0_value = /*thing*/ ctx[2].name + "";
-	let t0;
-	let t1;
+	let render_nodes = [];
+	let t_value = /*thing*/ ctx[2].name + "";
 
 	const block = {
 		c: function create() {
-			span = element("span");
-			t0 = text(t0_value);
-			t1 = space();
+			traverse(render(), render_nodes, node_path());
+			render_nodes[1].data = t_value;
 
 			{
 				const foo = /*foo*/ ctx[1];
@@ -45,15 +44,13 @@ function create_each_block(ctx) {
 				debugger;
 			}
 
-			add_location(span, file, 6, 1, 82);
+			add_location(render_nodes[0], file, 6, 1, 82);
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, span, anchor);
-			append_dev(span, t0);
-			insert_dev(target, t1, anchor);
+			insert_dev(target, render_nodes[0], anchor); /* span */
 		},
 		p: function update(ctx, dirty) {
-			if (dirty & /*things*/ 1 && t0_value !== (t0_value = /*thing*/ ctx[2].name + "")) set_data_dev(t0, t0_value);
+			if (dirty & /*things*/ 1 && t_value !== (t_value = /*thing*/ ctx[2].name + "")) set_data_dev(render_nodes[1], t_value);
 
 			if (dirty & /*foo*/ 2) {
 				const foo = /*foo*/ ctx[1];
@@ -62,8 +59,7 @@ function create_each_block(ctx) {
 			}
 		},
 		d: function destroy(detaching) {
-			if (detaching) detach_dev(span);
-			if (detaching) detach_dev(t1);
+			if (detaching) detach_dev(render_nodes[0]); /* span */
 		}
 	};
 
@@ -78,11 +74,11 @@ function create_each_block(ctx) {
 	return block;
 }
 
+const render_1 = make_renderer(`<!> <p>foo: <!></p>`);
+const node_path_1 = () => [0,-1,-1,,-1];
+
 function create_fragment(ctx) {
-	let t0;
-	let p;
-	let t1;
-	let t2;
+	let render_nodes = [];
 	let each_value = /*things*/ ctx[0];
 	validate_each_argument(each_value);
 	let each_blocks = [];
@@ -93,28 +89,27 @@ function create_fragment(ctx) {
 
 	const block = {
 		c: function create() {
+			traverse(render_1(), render_nodes, node_path_1());
+
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
-			t0 = space();
-			p = element("p");
-			t1 = text("foo: ");
-			t2 = text(/*foo*/ ctx[1]);
-			add_location(p, file, 10, 0, 131);
+			render_nodes[4] = replace_text(render_nodes[4], /*foo*/ ctx[1]);
+			add_location(render_nodes[2], file, 10, 0, 131);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
+			insert_dev(target, render_nodes[0], anchor); /* each_1 */
+
 			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(target, anchor);
+				each_blocks[i].m(target, render_nodes[0]);
 			}
 
-			insert_dev(target, t0, anchor);
-			insert_dev(target, p, anchor);
-			append_dev(p, t1);
-			append_dev(p, t2);
+			insert_dev(target, render_nodes[1], anchor); /* t0 */
+			insert_dev(target, render_nodes[2], anchor); /* p */
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*things*/ 1) {
@@ -130,7 +125,7 @@ function create_fragment(ctx) {
 					} else {
 						each_blocks[i] = create_each_block(child_ctx);
 						each_blocks[i].c();
-						each_blocks[i].m(t0.parentNode, t0);
+						each_blocks[i].m(render_nodes[0].parentNode, render_nodes[0]);
 					}
 				}
 
@@ -141,14 +136,15 @@ function create_fragment(ctx) {
 				each_blocks.length = each_value.length;
 			}
 
-			if (dirty & /*foo*/ 2) set_data_dev(t2, /*foo*/ ctx[1]);
+			if (dirty & /*foo*/ 2) set_data_dev(render_nodes[4], /*foo*/ ctx[1]);
 		},
 		i: noop,
 		o: noop,
 		d: function destroy(detaching) {
+			if (detaching) detach_dev(render_nodes[0]); /* each_1 */
 			destroy_each(each_blocks, detaching);
-			if (detaching) detach_dev(t0);
-			if (detaching) detach_dev(p);
+			if (detaching) detach_dev(render_nodes[1]); /* t0 */
+			if (detaching) detach_dev(render_nodes[2]); /* p */
 		}
 	};
 

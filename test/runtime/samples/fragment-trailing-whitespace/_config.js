@@ -8,9 +8,9 @@ export default {
 
 	async test({ assert, target }) {
 		const firstSpanList = target.children[0];
-		assert.equal(firstSpanList.innerHTML, expected);
+		assert.htmlEqual(firstSpanList.innerHTML, expected);
 
 		const secondSpanList = target.children[1];
-		assert.equal(secondSpanList.innerHTML, expected);
+		assert.htmlEqual(secondSpanList.innerHTML, expected);
 	}
 };

@@ -3,7 +3,6 @@ import BindingWrapper from '../Element/Binding';
 import Renderer from '../../Renderer';
 import Block from '../../Block';
 import InlineComponent from '../../../nodes/InlineComponent';
-import FragmentWrapper from '../Fragment';
 import SlotTemplateWrapper from '../SlotTemplate';
 import { sanitize } from '../../../../utils/names';
 import add_to_set from '../../../utils/add_to_set';
@@ -27,8 +26,7 @@ export default class InlineComponentWrapper extends Wrapper {
 	var: Identifier;
 	slots: Map<string, SlotDefinition> = new Map();
 	node: InlineComponent;
-	fragment: FragmentWrapper;
-	children: Array<Wrapper | FragmentWrapper> = [];
+	children: SlotTemplateWrapper[] = [];
 
 	constructor(
 		renderer: Renderer,
@@ -101,6 +99,16 @@ export default class InlineComponentWrapper extends Wrapper {
 		this.slots.set(name, slot_definition);
 	}
 
+	set_index_number(root_node: Wrapper) {
+		super.set_index_number(root_node);
+
+		this.push_to_node_path(true);
+
+		this.children.forEach(child => {
+			child.set_index_number(root_node);
+		});
+	}
+
 	warn_if_reactive() {
 		const { name } = this.node;
 		const variable = this.renderer.component.var_lookup.get(name);
@@ -133,7 +141,7 @@ export default class InlineComponentWrapper extends Wrapper {
 
 		this.children.forEach((child) => {
 			this.renderer.add_to_context('$$scope', true);
-			child.render(block, null, x`#nodes` as Identifier);
+			child.render();
 		});
 
 		let props;
@@ -207,6 +215,14 @@ export default class InlineComponentWrapper extends Wrapper {
 		if (!uses_spread && (dynamic_attributes.length > 0 || this.node.bindings.length > 0 || fragment_dependencies.size > 0)) {
 			updates.push(b`const ${name_changes} = {};`);
 		}
+
+		block.add_statement(
+			this.var,
+			this.get_var(),
+			this.get_create_statement(parent_node),
+			undefined,
+			parent_node
+		);
 
 		if (this.node.attributes.length) {
 			if (uses_spread) {
@@ -429,18 +445,23 @@ export default class InlineComponentWrapper extends Wrapper {
 
 			if (parent_nodes && this.renderer.options.hydratable) {
 				block.chunks.claim.push(
-					b`if (${name}) @claim_component(${name}.$$.fragment, ${parent_nodes});`
+					b`if (${name}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}.$$.fragment, n));`
 				);
+
+				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+				if (claim_statement) {
+					block.chunks.claim.push(claim_statement);
+				}
 			}
 
+			const initial_anchor_node = this.get_var();
 			block.chunks.mount.push(b`
 				if (${name}) {
-					@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? 'null' : '#anchor'});
+					@mount_component(${name}, ${parent_node || '#target'}, ${initial_anchor_node});
 				}
 			`);
 
-			const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
-			const update_mount_node = this.get_update_mount_node(anchor);
+			const update_mount_node = this.get_update_mount_node(this.get_var() as Identifier);
 
 			if (updates.length) {
 				block.chunks.update.push(b`
@@ -467,7 +488,7 @@ export default class InlineComponentWrapper extends Wrapper {
 
 						@create_component(${name}.$$.fragment);
 						@transition_in(${name}.$$.fragment, 1);
-						@mount_component(${name}, ${update_mount_node}, ${anchor});
+						@mount_component(${name}, ${update_mount_node}, ${this.get_var()});
 					} else {
 						${name} = null;
 					}
@@ -535,9 +556,15 @@ export default class InlineComponentWrapper extends Wrapper {
 						var ${nodes} = @children(${css_custom_properties_wrapper});
 					`);
 				}
-				block.chunks.claim.push(
-					b`@claim_component(${name}.$$.fragment, ${nodes});`
-				);
+
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}.$$.fragment, n));
+				`);
+
+				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+				if (claim_statement) {
+					block.chunks.claim.push(claim_statement);
+				}
 			}
 
 			if (has_css_custom_properties) {
@@ -555,7 +582,7 @@ export default class InlineComponentWrapper extends Wrapper {
 				block.chunks.mount.push(b`@mount_component(${name}, ${css_custom_properties_wrapper}, null);`);
 			} else {
 				block.chunks.mount.push(
-					b`@mount_component(${name}, ${parent_node || '#target'}, ${parent_node ? 'null' : '#anchor'});`
+					b`@mount_component(${name}, ${parent_node || '#target'}, ${this.get_var()});`
 				);
 			}
 

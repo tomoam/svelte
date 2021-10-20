@@ -3,6 +3,8 @@ import { get_attribute_value } from './shared/get_attribute_value';
 import Renderer, { RenderOptions } from '../Renderer';
 import InlineComponent from '../../nodes/InlineComponent';
 import { p, x } from 'code-red';
+import { is_static_only } from './utils/is_static_only';
+import remove_whitespace_children from './utils/remove_whitespace_children';
 
 function get_prop_value(attribute) {
 	if (attribute.is_true) return x`true`;
@@ -17,6 +19,12 @@ function get_prop_value(attribute) {
 }
 
 export default function(node: InlineComponent, renderer: Renderer, options: RenderOptions) {
+
+	if (is_static_only(options)) {
+		renderer.add_string('<!>');
+		return;
+	}
+
 	const binding_props = [];
 	const binding_fns = [];
 
@@ -67,7 +75,7 @@ export default function(node: InlineComponent, renderer: Renderer, options: Rend
 
 	const slot_fns = [];
 
-	const children = node.children;
+	const children = remove_whitespace_children(node.children, node.next, options.preserveComments);
 
 	if (children.length) {
 		const slot_scopes = new Map();

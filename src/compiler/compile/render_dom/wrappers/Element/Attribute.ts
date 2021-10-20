@@ -36,8 +36,16 @@ export class BaseAttributeWrapper {
 		if (node.dependencies.size > 0) {
 			parent.cannot_use_innerhtml();
 			parent.not_static_content();
+			parent.mark_as_on_traverse_path();
 
 			block.add_dependencies(node.dependencies);
+	
+		} else if (
+			node.is_spread ||
+			node.name === 'src' ||
+			(!node.is_static && !node.is_true)
+		) {
+			parent.mark_as_on_traverse_path();
 		}
 	}
 
@@ -130,17 +138,17 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 
 		if (is_legacy_input_type) {
 			block.chunks.hydrate.push(
-				b`@set_input_type(${element.var}, ${init});`
+				b`@set_input_type(${element.get_var()}, ${init});`
 			);
-			updater = b`@set_input_type(${element.var}, ${should_cache ? this.last : value});`;
+			updater = b`@set_input_type(${element.get_var()}, ${should_cache ? this.last : value});`;
 		} else if (this.is_select_value_attribute) {
 			// annoying special case
 			const is_multiple_select = element.node.get_static_attribute_value('multiple');
 
 			if (is_multiple_select) {
-				updater = b`@select_options(${element.var}, ${value});`;
+				updater = b`@select_options(${element.get_var()}, ${value});`;
 			} else {
-				updater = b`@select_option(${element.var}, ${value});`;
+				updater = b`@select_option(${element.get_var()}, ${value});`;
 			}
 
 			block.chunks.mount.push(b`
@@ -148,25 +156,25 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 			`);
 		} else if (this.is_src) {
 			block.chunks.hydrate.push(
-				b`if (!@src_url_equal(${element.var}.src, ${init})) ${method}(${element.var}, "${name}", ${this.last});`
+				b`if (!@src_url_equal(${element.get_var()}.src, ${init})) ${method}(${element.get_var()}, "${name}", ${this.last});`
 			);
-			updater = b`${method}(${element.var}, "${name}", ${should_cache ? this.last : value});`;
+			updater = b`${method}(${element.get_var()}, "${name}", ${should_cache ? this.last : value});`;
 		} else if (property_name) {
 			block.chunks.hydrate.push(
-				b`${element.var}.${property_name} = ${init};`
+				b`${element.get_var()}.${property_name} = ${init};`
 			);
 			updater = block.renderer.options.dev
-				? b`@prop_dev(${element.var}, "${property_name}", ${should_cache ? this.last : value});`
-				: b`${element.var}.${property_name} = ${should_cache ? this.last : value};`;
-		} else {
+				? b`@prop_dev(${element.get_var()}, "${property_name}", ${should_cache ? this.last : value});`
+				: b`${element.get_var()}.${property_name} = ${should_cache ? this.last : value};`;
+		} else if (!this.node.is_static || (element.node.namespace === namespaces.foreign)) {
 			block.chunks.hydrate.push(
-				b`${method}(${element.var}, "${name}", ${init});`
+				b`${method}(${element.get_var()}, "${name}", ${init});`
 			);
-			updater = b`${method}(${element.var}, "${name}", ${should_cache ? this.last : value});`;
+			updater = b`${method}(${element.get_var()}, "${name}", ${should_cache ? this.last : value});`;
 		}
 
 		if (is_indirectly_bound_value) {
-			const update_value = b`${element.var}.value = ${element.var}.__value;`;
+			const update_value = b`${element.get_var()}.value = ${element.get_var()}.__value;`;
 			block.chunks.hydrate.push(update_value);
 
 			updater = b`
@@ -187,7 +195,7 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 		// special case – autofocus. has to be handled in a bit of a weird way
 		if (name === 'autofocus') {
 			block.autofocus = {
-				element_var: element.var,
+				element_var: element.get_var() as Identifier,
 				condition_expression: this.node.is_true ? undefined : value
 			};
 		}
@@ -212,14 +220,14 @@ export default class AttributeWrapper extends BaseAttributeWrapper {
 
 		if (should_cache) {
 			condition = this.is_src
-				? x`${condition} && (!@src_url_equal(${element.var}.src, (${last} = ${value})))`
+				? x`${condition} && (!@src_url_equal(${element.get_var()}.src, (${last} = ${value})))`
 				: x`${condition} && (${last} !== (${last} = ${value}))`;
 		}
 
 		if (this.is_input_value) {
 			const type = element.node.get_static_attribute_value('type');
 			if (type !== true && !non_textlike_input_types.has(type)) {
-				condition = x`${condition} && ${element.var}.${property_name} !== ${should_cache ? last : value}`;
+				condition = x`${condition} && ${element.get_var()}.${property_name} !== ${should_cache ? last : value}`;
 			}
 		}
 

@@ -4,30 +4,31 @@ import {
 	check_outros,
 	create_out_transition,
 	detach,
-	element,
-	empty,
 	group_outros,
 	init,
 	insert,
+	make_renderer,
 	safe_not_equal,
 	transition_in,
-	transition_out
+	transition_out,
+	traverse
 } from "svelte/internal";
 
 import { fade } from 'svelte/transition';
+const render = make_renderer(`<div><p>wheeee</p></div>`);
 
+// (7:0) {#if num < 5}
 function create_if_block(ctx) {
-	let div;
+	let render_nodes = [];
 	let div_outro;
 	let current;
 
 	return {
 		c() {
-			div = element("div");
-			div.innerHTML = `<p>wheeee</p>`;
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
+			insert(target, render_nodes[0], anchor); /* div */
 			current = true;
 		},
 		i(local) {
@@ -36,29 +37,31 @@ function create_if_block(ctx) {
 			current = true;
 		},
 		o(local) {
-			div_outro = create_out_transition(div, fade, {});
+			div_outro = create_out_transition(render_nodes[0], fade, {});
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(render_nodes[0]); /* div */
 			if (detaching && div_outro) div_outro.end();
 		}
 	};
 }
 
+const render_1 = make_renderer(`<!>`);
+
 function create_fragment(ctx) {
-	let if_block_anchor;
+	let render_nodes = [];
 	let current;
 	let if_block = /*num*/ ctx[0] < 5 && create_if_block(ctx);
 
 	return {
 		c() {
+			traverse(render_1(), render_nodes);
 			if (if_block) if_block.c();
-			if_block_anchor = empty();
 		},
 		m(target, anchor) {
-			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
+			insert(target, render_nodes[0], anchor); /* if_block */
+			if (if_block) if_block.m(target, render_nodes[0]);
 			current = true;
 		},
 		p(ctx, [dirty]) {
@@ -71,7 +74,7 @@ function create_fragment(ctx) {
 					if_block = create_if_block(ctx);
 					if_block.c();
 					transition_in(if_block, 1);
-					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+					if_block.m(render_nodes[0].parentNode, render_nodes[0]);
 				}
 			} else if (if_block) {
 				group_outros();
@@ -93,8 +96,8 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
+			if (detaching) detach(render_nodes[0]); /* if_block */
 			if (if_block) if_block.d(detaching);
-			if (detaching) detach(if_block_anchor);
 		}
 	};
 }

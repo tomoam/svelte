@@ -11,6 +11,7 @@ import InlineComponentWrapper from './InlineComponent';
 import { extract_names } from 'periscopic';
 import SlotTemplate from '../../nodes/SlotTemplate';
 import { add_const_tags, add_const_tags_context } from './shared/add_const_tags';
+import { set_index_number_to_fragment } from './shared/set_index_number';
 
 export default class SlotTemplateWrapper extends Wrapper {
 	node: SlotTemplate;
@@ -67,6 +68,10 @@ export default class SlotTemplateWrapper extends Wrapper {
 		);
 
 		this.block.parent.add_dependencies(this.block.dependencies);
+	}
+
+	set_index_number(_root_node: Wrapper) {
+		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
 	}
 
 	render() {

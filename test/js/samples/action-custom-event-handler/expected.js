@@ -3,30 +3,32 @@ import {
 	SvelteComponent,
 	action_destroyer,
 	detach,
-	element,
 	init,
 	insert,
 	is_function,
+	make_renderer,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	traverse
 } from "svelte/internal";
 
+const render = make_renderer(`<button>foo</button>`);
+
 function create_fragment(ctx) {
-	let button;
+	let render_nodes = [];
 	let foo_action;
 	let mounted;
 	let dispose;
 
 	return {
 		c() {
-			button = element("button");
-			button.textContent = "foo";
+			traverse(render(), render_nodes);
 		},
 		m(target, anchor) {
-			insert(target, button, anchor);
+			insert(target, render_nodes[0], anchor); /* button */
 
 			if (!mounted) {
-				dispose = action_destroyer(foo_action = foo.call(null, button, /*foo_function*/ ctx[1]));
+				dispose = action_destroyer(foo_action = foo.call(null, render_nodes[0], /*foo_function*/ ctx[1]));
 				mounted = true;
 			}
 		},
@@ -36,7 +38,7 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(button);
+			if (detaching) detach(render_nodes[0]); /* button */
 			mounted = false;
 			dispose();
 		}

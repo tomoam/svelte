@@ -18,113 +18,6 @@ type NodeEx = Node & {
 	childNodes: NodeListOf<NodeEx>,
 };
 
-function upper_bound(low: number, high: number, key: (index: number) => number, value: number) {
-	// Return first index of value larger than input value in the range [low, high)
-	while (low < high) {
-		const mid = low + ((high - low) >> 1);
-		if (key(mid) <= value) {
-			low = mid + 1;
-		} else {
-			high = mid;
-		}
-	}
-	return low;
-}
-
-function init_hydrate(target: NodeEx) {
-	if (target.hydrate_init) return;
-	target.hydrate_init = true;
-
-	type NodeEx2 = NodeEx & {claim_order: number};
-
-	// We know that all children have claim_order values since the unclaimed have been detached if target is not <head>
-	let children: ArrayLike<NodeEx2> = target.childNodes as NodeListOf<NodeEx2>;
-
-	// If target is <head>, there may be children without claim_order
-	if (target.nodeName === 'HEAD') {
-		const myChildren = [];
-		for (let i = 0; i < children.length; i++) {
-			const node = children[i];
-			if (node.claim_order !== undefined) {
-				myChildren.push(node);
-			}
-		}
-		children = myChildren;
-	}
-
-	/*
-	* Reorder claimed children optimally.
-	* We can reorder claimed children optimally by finding the longest subsequence of
-	* nodes that are already claimed in order and only moving the rest. The longest
-	* subsequence subsequence of nodes that are claimed in order can be found by
-	* computing the longest increasing subsequence of .claim_order values.
-	*
-	* This algorithm is optimal in generating the least amount of reorder operations
-	* possible.
-	*
-	* Proof:
-	* We know that, given a set of reordering operations, the nodes that do not move
-	* always form an increasing subsequence, since they do not move among each other
-	* meaning that they must be already ordered among each other. Thus, the maximal
-	* set of nodes that do not move form a longest increasing subsequence.
-	*/
-
-	// Compute longest increasing subsequence
-	// m: subsequence length j => index k of smallest value that ends an increasing subsequence of length j
-	const m = new Int32Array(children.length + 1);
-	// Predecessor indices + 1
-	const p = new Int32Array(children.length);
-
-	m[0] = -1;
-	let longest = 0;
-	for (let i = 0; i < children.length; i++) {
-		const current = children[i].claim_order;
-		// Find the largest subsequence length such that it ends in a value less than our current value
-
-		// upper_bound returns first greater value, so we subtract one
-		// with fast path for when we are on the current longest subsequence
-		const seqLen = ((longest > 0 && children[m[longest]].claim_order <= current) ? longest + 1 : upper_bound(1, longest, idx => children[m[idx]].claim_order, current)) - 1;
-
-		p[i] = m[seqLen] + 1;
-
-		const newLen = seqLen + 1;
-
-		// We can guarantee that current is the smallest value. Otherwise, we would have generated a longer sequence.
-		m[newLen] = i;
-
-		longest = Math.max(newLen, longest);
-	}
-
-	// The longest increasing subsequence of nodes (initially reversed)
-	const lis: NodeEx2[] = [];
-	// The rest of the nodes, nodes that will be moved
-	const toMove: NodeEx2[] = [];
-	let last = children.length - 1;
-	for (let cur = m[longest] + 1; cur != 0; cur = p[cur - 1]) {
-		lis.push(children[cur - 1]);
-		for (; last >= cur; last--) {
-			toMove.push(children[last]);
-		}
-		last--;
-	}
-	for (; last >= 0; last--) {
-		toMove.push(children[last]);
-	}
-	lis.reverse();
-
-	// We sort the nodes being moved to guarantee that their insertion order matches the claim order
-	toMove.sort((a, b) => a.claim_order - b.claim_order);
-
-	// Finally, we move the nodes
-	for (let i = 0, j = 0; i < toMove.length; i++) {
-		while (j < lis.length && toMove[i].claim_order >= lis[j].claim_order) {
-			j++;
-		}
-		const anchor = j < lis.length ? lis[j] : null;
-		target.insertBefore(toMove[i], anchor);
-	}
-}
-
 export function append(target: Node, node: Node) {
 	target.appendChild(node);
 }
@@ -164,39 +57,13 @@ function append_stylesheet(node: ShadowRoot | Document, style: HTMLStyleElement)
 	append((node as Document).head || node, style);
 }
 
-export function append_hydration(target: NodeEx, node: NodeEx) {
-	if (is_hydrating) {
-		init_hydrate(target);
-
-		if ((target.actual_end_child === undefined) || ((target.actual_end_child !== null) && (target.actual_end_child.parentElement !== target))) {
-			target.actual_end_child = target.firstChild;
-		}
-
-		// Skip nodes of undefined ordering
-		while ((target.actual_end_child !== null) && (target.actual_end_child.claim_order === undefined)) {
-			target.actual_end_child = target.actual_end_child.nextSibling;
-		}
-
-		if (node !== target.actual_end_child) {
-			// We only insert if the ordering of this node should be modified or the parent node is not target
-			if (node.claim_order !== undefined || node.parentNode !== target) {
-				target.insertBefore(node, target.actual_end_child);
-			}
-		} else {
-			target.actual_end_child = node.nextSibling;
-		}
-	} else if (node.parentNode !== target || node.nextSibling !== null) {
-		target.appendChild(node);
-	}
-}
-
 export function insert(target: Node, node: Node, anchor?: Node) {
 	target.insertBefore(node, anchor || null);
 }
 
 export function insert_hydration(target: NodeEx, node: NodeEx, anchor?: NodeEx) {
 	if (is_hydrating && !anchor) {
-		append_hydration(target, node);
+		target.appendChild(node);
 	} else if (node.parentNode !== target || node.nextSibling != anchor) {
 		target.insertBefore(node, anchor || null);
 	}
@@ -241,6 +108,179 @@ export function svg_element<K extends keyof SVGElementTagNameMap>(name: K): SVGE
 
 export function text(data: string) {
 	return document.createTextNode(data);
+}
+
+export function traverse(fragment: Node, node: ChildNode[], node_path: number[] = []) {
+	node[0] = fragment.firstChild;
+	let temp = [];
+	if (is_hydrating) {
+		temp = node;
+	} else {
+		temp[0] = node[0];
+	}
+	for (let i = 1 ; i < node_path.length ; i = i + 1) {
+		const path_number = node_path[i];
+		if (path_number) {
+			const abs = path_number > 0 ? path_number : path_number * -1;
+			const path = abs === 1 ? i - 1 : abs - 2;
+			temp[i] = temp[path].nextSibling;
+		} else {
+			temp[i] = temp[i - 1].firstChild;
+		}
+		if (!is_hydrating && path_number <= 0) {
+			node[i] = temp[i];
+		}
+	}
+}
+
+export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[], node_path: number[], claim_func_map: Map<number, Function>, start: number, first_parent_node?) {
+	let point = start;
+	const point_stack = [];
+
+	let parent_node = first_parent_node || ssr_nodes[0].parentNode;
+	const parent_node_stack = [];
+
+	let nodes = ssr_nodes;
+	const nodes_stack = [];
+	nodes_stack.push(nodes);
+
+	const temp_nodes = [];
+	for (let i = start ; i < node_path.length ; i = i + 1) {
+
+		let ssr_node;
+
+		if (i === 0) {
+			if (claim_func_map.has(i)) {
+				const func = claim_func_map.get(i);
+				func(nodes);
+			}
+			ssr_node = nodes[0];
+		} else if (!node_path[i]) {
+			const base_node = render_nodes[i - 1];
+
+			parent_node_stack.push(parent_node);
+			parent_node = base_node;
+	
+			point_stack.push(i - 1);
+			point = i;
+
+			nodes_stack.push(nodes);
+			nodes = children(base_node as Element);
+			if (claim_func_map.has(i)) {
+				const func = claim_func_map.get(i);
+				func(nodes);
+				ssr_node = nodes[0];
+			} else {
+				ssr_node = base_node.firstChild;
+			}
+
+		} else {
+			const abs = node_path[i] > 0 ? node_path[i] : node_path[i] * -1;
+			const path = abs === 1 ? i - 1 : abs - 2;
+			while (point !== path) {
+				point = point_stack.pop();
+				nodes = nodes_stack.pop();
+				parent_node = parent_node_stack.pop();
+			}
+			point = i;
+			const base_node = render_nodes[path];
+
+			if (claim_func_map.has(i)) {
+				const func = claim_func_map.get(i);
+				func(nodes);
+				ssr_node = nodes[0];
+			} else {
+				ssr_node = base_node.nextSibling;
+			}
+		}
+
+		const render_node = render_nodes[i];
+
+		if (render_node.nodeType === 1) {
+			if (!ssr_node) {
+				ssr_node = render_node;
+				insert_hydration(parent_node, ssr_node);
+			} else {
+				nodes[0] && nodes.shift();
+	
+				const remove = [];
+				for (let j = 0; j < ssr_node.attributes.length; j++) {
+					const attribute = ssr_node.attributes[j];
+					if (!((render_node as Element).attributes[attribute.name])) {
+						remove.push(attribute.name);
+					}
+				}
+				remove.forEach(v => ssr_node.removeAttribute(v));
+			}
+
+		} else if (render_node.nodeType === 3) {
+
+			if (!ssr_node) {
+				ssr_node = text((render_node as Text).data);
+				insert_hydration(parent_node, ssr_node);
+			} else if (ssr_node.nodeType === 3 && (render_node as Text).data !== ssr_node.data) {
+				if (ssr_node.data.startsWith((render_node as Text).data)) {
+					if ((render_node as Text).data.length < ssr_node.data.length) {
+						nodes[0] = ssr_node.splitText((render_node as Text).data.length);
+					} else if ((render_node as Text).data.length === ssr_node.data.length) {
+						nodes[0] && nodes.shift();
+					} else {
+						ssr_node.data = (render_node as Text).data;
+						nodes[0] && nodes.shift();
+					}
+				} else {
+					ssr_node.data = (render_node as Text).data;
+					nodes[0] && nodes.shift();
+				}
+
+			} else if (ssr_node.nodeType === 1 || ssr_node.nodeType === 8) {
+				insert_hydration(parent_node, render_node, ssr_node);
+				ssr_node = render_node;
+			} else {
+				nodes[0] && nodes.shift();
+			}
+		} else if (render_node.nodeType === 8) {
+			if (!ssr_node || ssr_node.nodeType !== 8 || (ssr_node as Comment).textContent !== '') {
+				insert_hydration(parent_node, render_node, ssr_node);
+				ssr_node = render_node;
+			} else {
+				nodes[0] && nodes.shift();
+			}
+		}
+
+		render_nodes[i] = ssr_node;
+
+		if (i === 0 || node_path[i] <= 0) {
+			temp_nodes[i] = render_nodes[i];
+		}
+	}
+
+	render_nodes = temp_nodes;
+}
+
+export function replace_text(elm: ChildNode, data: string) {
+	const textNode = text(data);
+	elm.replaceWith(textNode);
+	return textNode;
+}
+
+export function insert_blank_anchor(next_node: ChildNode, parent_node?: ChildNode) {
+	const target = parent_node || next_node.parentNode;
+	const anchor = empty();
+	insert_hydration(target, anchor, next_node);
+	return anchor;
+}
+
+export function make_renderer(html) {
+	const template = document.createElement('template');
+	template.innerHTML = html;
+	return () => template.content.cloneNode(true);
+}
+
+export function make_custom_renderer(html) {
+	const template = document.createElement('template');
+	template.innerHTML = html;
+	return () => document.importNode(template.content, true);
 }
 
 export function space() {
@@ -498,6 +538,7 @@ export function claim_html_tag(nodes, is_svg: boolean) {
 	const start_index = find_comment(nodes, 'HTML_TAG_START', 0);
 	const end_index = find_comment(nodes, 'HTML_TAG_END', start_index);
 	if (start_index === end_index) {
+		nodes.splice(start_index, start_index + 1);
 		return new HtmlTagHydration(undefined, is_svg);
 	}
 
