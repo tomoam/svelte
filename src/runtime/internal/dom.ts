@@ -118,7 +118,7 @@ export function traverse(fragment: Node, node: ChildNode[], node_path: number[] 
 	} else {
 		temp[0] = node[0];
 	}
-	for (let i = 1 ; i < node_path.length ; i = i + 1) {
+	for (let i = 1 ; i < node_path.length ; i += 1) {
 		const path_number = node_path[i];
 		if (path_number) {
 			const abs = path_number > 0 ? path_number : path_number * -1;
@@ -133,8 +133,8 @@ export function traverse(fragment: Node, node: ChildNode[], node_path: number[] 
 	}
 }
 
-export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[], node_path: number[], claim_func_map: Map<number, Function>, start: number, first_parent_node?) {
-	let point = start;
+export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[], node_path: number[], claim_func_map: Map<number, Function> = new Map(), first_parent_node?) {
+	let point = 0;
 	const point_stack = [];
 
 	let parent_node = first_parent_node || ssr_nodes[0].parentNode;
@@ -145,7 +145,7 @@ export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[]
 	nodes_stack.push(nodes);
 
 	const temp_nodes = [];
-	for (let i = start ; i < node_path.length ; i = i + 1) {
+	for (let i = 0 ; i < node_path.length ; i += 1) {
 
 		let ssr_node;
 

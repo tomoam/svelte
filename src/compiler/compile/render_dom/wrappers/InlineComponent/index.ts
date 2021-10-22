@@ -444,13 +444,19 @@ export default class InlineComponentWrapper extends Wrapper {
 			);
 
 			if (parent_nodes && this.renderer.options.hydratable) {
-				block.chunks.claim.push(
-					b`if (${name}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}.$$.fragment, n));`
-				);
+				if (!parent_node && !this.prev && !this.next) {
+					block.chunks.claim.push(
+						b`if (${name}) @claim_component(${name}.$$.fragment, ${parent_nodes});`
+					);
+				} else {
+					block.chunks.claim.push(
+						b`if (${name}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}.$$.fragment, n));`
+					);
 
-				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
-				if (claim_statement) {
-					block.chunks.claim.push(claim_statement);
+					const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+					if (claim_statement) {
+						block.chunks.claim.push(claim_statement);
+					}
 				}
 			}
 
@@ -557,13 +563,19 @@ export default class InlineComponentWrapper extends Wrapper {
 					`);
 				}
 
-				block.chunks.claim.push(b`
-					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}.$$.fragment, n));
-				`);
+				if (!parent_node && !this.prev && !this.next) {
+					block.chunks.claim.push(
+						b`@claim_component(${name}.$$.fragment, ${nodes});`
+					);
+				} else {
+					block.chunks.claim.push(b`
+						${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}.$$.fragment, n));
+					`);
 
-				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
-				if (claim_statement) {
-					block.chunks.claim.push(claim_statement);
+					const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+					if (claim_statement) {
+						block.chunks.claim.push(claim_statement);
+					}
 				}
 			}
 

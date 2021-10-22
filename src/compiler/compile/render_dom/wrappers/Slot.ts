@@ -159,13 +159,19 @@ export default class SlotWrapper extends Wrapper {
 		);
 
 		if (renderer.options.hydratable) {
-			block.chunks.claim.push(
-				b`if (${slot_or_fallback}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${slot_or_fallback}.l(n));`
-			);
+			if (!parent_node && !this.prev && !this.next) {
+				block.chunks.claim.push(
+					b`if (${slot_or_fallback}) ${slot_or_fallback}.l(${parent_nodes});`
+				);
+			} else {
+				block.chunks.claim.push(
+					b`if (${slot_or_fallback}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${slot_or_fallback}.l(n));`
+				);
 
-			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
-			if (claim_statement) {
-				block.chunks.claim.push(claim_statement);
+				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+				if (claim_statement) {
+					block.chunks.claim.push(claim_statement);
+				}
 			}
 		}
 

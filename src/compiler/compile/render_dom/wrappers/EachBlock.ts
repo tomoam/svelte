@@ -417,30 +417,33 @@ export default class EachBlockWrapper extends Wrapper {
 		`);
 
 		if (parent_nodes && this.renderer.options.hydratable) {
-			if (each_block_else) {
-				block.chunks.claim.push(b`
-					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
-						for (let #i = 0; #i < ${view_length}; #i += 1) {
-							${iterations}[#i].l(n);
-						}
-						if (${each_block_else}) {
-							${each_block_else}.l(n);
-						}
-					});
-				`);
+			const arg_node = 'n';
+			const node = (!parent_node && !this.prev && !this.next) ? parent_nodes : arg_node;
+			const claim = b`
+				for (let #i = 0; #i < ${view_length}; #i += 1) {
+					${iterations}[#i].l(${node});
+				}
+			`;
+			const each_block_else_claim = each_block_else && b`
+				if (${each_block_else}) {
+					${each_block_else}.l(${node});
+				}
+			`
+			if (!parent_node && !this.prev && !this.next) {
+				block.chunks.claim.push(claim);
+				if (each_block_else_claim) block.chunks.claim.push(each_block_else_claim);
 			} else {
 				block.chunks.claim.push(b`
-					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
-						for (let #i = 0; #i < ${view_length}; #i += 1) {
-							${iterations}[#i].l(n);
-						}
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (${arg_node}) => {
+						${claim}
+						${each_block_else_claim}
 					});
 				`);
-			}
 
-			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
-			if (claim_statement) {
-				block.chunks.claim.push(claim_statement);
+				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+				if (claim_statement) {
+					block.chunks.claim.push(claim_statement);
+				}
 			}
 		}
 
@@ -533,30 +536,33 @@ export default class EachBlockWrapper extends Wrapper {
 		`);
 
 		if (parent_nodes && this.renderer.options.hydratable) {
-			if (each_block_else) {
-				block.chunks.claim.push(b`
-					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
-						for (let #i = 0; #i < ${view_length}; #i += 1) {
-							${iterations}[#i].l(n);
-						}
-						if (${each_block_else}) {
-							${each_block_else}.l(n);
-						}
-					});
-				`);
+			const arg_node = 'n';
+			const node = (!parent_node && !this.prev && !this.next) ? parent_nodes : arg_node;
+			const claim = b`
+				for (let #i = 0; #i < ${view_length}; #i += 1) {
+					${iterations}[#i].l(${node});
+				}
+			`;
+			const each_block_else_claim = each_block_else && b`
+				if (${each_block_else}) {
+					${each_block_else}.l(${node});
+				}
+			`
+			if (!parent_node && !this.prev && !this.next) {
+				block.chunks.claim.push(claim);
+				if (each_block_else_claim) block.chunks.claim.push(each_block_else_claim);
 			} else {
 				block.chunks.claim.push(b`
-					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
-						for (let #i = 0; #i < ${view_length}; #i += 1) {
-							${iterations}[#i].l(n);
-						}
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (${arg_node}) => {
+						${claim}
+						${each_block_else_claim}
 					});
 				`);
-			}
 
-			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
-			if (claim_statement) {
-				block.chunks.claim.push(claim_statement);
+				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+				if (claim_statement) {
+					block.chunks.claim.push(claim_statement);
+				}
 			}
 		}
 

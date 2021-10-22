@@ -24,8 +24,7 @@ function create_fragment(ctx) {
 		l(nodes) {
 			this.c();
 			if (!nodes.length) return;
-			const claim_func_var = new Map();
-			traverse_claim(nodes, render_nodes, node_path(), claim_func_var, 0);
+			traverse_claim(nodes, render_nodes, [0]);
 		},
 		m(target, anchor) {
 			insert_hydration(target, render_nodes[0], anchor); /* svg */
