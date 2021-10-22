@@ -260,19 +260,31 @@ export default class IfBlockWrapper extends Wrapper {
 		}
 
 		if (this.renderer.options.hydratable) {
-			if (if_exists_condition) {
-				block.chunks.claim.push(b`
-					if (${if_exists_condition}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${name}.l(n));
-				`);
+			if (!parent_node && !this.prev && !this.next) {
+				if (if_exists_condition) {
+					block.chunks.claim.push(
+						b`if (${if_exists_condition}) ${name}.l(${parent_nodes});`
+					);
+				} else {
+					block.chunks.claim.push(
+						b`${name}.l(${parent_nodes});`
+					);
+				}
 			} else {
-				block.chunks.claim.push(b`
-					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${name}.l(n));
-				`);
-			}
+				if (if_exists_condition) {
+					block.chunks.claim.push(b`
+						if (${if_exists_condition}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${name}.l(n));
+					`);
+				} else {
+					block.chunks.claim.push(b`
+						${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${name}.l(n));
+					`);
+				}
 
-			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
-			if (claim_statement) {
-				block.chunks.claim.push(claim_statement);
+				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+				if (claim_statement) {
+					block.chunks.claim.push(claim_statement);
+				}
 			}
 		}
 

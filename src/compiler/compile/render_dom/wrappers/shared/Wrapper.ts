@@ -109,8 +109,8 @@ export default class Wrapper {
 		return x`${this.root_node.render_nodes_var}[${this.index_in_render_nodes}]`;
 	}
 
-	get_claim_func_map_var(block: Block) {
-		if (!this.root_node.claim_func_map_var) {
+	get_claim_func_map_var(block: Block, if_create: boolean = true) {
+		if (!this.root_node.claim_func_map_var && if_create) {
 			this.root_node.claim_func_map_var = block.get_unique_name('claim_func_var');
 		}
 		return this.root_node.claim_func_map_var;
@@ -140,11 +140,11 @@ export default class Wrapper {
 			const statements = [];
 			if (is_head(parent_node) && this.parent.template_name) {
 				statements.push(b`
-					@traverse_claim(${parent_nodes}, ${this.get_render_nodes_var()}, ${this.root_node.node_path_var_name}(), ${this.get_claim_func_map_var(block)}, 0, @_document.head);
+					@traverse_claim(${parent_nodes}, ${this.get_render_nodes_var()}, ${this.root_node.index_in_render_nodes_sequence > 1 ? `${this.root_node.node_path_var_name}()` : `[0]`}, ${this.get_claim_func_map_var(block, false) || `undefined`}, @_document.head);
 				`);
 			} else {
 				statements.push(b`
-					@traverse_claim(#nodes, ${this.get_render_nodes_var()}, ${this.root_node.node_path_var_name}(), ${this.get_claim_func_map_var(block)}, 0);
+					@traverse_claim(#nodes, ${this.get_render_nodes_var()}, ${this.root_node.index_in_render_nodes_sequence > 1 ? `${this.root_node.node_path_var_name}()` : `[0]`}, ${this.get_claim_func_map_var(block, false)});
 				`);
 			}
 			return statements;

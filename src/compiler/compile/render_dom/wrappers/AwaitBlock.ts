@@ -247,13 +247,19 @@ export default class AwaitBlockWrapper extends Wrapper {
 		`);
 
 		if (parent_nodes && this.renderer.options.hydratable) {
-			block.chunks.claim.push(b`
-				${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${info}.block.l(n));
-			`);
+			if (!parent_node && !this.prev && !this.next) {
+				block.chunks.claim.push(b`
+					${info}.block.l(${parent_nodes});
+				`);
+			} else {
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${info}.block.l(n));
+				`);
 
-			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
-			if (claim_statement) {
-				block.chunks.claim.push(claim_statement);
+				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+				if (claim_statement) {
+					block.chunks.claim.push(claim_statement);
+				}
 			}
 		}
 

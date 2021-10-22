@@ -59,18 +59,25 @@ export default class RawMustacheTagWrapper extends Tag {
 			block.chunks.create.push(b`${html_tag} = new @HtmlTag(${is_svg ? 'true' : 'false'});`);
 
 			if (this.renderer.options.hydratable) {
-				block.chunks.claim.push(b`
-					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => {
-						${html_tag} = @claim_html_tag(n, ${is_svg ? 'true' : 'false'});
-					});
-				`);
+				if (!parent_node && !this.prev && !this.next) {
+					block.chunks.claim.push(b`${html_tag} = @claim_html_tag(${parent_nodes}, ${is_svg ? 'true' : 'false'});`);
+				} else {
+					block.chunks.claim.push(b`
+						${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${html_tag} = @claim_html_tag(n, ${is_svg ? 'true' : 'false'}));
+					`);
+
+					const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+					if (claim_statement) {
+						block.chunks.claim.push(claim_statement);
+					}
+				}
 			}
 
 			block.add_statement(
 				this.var,
 				this.get_var(),
 				this.get_create_statement(parent_node),
-				this.get_claim_statement(block, parent_node, parent_nodes),
+				undefined,
 				parent_node
 			);
 
