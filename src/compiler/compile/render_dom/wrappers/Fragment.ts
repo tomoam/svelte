@@ -117,7 +117,12 @@ export default class FragmentWrapper {
 					if (should_trim && !child.keep_space()) {
 						data = trim_end(data);
 						child.data = data;
-						if (!data) continue;
+						if (!data) {
+							if (child.prev && child.prev.next) {
+								child.prev.next = null;
+							}
+							continue;
+						} 
 					}
 				}
 
@@ -178,6 +183,7 @@ export default class FragmentWrapper {
 
 					if (this.nodes[0]) {
 						this.nodes[0].prev = null;
+						this.nodes[0].node.prev = null;
 					}
 				}
 			}

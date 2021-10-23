@@ -271,13 +271,13 @@ export function insert_blank_anchor(next_node: ChildNode, parent_node?: ChildNod
 	return anchor;
 }
 
-export function make_renderer(html) {
+export function make_renderer(html: string) {
 	const template = document.createElement('template');
 	template.innerHTML = html;
 	return () => template.content.cloneNode(true);
 }
 
-export function make_custom_renderer(html) {
+export function make_custom_renderer(html: string) {
 	const template = document.createElement('template');
 	template.innerHTML = html;
 	return () => document.importNode(template.content, true);
