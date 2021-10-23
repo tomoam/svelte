@@ -8,7 +8,6 @@ import {
 	insert_dev,
 	make_renderer,
 	noop,
-	replace_text,
 	safe_not_equal,
 	traverse,
 	validate_each_argument,
@@ -24,7 +23,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-const render = make_renderer(`<!>`);
+const render = make_renderer(` `);
 
 // (4:0) {#each things as thing, index}
 function create_each_block(ctx) {
@@ -40,7 +39,7 @@ function create_each_block(ctx) {
 			}
 
 			traverse(render());
-			render_nodes[1] = replace_text(render_nodes[1], t_value);
+			render_nodes[1].data = t_value;
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, render_nodes[1], anchor); /* t */

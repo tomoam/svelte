@@ -47,7 +47,12 @@ export default function remove_whitespace_children(children: INode[], next?: INo
 				if (should_trim) {
 					data = trim_end(data);
 					child.data = data;
-					if (!data) continue;
+					if (!data) {
+						if (child.prev && child.prev.next) {
+							child.prev.next = null;
+						}
+						continue;
+					} 
 				}
 			}
 
