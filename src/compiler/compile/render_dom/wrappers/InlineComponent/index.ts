@@ -216,16 +216,21 @@ export default class InlineComponentWrapper extends Wrapper {
 			updates.push(b`const ${name_changes} = {};`);
 		}
 
-		block.add_statement(
-			this.var,
-			this.get_var(),
-			this.get_create_statement(parent_node),
-			undefined,
-			this.get_mount_statement(),
-			this.get_destroy_statement(),
-			parent_node,
-			this
-		);
+		if (this.is_single_in_fragment(parent_node) && this.node.name !== 'svelte:component') {
+			this.template_name = null;
+			this.template = null;
+		} else {
+			block.add_statement(
+				this.var,
+				this.get_var(),
+				this.get_create_statement(parent_node),
+				undefined,
+				this.get_mount_statement(),
+				this.get_destroy_statement(),
+				parent_node,
+				this
+			);
+		}
 
 		if (this.node.attributes.length) {
 			if (uses_spread) {
@@ -597,7 +602,7 @@ export default class InlineComponentWrapper extends Wrapper {
 				block.chunks.mount.push(b`@mount_component(${name}, ${css_custom_properties_wrapper}, null);`);
 			} else {
 				block.chunks.mount.push(
-					b`@mount_component(${name}, ${parent_node || '#target'}, ${this.get_var()});`
+					b`@mount_component(${name}, ${parent_node || '#target'}, ${!this.is_single_in_fragment(parent_node) ? this.get_var() : '#anchor'});`
 				);
 			}
 
