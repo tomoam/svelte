@@ -324,13 +324,9 @@ export default class Block {
 			} else {
 				const prefix = [];
 				if (this.renderer.options.hydratable) {
-					if (this.chunks.create.length > 0) {
+					if (this.chunks.create.length > 0 && this.wrappers.some(node => node.template)) {
 						prefix.push(b`this.c();`);
 					}
-
-					// if (!this.wrappers.some((n) => n.node.type === 'Head')) {
-					// 	prefix.push(b`if (!#nodes.length) return;`);
-					// }
 
 					this.wrappers.filter(node => node.template).forEach((node) => {
 						if (node.claim_func_map_var) {

@@ -128,8 +128,8 @@ export function text(data: string) {
 	return document.createTextNode(data);
 }
 
-export function traverse(fragment: Node, node: ChildNode[], node_path: number[] = []) {
-	node[0] = fragment.firstChild;
+export function traverse(fragment: ChildNode, node: ChildNode[], node_path: number[] = []) {
+	node[0] = fragment;
 	let temp = [];
 	if (is_hydrating) {
 		temp = node;
@@ -305,13 +305,13 @@ export function insert_blank_anchor(next_node: ChildNode, parent_node?: ChildNod
 export function make_renderer(html: string) {
 	const template = document.createElement('template');
 	template.innerHTML = html;
-	return () => template.content.cloneNode(true);
+	return () => template.content.cloneNode(true).firstChild;
 }
 
 export function make_custom_renderer(html: string) {
 	const template = document.createElement('template');
 	template.innerHTML = html;
-	return () => document.importNode(template.content, true);
+	return () => document.importNode(template.content, true).firstChild;
 }
 
 export function space() {

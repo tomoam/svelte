@@ -150,19 +150,24 @@ export default class SlotWrapper extends Wrapper {
 			b`if (${slot_or_fallback}) ${slot_or_fallback}.c();`
 		);
 
-		block.add_statement(
-			this.var,
-			this.get_var(),
-			this.get_create_statement(parent_node),
-			undefined,
-			this.get_mount_statement(),
-			this.get_destroy_statement(),
-			parent_node,
-			this
-		);
+		if (this.is_single_in_fragment(parent_node)) {
+			this.template = null;
+			this.template_name = null;
+		} else {
+			block.add_statement(
+				this.var,
+				this.get_var(),
+				this.get_create_statement(parent_node),
+				undefined,
+				this.get_mount_statement(),
+				this.get_destroy_statement(),
+				parent_node,
+				this
+			);
+		}
 
 		if (renderer.options.hydratable) {
-			if (!parent_node && !this.prev && !this.next) {
+			if (this.is_single_in_fragment(parent_node)) {
 				block.chunks.claim.push(
 					b`if (${slot_or_fallback}) ${slot_or_fallback}.l(${parent_nodes});`
 				);
@@ -180,7 +185,7 @@ export default class SlotWrapper extends Wrapper {
 
 		block.chunks.mount.push(b`
 			if (${slot_or_fallback}) {
-				${slot_or_fallback}.m(${parent_node || '#target'}, ${this.get_var()});
+				${slot_or_fallback}.m(${parent_node || '#target'}, ${this.is_single_in_fragment(parent_node) ? '#anchor' : this.get_var()});
 			}
 		`);
 

@@ -207,6 +207,10 @@ export default class Wrapper {
 		);
 	}
 
+	is_single_in_fragment(parent_node: Identifier) {
+		return !parent_node && !this.prev && !this.next;
+	}
+
 	render(_block: Block, _parent_node: Identifier, _parent_nodes: Identifier) {
 		throw Error('Wrapper class is not renderable');
 	}
