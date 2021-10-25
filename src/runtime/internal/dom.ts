@@ -61,6 +61,12 @@ export function insert(target: Node, node: Node, anchor?: Node) {
 	target.insertBefore(node, anchor || null);
 }
 
+export function insert_all(target: Node, nodes: Node[], indexes: number[], anchor?: Node) {
+	for (let i = 0 ; i < indexes.length ; i += 1) {
+		insert(target, nodes[indexes[i]], anchor);
+	}
+}
+
 export function insert_hydration(target: NodeEx, node: NodeEx, anchor?: NodeEx) {
 	if (is_hydrating && !anchor) {
 		target.appendChild(node);
@@ -69,8 +75,20 @@ export function insert_hydration(target: NodeEx, node: NodeEx, anchor?: NodeEx) 
 	}
 }
 
+export function insert_all_hydration(target: Node, nodes: Node[], indexes: number[], anchor?: Node) {
+	for (let i = 0 ; i < indexes.length ; i += 1) {
+		insert_hydration(target, nodes[indexes[i]], anchor);
+	}
+}
+
 export function detach(node: Node) {
 	node.parentNode.removeChild(node);
+}
+
+export function detach_all(detaching, nodes: Node[], indexes: number[]) {
+	for (let i = 0 ; i < indexes.length ; i += 1) {
+		if (detaching) detach(nodes[indexes[i]]);
+	}
 }
 
 export function destroy_each(iterations, detaching) {
@@ -134,6 +152,20 @@ export function traverse(fragment: Node, node: ChildNode[], node_path: number[] 
 }
 
 export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[], node_path: number[], claim_func_map: Map<number, Function> = new Map(), first_parent_node?) {
+
+	const temp_nodes = [];
+
+	if (!ssr_nodes.length) {
+		temp_nodes[0] = render_nodes[0];
+		for (let i = 1 ; i < node_path.length ; i += 1) {
+			if (node_path[i] <= 0) {
+				temp_nodes[i] = render_nodes[i];
+			}
+		}
+		render_nodes = temp_nodes;
+		return;
+	}
+
 	let point = 0;
 	const point_stack = [];
 
@@ -144,7 +176,6 @@ export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[]
 	const nodes_stack = [];
 	nodes_stack.push(nodes);
 
-	const temp_nodes = [];
 	for (let i = 0 ; i < node_path.length ; i += 1) {
 
 		let ssr_node;

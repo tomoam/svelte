@@ -251,7 +251,10 @@ export default class EachBlockWrapper extends Wrapper {
 			this.get_var(),
 			this.get_create_statement(parent_node),
 			undefined,
-			parent_node
+			this.get_mount_statement(),
+			this.get_destroy_statement(),
+			parent_node,
+			this
 		);
 
 		if (this.node.key) {

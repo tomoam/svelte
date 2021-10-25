@@ -36,12 +36,19 @@ export default class MustacheTagWrapper extends Tag {
 
 		const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
 
+		const mount_statement = this.get_mount_statement();
+
+		const destroy_statement = this.get_destroy_statement();
+
 		block.add_statement(
 			this.var,
 			this.get_var(),
 			render_statement,
 			claim_statement,
-			parent_node
+			mount_statement,
+			destroy_statement,
+			parent_node,
+			this
 		);
 
 		if (!is_text(this.node.prev) && !is_text(this.node.next)) {

@@ -19,15 +19,15 @@ export default {
 		await fulfil(42);
 
 		assert.htmlEqual(target.innerHTML, `
-			<p class="then" foo="0.0">42</p>
 			<p class="pending" foo="0.5">loading...</p>
+			<p class="then" foo="0.0">42</p>
 		`);
 
 		// see the transition 30% complete
 		raf.tick(time += 30);
 		assert.htmlEqual(target.innerHTML, `
-			<p class="then" foo="0.3">42</p>
 			<p class="pending" foo="0.2">loading...</p>
+			<p class="then" foo="0.3">42</p>
 		`);
 
 		// completely transition in the {:then} block

@@ -78,7 +78,10 @@ export default class RawMustacheTagWrapper extends Tag {
 				this.get_var(),
 				this.get_create_statement(parent_node),
 				undefined,
-				parent_node
+				this.get_mount_statement(),
+				this.get_destroy_statement(),
+				parent_node,
+				this
 			);
 
 			block.chunks.mount.push(b`${html_tag}.m(${init}, ${parent_node || '#target'}, ${this.get_var()});`);
