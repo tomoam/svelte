@@ -284,19 +284,38 @@ export default class ElementWrapper extends Wrapper {
 				}
 			}
 		} else {
-			const insert = b`@insert(#target, /* ${this.var.name} */ ${node}, #anchor);`;
-			((insert[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
-				start: this.renderer.locate(this.node.start),
-				end: this.renderer.locate(this.node.end)
-			};
-			block.chunks.mount.push(insert);
+			if (this.node.namespace && this.node.namespace !== namespaces.svg) {
+
+				const insert = b`@insert(#target, /* ${this.var.name} */ ${node}, #anchor);`;
+				((insert[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
+					start: this.renderer.locate(this.node.start),
+					end: this.renderer.locate(this.node.end)
+				};
+				block.chunks.mount.push(insert);
+			} else {
+				this.root_node.insert_indexes.push(this.index_in_render_nodes);
+
+				const mount_statement = this.get_mount_statement();
+				if (mount_statement) {
+					block.chunks.mount.push(mount_statement);
+				}
+
+				const destroy_statement = this.get_destroy_statement();
+				if (destroy_statement) {
+					block.chunks.destroy.push(destroy_statement);
+				}
+			}
 
 			// TODO we eventually need to consider what happens to elements
 			// that belong to the same outgroup as an outroing element...
 			if (this.node.name === 'noscript') {
 				block.chunks.destroy.push(b`if (detaching && ${node}.parentNode) @detach(${node}); /* ${this.var.name} */`);
 			} else {
-				block.chunks.destroy.push(b`if (detaching) @detach(${node}); /* ${this.var.name} */`);
+				if (this.node.namespace && this.node.namespace !== namespaces.svg) {
+					block.chunks.destroy.push(b`if (detaching) @detach(${node}); /* ${this.var.name} */`);
+				} else {
+					this.root_node.detach_indexes.push(this.index_in_render_nodes);
+				}
 			}
 		}
 

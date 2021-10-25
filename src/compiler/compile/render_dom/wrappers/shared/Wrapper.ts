@@ -35,6 +35,9 @@ export default class Wrapper {
 
 	claim_func_map_var: Identifier;
 
+	insert_indexes: number[] = [];
+	detach_indexes: number[] = [];
+
 	constructor(
 		renderer: Renderer,
 		block: Block,
@@ -153,6 +156,43 @@ export default class Wrapper {
 		}
 	}
 
+	get_mount_statement() {
+		if (this.template_name) {
+			const root = this.root_node;
+			const indexes =  {
+				type: 'ChainExpression',
+				get expression() {
+					return x`[${root.insert_indexes.toString()}]`;
+				}
+			} as any;
+
+			const statements = [];
+			statements.push(b`@insert_all(#target, ${this.render_nodes_var}, ${indexes}, #anchor);`);
+
+			return statements;
+		} else {
+			return undefined;
+		}
+	}
+
+	get_destroy_statement() {
+		if (this.template_name) {
+			const root = this.root_node;
+			const indexes = {
+				type: 'ChainExpression',
+				get expression() {
+					return x`[${root.detach_indexes.toString()}]`;
+				}
+			} as any;
+
+			const statements = [];
+			statements.push(b`@detach_all(detaching, ${this.render_nodes_var}, ${indexes});`);
+
+			return statements;
+		} else {
+			return undefined;
+		}
+	}
 	get_update_mount_node(anchor: Identifier): Identifier {
 		return ((this.parent && this.parent.is_dom_node())
 			? this.parent.get_var()

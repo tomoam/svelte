@@ -226,7 +226,10 @@ export default class AwaitBlockWrapper extends Wrapper {
 			this.get_var(),
 			this.get_create_statement(parent_node),
 			undefined,
-			parent_node
+			this.get_mount_statement(),
+			this.get_destroy_statement(),
+			parent_node,
+			this
 		);
 
 		block.chunks.create.push(b`
@@ -251,19 +254,25 @@ export default class AwaitBlockWrapper extends Wrapper {
 		}
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = !parent_node
-			? { type: 'Identifier', name: '#anchor' }
-			: !is_head(parent_node) && this.next && this.next.is_dom_node()
-				? this.next.get_var() as Identifier
-				: { type: 'Identifier', name: 'null' };
 
 		const has_transitions = this.pending.block.has_intro_method || this.pending.block.has_outro_method;
 
-		block.chunks.mount.push(b`
-			${info}.block.m(${initial_mount_node}, ${info}.anchor = ${anchor_node});
-			${info}.mount = () => ${update_mount_node};
-			${info}.anchor = ${anchor};
-		`);
+		if (parent_node) {
+			const anchor_node =  !is_head(parent_node) && this.next && this.next.is_dom_node()
+					? this.next.get_var() as Identifier
+					: { type: 'Identifier', name: 'null' };
+
+			block.chunks.mount.push(b`
+				${info}.block.m(${initial_mount_node}, ${info}.anchor = ${anchor_node});
+				${info}.mount = () => ${update_mount_node};
+				${info}.anchor = ${anchor};
+			`);
+		} else {
+			block.chunks.mount.push(b`
+				${info}.block.m(${initial_mount_node}, ${info}.anchor = ${anchor});
+				${info}.mount = () => ${update_mount_node};
+			`);
+		} 
 
 		if (has_transitions) {
 			block.chunks.intro.push(b`@transition_in(${info}.block);`);

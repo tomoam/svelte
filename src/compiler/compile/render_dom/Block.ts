@@ -195,7 +195,10 @@ export default class Block {
 		node_name: Node,
 		render_statement: Node[],
 		claim_statement: Node[],
+		mount_statement: Node[],
+		destroy_statement: Node[],
 		parent_node: Node,
+		self_node: Wrapper,
 		no_detach?: boolean
 	) {
 		if (render_statement) {
@@ -206,6 +209,14 @@ export default class Block {
 			this.chunks.claim.push(claim_statement);
 		}
 
+		if (mount_statement) {
+			this.chunks.mount.push(mount_statement);
+		}
+
+		if (destroy_statement) {
+			this.chunks.destroy.push(destroy_statement);
+		}
+
 		if (parent_node) {
 			if (is_head(parent_node)) {
 				this.chunks.mount.push(b`@append(${parent_node}, /* ${id.name} */ ${node_name});`);
@@ -213,8 +224,8 @@ export default class Block {
 				if (!no_detach) this.chunks.destroy.push(b`@detach(${node_name}); /* ${id.name} */`);
 			} 
 		} else {
-			this.chunks.mount.push(b`@insert(#target, /* ${id.name} */ ${node_name}, #anchor);`);
-			if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(${node_name}); /* ${id.name} */`);
+			self_node.root_node.insert_indexes.push(self_node.index_in_render_nodes);
+			if (!no_detach) self_node.root_node.detach_indexes.push(self_node.index_in_render_nodes);
 		}
 	}
 
@@ -317,9 +328,9 @@ export default class Block {
 						prefix.push(b`this.c();`);
 					}
 
-					if (!this.wrappers.some((n) => n.node.type === 'Head')) {
-						prefix.push(b`if (!#nodes.length) return;`);
-					}
+					// if (!this.wrappers.some((n) => n.node.type === 'Head')) {
+					// 	prefix.push(b`if (!#nodes.length) return;`);
+					// }
 
 					this.wrappers.filter(node => node.template).forEach((node) => {
 						if (node.claim_func_map_var) {
