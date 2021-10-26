@@ -4,9 +4,9 @@ import {
 	attr,
 	create_component,
 	destroy_component,
-	detach,
+	detach_all,
 	init,
-	insert,
+	insert_all,
 	make_renderer,
 	mount_component,
 	replace_text,
@@ -18,7 +18,7 @@ import {
 } from "svelte/internal";
 
 const render = make_renderer(`<!><!> <!><!> <!><!> <div></div> <!>`);
-const node_path = () => [0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
+const node_path = () => [0,1,1,1,1,1,1,1,1,1,1,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -66,18 +66,7 @@ function create_fragment(ctx) {
 			attr(render_nodes[9], "f", div_f_value = /*f*/ ctx[5]?.());
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* t0 */
-			insert(target, render_nodes[1], anchor); /* t1 */
-			insert(target, render_nodes[2], anchor); /* t2 */
-			insert(target, render_nodes[3], anchor); /* t3 */
-			insert(target, render_nodes[4], anchor); /* t4 */
-			insert(target, render_nodes[5], anchor); /* t5 */
-			insert(target, render_nodes[6], anchor); /* t6 */
-			insert(target, render_nodes[7], anchor); /* t7 */
-			insert(target, render_nodes[8], anchor); /* t8 */
-			insert(target, render_nodes[9], anchor); /* div */
-			insert(target, render_nodes[10], anchor); /* t9 */
-			insert(target, render_nodes[11], anchor); /* component */
+			insert_all(target, render_nodes, [0,1,2,3,4,5,6,7,8,9,10,11], anchor);
 			mount_component(component, target, render_nodes[11]);
 			current = true;
 		},
@@ -132,18 +121,7 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* t0 */
-			if (detaching) detach(render_nodes[1]); /* t1 */
-			if (detaching) detach(render_nodes[2]); /* t2 */
-			if (detaching) detach(render_nodes[3]); /* t3 */
-			if (detaching) detach(render_nodes[4]); /* t4 */
-			if (detaching) detach(render_nodes[5]); /* t5 */
-			if (detaching) detach(render_nodes[6]); /* t6 */
-			if (detaching) detach(render_nodes[7]); /* t7 */
-			if (detaching) detach(render_nodes[8]); /* t8 */
-			if (detaching) detach(render_nodes[9]); /* div */
-			if (detaching) detach(render_nodes[10]); /* t9 */
-			if (detaching) detach(render_nodes[11]); /* component */
+			detach_all(detaching, render_nodes, [0,1,2,3,4,5,6,7,8,9,10,11]);
 			destroy_component(component, detaching);
 		}
 	};

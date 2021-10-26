@@ -145,7 +145,7 @@ export function traverse(fragment: ChildNode, node: ChildNode[], node_path: numb
 		} else {
 			temp[i] = temp[i - 1].firstChild;
 		}
-		if (!is_hydrating && path_number <= 0) {
+		if (!is_hydrating && path_number >= 0) {
 			node[i] = temp[i];
 		}
 	}
@@ -250,20 +250,7 @@ export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[]
 				ssr_node = text((render_node as Text).data);
 				insert_hydration(parent_node, ssr_node);
 			} else if (ssr_node.nodeType === 3 && (render_node as Text).data !== ssr_node.data) {
-				if (ssr_node.data.startsWith((render_node as Text).data)) {
-					if ((render_node as Text).data.length < ssr_node.data.length) {
-						nodes[0] = ssr_node.splitText((render_node as Text).data.length);
-					} else if ((render_node as Text).data.length === ssr_node.data.length) {
-						nodes[0] && nodes.shift();
-					} else {
-						ssr_node.data = (render_node as Text).data;
-						nodes[0] && nodes.shift();
-					}
-				} else {
-					ssr_node.data = (render_node as Text).data;
-					nodes[0] && nodes.shift();
-				}
-
+				hydrate_text(render_node as Text, nodes, ssr_node);
 			} else if (ssr_node.nodeType === 1 || ssr_node.nodeType === 8) {
 				insert_hydration(parent_node, render_node, ssr_node);
 				ssr_node = render_node;
@@ -281,12 +268,35 @@ export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[]
 
 		render_nodes[i] = ssr_node;
 
-		if (i === 0 || node_path[i] <= 0) {
+		if (i === 0 || node_path[i] >= 0) {
 			temp_nodes[i] = render_nodes[i];
 		}
 	}
 
 	render_nodes = temp_nodes;
+}
+
+export function hydrate_text(render_node: Text, nodes: ChildNode[], ssr_node: Text = nodes[0] as Text ) {
+
+	if (ssr_node && ssr_node.nodeType === 3) {
+		if (ssr_node.data.startsWith(render_node.data)) {
+			if (render_node.data.length === ssr_node.data.length) {
+				nodes[0] && nodes.shift();
+			} else if (render_node.data.length < ssr_node.data.length) {
+				nodes[0] = ssr_node.splitText(render_node.data.length);
+			} else {
+				ssr_node.data = render_node.data;
+				nodes[0] && nodes.shift();
+			}
+		} else {
+			ssr_node.data = render_node.data;
+			nodes[0] && nodes.shift();
+		}
+	} else {
+		return render_node;
+	}
+
+	return ssr_node;
 }
 
 export function replace_text(elm: ChildNode, data: string) {

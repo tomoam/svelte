@@ -419,7 +419,7 @@ export default class ElementWrapper extends Wrapper {
 				}
 			}
 		} else {
-			if (this.node.namespace && this.node.namespace !== namespaces.svg) {
+			if (this.is_single_in_fragment(parent_node) || (this.node.namespace && this.node.namespace !== namespaces.svg)) {
 
 				const insert = b`@insert(#target, /* ${this.var.name} */ ${node}, #anchor);`;
 				((insert[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
@@ -427,6 +427,7 @@ export default class ElementWrapper extends Wrapper {
 					end: this.renderer.locate(this.node.end)
 				};
 				block.chunks.mount.push(insert);
+
 			} else {
 				this.root_node.insert_indexes.push(this.index_in_render_nodes);
 
@@ -446,7 +447,7 @@ export default class ElementWrapper extends Wrapper {
 			if (this.node.name === 'noscript') {
 				block.chunks.destroy.push(b`if (detaching && ${node}.parentNode) @detach(${node}); /* ${this.var.name} */`);
 			} else {
-				if (this.node.namespace && this.node.namespace !== namespaces.svg) {
+				if (this.is_single_in_fragment(parent_node) || (this.node.namespace && this.node.namespace !== namespaces.svg)) {
 					block.chunks.destroy.push(b`if (detaching) @detach(${node}); /* ${this.var.name} */`);
 				} else {
 					this.root_node.detach_indexes.push(this.index_in_render_nodes);

@@ -3,9 +3,9 @@ import {
 	SvelteComponent,
 	create_component,
 	destroy_component,
-	detach,
+	detach_all,
 	init,
-	insert,
+	insert_all,
 	listen,
 	make_renderer,
 	mount_component,
@@ -19,7 +19,7 @@ import {
 import Foo from './Foo.svelte';
 import Bar from './Bar.svelte';
 const render = make_renderer(`<!> <!> <input>`);
-const node_path = () => [0,-1,-1,-1,-1];
+const node_path = () => [0,1,1,1,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -38,13 +38,9 @@ function create_fragment(ctx) {
 			create_component(bar.$$.fragment);
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* foo */
+			insert_all(target, render_nodes, [0,1,2,3,4], anchor);
 			mount_component(foo, target, render_nodes[0]);
-			insert(target, render_nodes[1], anchor); /* t0 */
-			insert(target, render_nodes[2], anchor); /* bar */
 			mount_component(bar, target, render_nodes[2]);
-			insert(target, render_nodes[3], anchor); /* t1 */
-			insert(target, render_nodes[4], anchor); /* input */
 			set_input_value(render_nodes[4], /*z*/ ctx[0]);
 			current = true;
 
@@ -74,13 +70,9 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* foo */
+			detach_all(detaching, render_nodes, [0,1,2,3,4]);
 			destroy_component(foo, detaching);
-			if (detaching) detach(render_nodes[1]); /* t0 */
-			if (detaching) detach(render_nodes[2]); /* bar */
 			destroy_component(bar, detaching);
-			if (detaching) detach(render_nodes[3]); /* t1 */
-			if (detaching) detach(render_nodes[4]); /* input */
 			mounted = false;
 			dispose();
 		}

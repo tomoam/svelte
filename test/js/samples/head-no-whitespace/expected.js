@@ -11,7 +11,7 @@ import {
 } from "svelte/internal";
 
 const render = make_renderer(`<meta name="twitter:creator" content="@sveltejs"><meta name="twitter:title" content="Svelte">`);
-const node_path = () => [,-1];
+const node_path = () => [,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

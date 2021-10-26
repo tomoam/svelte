@@ -226,8 +226,13 @@ export default class Block {
 				if (!no_detach) this.chunks.destroy.push(b`@detach(${node_name}); /* ${id.name} */`);
 			} 
 		} else {
-			self_node.root_node.insert_indexes.push(self_node.index_in_render_nodes);
-			if (!no_detach) self_node.root_node.detach_indexes.push(self_node.index_in_render_nodes);
+			if (self_node.is_single_in_fragment(parent_node)) {
+				this.chunks.mount.push(b`@insert(#target, /* ${id.name} */ ${node_name}, #anchor);`);
+				if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(${node_name}); /* ${id.name} */`);
+			} else {
+				self_node.root_node.insert_indexes.push(self_node.index_in_render_nodes);
+				if (!no_detach) self_node.root_node.detach_indexes.push(self_node.index_in_render_nodes);
+			}
 		}
 	}
 
@@ -326,7 +331,11 @@ export default class Block {
 			} else {
 				const prefix = [];
 				if (this.renderer.options.hydratable) {
-					if (this.chunks.create.length > 0 && this.wrappers.some(node => node.template)) {
+					if (
+						this.chunks.create.length > 0 &&
+						this.wrappers.some(node => node.template) &&
+						!(this.wrappers.length === 1 && this.wrappers[0].node.type === 'Text')
+					) {
 						prefix.push(b`this.c();`);
 					}
 

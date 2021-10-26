@@ -14,7 +14,7 @@ import {
 
 import { onMount } from "a/b/svelte";
 const render = make_renderer(`<h1>Hello <!>!</h1>`);
-const node_path = () => [,,-1,1];
+const node_path = () => [,,1,-1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

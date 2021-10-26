@@ -3,19 +3,13 @@ import {
 	SvelteComponent,
 	create_component,
 	destroy_component,
-	detach,
 	init,
-	insert,
-	make_renderer,
 	mount_component,
 	noop,
 	not_equal,
 	transition_in,
-	transition_out,
-	traverse
+	transition_out
 } from "svelte/internal";
-
-const render = make_renderer(`<!>`);
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -25,12 +19,10 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			traverse(render(), render_nodes);
 			create_component(nested.$$.fragment);
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* nested */
-			mount_component(nested, target, render_nodes[0]);
+			mount_component(nested, target, anchor);
 			current = true;
 		},
 		p: noop,
@@ -44,7 +36,6 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* nested */
 			destroy_component(nested, detaching);
 		}
 	};

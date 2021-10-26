@@ -2,9 +2,9 @@
 import {
 	SvelteComponent,
 	attr,
-	detach,
+	detach_all,
 	init,
-	insert_hydration,
+	insert_all_hydration,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -14,7 +14,7 @@ import {
 } from "svelte/internal";
 
 const render = make_renderer(`<img src="donuts.jpg" alt="donuts"> <div></div>`);
-const node_path = () => [,-1,-1];
+const node_path = () => [,1,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -27,7 +27,6 @@ function create_fragment(ctx) {
 		},
 		l(nodes) {
 			this.c();
-			if (!nodes.length) return;
 			traverse_claim(nodes, render_nodes, node_path());
 			this.h();
 		},
@@ -35,17 +34,13 @@ function create_fragment(ctx) {
 			if (!src_url_equal(render_nodes[0].src, img_src_value = "donuts.jpg")) attr(render_nodes[0], "src", img_src_value);
 		},
 		m(target, anchor) {
-			insert_hydration(target, render_nodes[0], anchor); /* img */
-			insert_hydration(target, render_nodes[1], anchor); /* t */
-			insert_hydration(target, render_nodes[2], anchor); /* div */
+			insert_all_hydration(target, render_nodes, [0,1,2], anchor);
 		},
 		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* img */
-			if (detaching) detach(render_nodes[1]); /* t */
-			if (detaching) detach(render_nodes[2]); /* div */
+			detach_all(detaching, render_nodes, [0,1,2]);
 		}
 	};
 }
