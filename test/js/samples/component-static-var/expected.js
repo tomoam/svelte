@@ -34,8 +34,8 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			traverse(render(), render_nodes, node_path());
-			create_component(foo.$$.fragment);
-			create_component(bar.$$.fragment);
+			create_component(foo);
+			create_component(bar);
 		},
 		m(target, anchor) {
 			insert_all(target, render_nodes, [0,1,2,3,4], anchor);

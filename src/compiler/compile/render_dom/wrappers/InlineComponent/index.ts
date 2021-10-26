@@ -448,17 +448,17 @@ export default class InlineComponentWrapper extends Wrapper {
 			`);
 
 			block.chunks.create.push(
-				b`if (${name}) @create_component(${name}.$$.fragment);`
+				b`if (${name}) @create_component(${name});`
 			);
 
 			if (parent_nodes && this.renderer.options.hydratable) {
 				if (!parent_node && !this.prev && !this.next) {
 					block.chunks.claim.push(
-						b`if (${name}) @claim_component(${name}.$$.fragment, ${parent_nodes});`
+						b`if (${name}) @claim_component(${name}, ${parent_nodes});`
 					);
 				} else {
 					block.chunks.claim.push(
-						b`if (${name}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}.$$.fragment, n));`
+						b`if (${name}) ${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}, n));`
 					);
 
 					const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
@@ -500,7 +500,7 @@ export default class InlineComponentWrapper extends Wrapper {
 						${munged_bindings}
 						${munged_handlers}
 
-						@create_component(${name}.$$.fragment);
+						@create_component(${name});
 						@transition_in(${name}.$$.fragment, 1);
 						@mount_component(${name}, ${update_mount_node}, ${this.get_var()});
 					} else {
@@ -559,7 +559,7 @@ export default class InlineComponentWrapper extends Wrapper {
 					}
 				});
 			}
-			block.chunks.create.push(b`@create_component(${name}.$$.fragment);`);
+			block.chunks.create.push(b`@create_component(${name});`);
 
 			if (parent_nodes && this.renderer.options.hydratable) {
 				let nodes = parent_nodes;
@@ -573,11 +573,11 @@ export default class InlineComponentWrapper extends Wrapper {
 
 				if (!parent_node && !this.prev && !this.next) {
 					block.chunks.claim.push(
-						b`@claim_component(${name}.$$.fragment, ${nodes});`
+						b`@claim_component(${name}, ${nodes});`
 					);
 				} else {
 					block.chunks.claim.push(b`
-						${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}.$$.fragment, n));
+						${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => @claim_component(${name}, n));
 					`);
 
 					const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);

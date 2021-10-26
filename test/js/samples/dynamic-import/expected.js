@@ -21,7 +21,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			create_component(lazyload.$$.fragment);
+			create_component(lazyload);
 		},
 		m(target, anchor) {
 			mount_component(lazyload, target, anchor);

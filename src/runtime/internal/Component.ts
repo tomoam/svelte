@@ -49,11 +49,13 @@ export function bind(component, name, callback) {
 	}
 }
 
-export function create_component(block) {
+export function create_component(component) {
+	const block = component.$$.fragment;
 	block && block.c();
 }
 
-export function claim_component(block, parent_nodes) {
+export function claim_component(component, parent_nodes) {
+	const block = component.$$.fragment;
 	block && block.l(parent_nodes);
 }
 

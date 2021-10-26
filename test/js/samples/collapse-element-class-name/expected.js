@@ -41,7 +41,7 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			traverse(render(), render_nodes, node_path());
-			create_component(component.$$.fragment);
+			create_component(component);
 			attr(render_nodes[0], "class", div_class_value = "button button--size--" + /*size*/ ctx[0] + " button--theme--" + /*theme*/ ctx[1] + " " + (/*$$restProps*/ ctx[2].class || ''));
 			attr(render_nodes[0], "style", div_style_value = "color: green; background: white; font-size: " + /*size*/ ctx[0] + "; transform: " + /*$$restProps*/ ctx[2].scale + " " + /*$$restProps*/ ctx[2].rotate + "; " + /*$$restProps*/ ctx[2].styles);
 			attr(render_nodes[0], "other", div_other_value = "\n\t\tbutton\n\t\tbutton--size--" + /*size*/ ctx[0] + "\n\t\tbutton--theme--" + /*theme*/ ctx[1] + "\n  \t" + (/*$$restProps*/ ctx[2].class || ''));

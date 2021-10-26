@@ -19,7 +19,7 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			create_component(nested.$$.fragment);
+			create_component(nested);
 		},
 		m(target, anchor) {
 			mount_component(nested, target, anchor);
