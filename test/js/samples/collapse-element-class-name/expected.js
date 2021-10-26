@@ -6,10 +6,10 @@ import {
 	compute_rest_props,
 	create_component,
 	destroy_component,
-	detach,
+	detach_all,
 	exclude_internal_props,
 	init,
-	insert,
+	insert_all,
 	make_renderer,
 	mount_component,
 	safe_not_equal,
@@ -20,7 +20,7 @@ import {
 
 import Component from "./Component.svelte";
 const render = make_renderer(`<div></div> <!>`);
-const node_path = () => [,-1,-1];
+const node_path = () => [,1,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -47,9 +47,7 @@ function create_fragment(ctx) {
 			attr(render_nodes[0], "other", div_other_value = "\n\t\tbutton\n\t\tbutton--size--" + /*size*/ ctx[0] + "\n\t\tbutton--theme--" + /*theme*/ ctx[1] + "\n  \t" + (/*$$restProps*/ ctx[2].class || ''));
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* div */
-			insert(target, render_nodes[1], anchor); /* t */
-			insert(target, render_nodes[2], anchor); /* component */
+			insert_all(target, render_nodes, [0,1,2], anchor);
 			mount_component(component, target, render_nodes[2]);
 			current = true;
 		},
@@ -82,9 +80,7 @@ function create_fragment(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* div */
-			if (detaching) detach(render_nodes[1]); /* t */
-			if (detaching) detach(render_nodes[2]); /* component */
+			detach_all(detaching, render_nodes, [0,1,2]);
 			destroy_component(component, detaching);
 		}
 	};

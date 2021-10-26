@@ -15,7 +15,7 @@ import {
 } from "svelte/internal";
 
 const render = make_renderer(`<div><div>touch me</div> <button>click me</button> <button>or me</button> <button>or me!</button></div>`);
-const node_path = () => [,0,1,-1,1,-1,1,-1];
+const node_path = () => [,0,-1,1,-1,1,-1,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];

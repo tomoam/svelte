@@ -2,7 +2,7 @@ import Renderer from '../../Renderer';
 import Block from '../../Block';
 import { b, x } from 'code-red';
 import { TemplateNode } from '../../../../interfaces';
-import { Identifier, TemplateLiteral } from 'estree';
+import { Node, Identifier, TemplateLiteral, ExpressionStatement, CallExpression } from 'estree';
 import { is_head } from './is_head';
 import { needs_svg_wrapper } from './needs_svg_wrapper';
 
@@ -96,7 +96,7 @@ export default class Wrapper {
 			const base = this.index_in_render_nodes - this.prev.index_in_render_nodes === 1
 				? 1
 				: this.prev.index_in_render_nodes + 2;
-			const path = use_in_fragment ? (base * -1) : base;
+			const path = use_in_fragment ? base : (base * -1);
 			this.root_node.node_path.push(path);
 		} else {
 			const path = use_in_fragment ? 0 : '';
@@ -157,7 +157,7 @@ export default class Wrapper {
 	}
 
 	get_mount_statement() {
-		if (this.template_name) {
+		if (this.template_name && !((!this.parent || !this.parent.is_dom_node()) && !this.prev && !this.next)) {
 			const root = this.root_node;
 			const indexes =  {
 				type: 'ChainExpression',
@@ -166,8 +166,14 @@ export default class Wrapper {
 				}
 			} as any;
 
+			const statement = b`@insert_all(#target, ${this.render_nodes_var}, ${indexes}, #anchor);`;
+			((statement[0] as ExpressionStatement).expression as CallExpression).callee.loc = {
+				start: this.renderer.locate(this.node.start),
+				end: this.renderer.locate(this.node.end)
+			};
+
 			const statements = [];
-			statements.push(b`@insert_all(#target, ${this.render_nodes_var}, ${indexes}, #anchor);`);
+			statements.push(statement);
 
 			return statements;
 		} else {
@@ -176,7 +182,7 @@ export default class Wrapper {
 	}
 
 	get_destroy_statement() {
-		if (this.template_name) {
+		if (this.template_name && !((!this.parent || !this.parent.is_dom_node()) && !this.prev && !this.next)) {
 			const root = this.root_node;
 			const indexes = {
 				type: 'ChainExpression',
@@ -207,7 +213,7 @@ export default class Wrapper {
 		);
 	}
 
-	is_single_in_fragment(parent_node: Identifier) {
+	is_single_in_fragment(parent_node: Node) {
 		return !parent_node && !this.prev && !this.next;
 	}
 

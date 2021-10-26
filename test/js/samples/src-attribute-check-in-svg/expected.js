@@ -25,7 +25,6 @@ function create_fragment(ctx) {
 		},
 		l(nodes) {
 			this.c();
-			if (!nodes.length) return;
 			traverse_claim(nodes, render_nodes, node_path());
 			this.h();
 		},

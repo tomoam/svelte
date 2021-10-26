@@ -2,9 +2,9 @@
 import {
 	SvelteComponent,
 	component_subscribe,
-	detach,
+	detach_all,
 	init,
-	insert,
+	insert_all,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -15,7 +15,7 @@ import {
 
 import { reactiveStoreVal, unreactiveExport } from './store';
 const render = make_renderer(`<div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div> <div></div>`);
-const node_path = () => [,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
+const node_path = () => [,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -34,23 +34,7 @@ function create_fragment(ctx) {
 			toggle_class(render_nodes[16], "static4", unreactiveExport);
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* div0 */
-			insert(target, render_nodes[1], anchor); /* t0 */
-			insert(target, render_nodes[2], anchor); /* div1 */
-			insert(target, render_nodes[3], anchor); /* t1 */
-			insert(target, render_nodes[4], anchor); /* div2 */
-			insert(target, render_nodes[5], anchor); /* t2 */
-			insert(target, render_nodes[6], anchor); /* div3 */
-			insert(target, render_nodes[7], anchor); /* t3 */
-			insert(target, render_nodes[8], anchor); /* div4 */
-			insert(target, render_nodes[9], anchor); /* t4 */
-			insert(target, render_nodes[10], anchor); /* div5 */
-			insert(target, render_nodes[11], anchor); /* t5 */
-			insert(target, render_nodes[12], anchor); /* div6 */
-			insert(target, render_nodes[13], anchor); /* t6 */
-			insert(target, render_nodes[14], anchor); /* div7 */
-			insert(target, render_nodes[15], anchor); /* t7 */
-			insert(target, render_nodes[16], anchor); /* div8 */
+			insert_all(target, render_nodes, [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*reactiveModuleVar*/ 0) {
@@ -76,23 +60,7 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* div0 */
-			if (detaching) detach(render_nodes[1]); /* t0 */
-			if (detaching) detach(render_nodes[2]); /* div1 */
-			if (detaching) detach(render_nodes[3]); /* t1 */
-			if (detaching) detach(render_nodes[4]); /* div2 */
-			if (detaching) detach(render_nodes[5]); /* t2 */
-			if (detaching) detach(render_nodes[6]); /* div3 */
-			if (detaching) detach(render_nodes[7]); /* t3 */
-			if (detaching) detach(render_nodes[8]); /* div4 */
-			if (detaching) detach(render_nodes[9]); /* t4 */
-			if (detaching) detach(render_nodes[10]); /* div5 */
-			if (detaching) detach(render_nodes[11]); /* t5 */
-			if (detaching) detach(render_nodes[12]); /* div6 */
-			if (detaching) detach(render_nodes[13]); /* t6 */
-			if (detaching) detach(render_nodes[14]); /* div7 */
-			if (detaching) detach(render_nodes[15]); /* t7 */
-			if (detaching) detach(render_nodes[16]); /* div8 */
+			detach_all(detaching, render_nodes, [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]);
 		}
 	};
 }

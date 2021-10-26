@@ -2,8 +2,10 @@
 import {
 	SvelteComponent,
 	detach,
+	detach_all,
 	init,
 	insert,
+	insert_all,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -106,7 +108,7 @@ function create_if_block(ctx) {
 }
 
 const render_5 = make_renderer(`<div><!> <p>this can be used as an anchor</p> <!> <!> <p>so can this</p> <!></div> <!>`);
-const node_path_5 = () => [,0,-1,1,1,-1,-1,-1,-1,1,1,-1,-2,-1];
+const node_path_5 = () => [,0,1,-1,-1,1,1,1,1,-1,-1,1,2,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -126,13 +128,11 @@ function create_fragment(ctx) {
 			if (if_block4) if_block4.c();
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* div */
+			insert_all(target, render_nodes, [0,12,13], anchor);
 			if (if_block0) if_block0.m(render_nodes[0], render_nodes[1]);
 			if (if_block1) if_block1.m(render_nodes[0], render_nodes[5]);
 			if (if_block2) if_block2.m(render_nodes[0], render_nodes[7]);
 			if (if_block3) if_block3.m(render_nodes[0], render_nodes[11]);
-			insert(target, render_nodes[12], anchor); /* t7 */
-			insert(target, render_nodes[13], anchor); /* if_block4 */
 			if (if_block4) if_block4.m(target, render_nodes[13]);
 		},
 		p(ctx, [dirty]) {
@@ -204,13 +204,11 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* div */
+			detach_all(detaching, render_nodes, [0,12,13]);
 			if (if_block0) if_block0.d();
 			if (if_block1) if_block1.d();
 			if (if_block2) if_block2.d();
 			if (if_block3) if_block3.d();
-			if (detaching) detach(render_nodes[12]); /* t7 */
-			if (detaching) detach(render_nodes[13]); /* if_block4 */
 			if (if_block4) if_block4.d(detaching);
 		}
 	};

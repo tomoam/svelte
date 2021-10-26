@@ -2,9 +2,9 @@
 import {
 	SvelteComponent,
 	attr,
-	detach,
+	detach_all,
 	init,
-	insert,
+	insert_all,
 	make_renderer,
 	noop,
 	safe_not_equal,
@@ -12,7 +12,7 @@ import {
 } from "svelte/internal";
 
 const render = make_renderer(`<div data-foo="bar"></div> <div></div>`);
-const node_path = () => [,-1,-1];
+const node_path = () => [,1,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -23,9 +23,7 @@ function create_fragment(ctx) {
 			attr(render_nodes[2], "data-foo", /*bar*/ ctx[0]);
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* div0 */
-			insert(target, render_nodes[1], anchor); /* t */
-			insert(target, render_nodes[2], anchor); /* div1 */
+			insert_all(target, render_nodes, [0,1,2], anchor);
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*bar*/ 1) {
@@ -35,9 +33,7 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* div0 */
-			if (detaching) detach(render_nodes[1]); /* t */
-			if (detaching) detach(render_nodes[2]); /* div1 */
+			detach_all(detaching, render_nodes, [0,1,2]);
 		}
 	};
 }

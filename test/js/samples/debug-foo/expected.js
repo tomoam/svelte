@@ -3,9 +3,11 @@ import {
 	SvelteComponentDev,
 	add_location,
 	destroy_each,
+	detach_all,
 	detach_dev,
 	dispatch_dev,
 	init,
+	insert_all,
 	insert_dev,
 	make_renderer,
 	noop,
@@ -75,7 +77,7 @@ function create_each_block(ctx) {
 }
 
 const render_1 = make_renderer(`<!> <p>foo: <!></p>`);
-const node_path_1 = () => [0,-1,-1,,-1];
+const node_path_1 = () => [0,1,1,,1];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -102,14 +104,11 @@ function create_fragment(ctx) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
-			insert_dev(target, render_nodes[0], anchor); /* each_1 */
+			insert_all(target, render_nodes, [0,1,2], anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(target, render_nodes[0]);
 			}
-
-			insert_dev(target, render_nodes[1], anchor); /* t0 */
-			insert_dev(target, render_nodes[2], anchor); /* p */
 		},
 		p: function update(ctx, [dirty]) {
 			if (dirty & /*things*/ 1) {
@@ -141,10 +140,8 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d: function destroy(detaching) {
-			if (detaching) detach_dev(render_nodes[0]); /* each_1 */
+			detach_all(detaching, render_nodes, [0,1,2]);
 			destroy_each(each_blocks, detaching);
-			if (detaching) detach_dev(render_nodes[1]); /* t0 */
-			if (detaching) detach_dev(render_nodes[2]); /* p */
 		}
 	};
 

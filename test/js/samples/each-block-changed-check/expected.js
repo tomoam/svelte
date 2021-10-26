@@ -4,8 +4,10 @@ import {
 	SvelteComponent,
 	destroy_each,
 	detach,
+	detach_all,
 	init,
 	insert,
+	insert_all,
 	make_renderer,
 	noop,
 	replace_text,
@@ -22,7 +24,7 @@ function get_each_context(ctx, list, i) {
 }
 
 const render = make_renderer(`<div class="comment"><strong> </strong> <span class="meta"><!> wrote <!> ago:</span> <!></div>`);
-const node_path = () => [,,0,3,1,0,1,-1,1,6,-1];
+const node_path = () => [,,0,-3,-1,0,-1,1,-1,-6,1];
 
 // (8:0) {#each comments as comment, i}
 function create_each_block(ctx) {
@@ -57,7 +59,7 @@ function create_each_block(ctx) {
 }
 
 const render_1 = make_renderer(`<!> <p> </p>`);
-const node_path_1 = () => [0,-1,-1,0];
+const node_path_1 = () => [0,1,1,0];
 
 function create_fragment(ctx) {
 	let render_nodes = [];
@@ -79,14 +81,11 @@ function create_fragment(ctx) {
 			render_nodes[3].data = /*foo*/ ctx[3];
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* each_1 */
+			insert_all(target, render_nodes, [0,1,2], anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(target, render_nodes[0]);
 			}
-
-			insert(target, render_nodes[1], anchor); /* t0 */
-			insert(target, render_nodes[2], anchor); /* p */
 		},
 		p(ctx, [dirty]) {
 			if (dirty & /*comments, elapsed, time*/ 7) {
@@ -117,10 +116,8 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* each_1 */
+			detach_all(detaching, render_nodes, [0,1,2]);
 			destroy_each(each_blocks, detaching);
-			if (detaching) detach(render_nodes[1]); /* t0 */
-			if (detaching) detach(render_nodes[2]); /* p */
 		}
 	};
 }
