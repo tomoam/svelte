@@ -47,6 +47,11 @@ export default class Node {
 		if (this.parent) return this.parent.find_nearest(selector);
 	}
 
+	find_nearest_element(name: string) {
+		if (this.type === 'Element' && (this as any).name === name) return this;
+		if (this.parent) return this.parent.find_nearest_element(name);
+	}
+
 	get_static_attribute_value(name: string) {
 		const attribute = this.attributes && this.attributes.find(
 			(attr: Attribute) => attr.type === 'Attribute' && attr.name.toLowerCase() === name
