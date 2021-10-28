@@ -64,7 +64,7 @@ class AwaitBlockBranch extends Wrapper {
 	}
 
 	set_index_number(_root_node: Wrapper) {
-		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
+		set_index_number_to_fragment(this.fragment.nodes, this.renderer, this.block);
 	}
 
 	add_context(node: Node | null, contexts: Context[]) {
@@ -271,7 +271,7 @@ export default class AwaitBlockWrapper extends Wrapper {
 		const has_transitions = this.pending.block.has_intro_method || this.pending.block.has_outro_method;
 
 		if (parent_node) {
-			const anchor_node =  !is_head(parent_node) && this.next && this.next.is_dom_node()
+			const anchor_node = !is_head(parent_node) && this.next && this.next.is_dom_node()
 					? this.next.get_var() as Identifier
 					: { type: 'Identifier', name: 'null' };
 

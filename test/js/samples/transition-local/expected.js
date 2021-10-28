@@ -2,6 +2,7 @@
 import {
 	SvelteComponent,
 	add_render_callback,
+	comment,
 	create_in_transition,
 	detach,
 	init,
@@ -13,21 +14,17 @@ import {
 	traverse
 } from "svelte/internal";
 
-const render_1 = make_renderer(`<!>`);
-
-// (8:0) {#if x}
 function create_if_block(ctx) {
-	let render_nodes = [];
+	let if_block_anchor = comment();
 	let if_block = /*y*/ ctx[1] && create_if_block_1(ctx);
 
 	return {
 		c() {
-			traverse(render_1(), render_nodes);
 			if (if_block) if_block.c();
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* if_block */
-			if (if_block) if_block.m(target, render_nodes[0]);
+			insert(target, if_block_anchor, anchor);
+			if (if_block) if_block.m(target, if_block_anchor);
 		},
 		p(ctx, dirty) {
 			if (/*y*/ ctx[1]) {
@@ -39,7 +36,7 @@ function create_if_block(ctx) {
 					if_block = create_if_block_1(ctx);
 					if_block.c();
 					transition_in(if_block, 1);
-					if_block.m(render_nodes[0].parentNode, render_nodes[0]);
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
 			} else if (if_block) {
 				if_block.d(1);
@@ -47,7 +44,7 @@ function create_if_block(ctx) {
 			}
 		},
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* if_block */
+			if (detaching) detach(if_block_anchor);
 			if (if_block) if_block.d(detaching);
 		}
 	};
@@ -84,20 +81,17 @@ function create_if_block_1(ctx) {
 	};
 }
 
-const render_2 = make_renderer(`<!>`);
-
 function create_fragment(ctx) {
-	let render_nodes = [];
+	let if_block_anchor = comment();
 	let if_block = /*x*/ ctx[0] && create_if_block(ctx);
 
 	return {
 		c() {
-			traverse(render_2(), render_nodes);
 			if (if_block) if_block.c();
 		},
 		m(target, anchor) {
-			insert(target, render_nodes[0], anchor); /* if_block */
-			if (if_block) if_block.m(target, render_nodes[0]);
+			insert(target, if_block_anchor, anchor);
+			if (if_block) if_block.m(target, if_block_anchor);
 		},
 		p(ctx, [dirty]) {
 			if (/*x*/ ctx[0]) {
@@ -106,7 +100,7 @@ function create_fragment(ctx) {
 				} else {
 					if_block = create_if_block(ctx);
 					if_block.c();
-					if_block.m(render_nodes[0].parentNode, render_nodes[0]);
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
 			} else if (if_block) {
 				if_block.d(1);
@@ -116,7 +110,7 @@ function create_fragment(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
-			if (detaching) detach(render_nodes[0]); /* if_block */
+			if (detaching) detach(if_block_anchor);
 			if (if_block) if_block.d(detaching);
 		}
 	};

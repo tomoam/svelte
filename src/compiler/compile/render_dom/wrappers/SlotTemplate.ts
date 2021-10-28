@@ -71,7 +71,7 @@ export default class SlotTemplateWrapper extends Wrapper {
 	}
 
 	set_index_number(_root_node: Wrapper) {
-		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
+		set_index_number_to_fragment(this.fragment.nodes, this.renderer, this.block);
 	}
 
 	render() {

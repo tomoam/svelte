@@ -2,7 +2,7 @@ import Renderer from '../../Renderer';
 import Block from '../../Block';
 import { b, x } from 'code-red';
 import { TemplateNode } from '../../../../interfaces';
-import { Node, Identifier, TemplateLiteral, ExpressionStatement, CallExpression } from 'estree';
+import { Identifier, TemplateLiteral, ExpressionStatement, CallExpression } from 'estree';
 import { is_head } from './is_head';
 import { needs_svg_wrapper } from './needs_svg_wrapper';
 
@@ -171,21 +171,11 @@ export default class Wrapper {
 			const statements = [];
 			if (is_head(parent_node) && this.parent.template_name) {
 				statements.push(b`
-					@traverse_claim(${parent_nodes}, ${this.get_render_nodes_var()}, ${
-					this.root_node.index_in_render_nodes_sequence > 1
-						? `${this.root_node.node_path_var_name}()`
-						: `[0]`
-				}, ${
-					this.get_claim_func_map_var(block, false) || `undefined`
-				}, @_document.head);
+					@traverse_claim(${parent_nodes}, ${this.get_render_nodes_var()}, ${this.root_node.index_in_render_nodes_sequence > 1 ? `${this.root_node.node_path_var_name}()` : '[0]'}, ${this.get_claim_func_map_var(block, false) || 'undefined'}, @_document.head);
 				`);
 			} else {
 				statements.push(b`
-					@traverse_claim(#nodes, ${this.get_render_nodes_var()}, ${
-					this.root_node.index_in_render_nodes_sequence > 1
-						? `${this.root_node.node_path_var_name}()`
-						: `[0]`
-				}, ${this.get_claim_func_map_var(block, false)});
+					@traverse_claim(#nodes, ${this.get_render_nodes_var()}, ${this.root_node.index_in_render_nodes_sequence > 1 ? `${this.root_node.node_path_var_name}()` : '[0]'}, ${this.get_claim_func_map_var(block, false)});
 				`);
 			}
 			return statements;
@@ -282,8 +272,40 @@ export default class Wrapper {
 		);
 	}
 
-	is_single_in_fragment(parent_node: Node) {
-		return !parent_node && !this.prev && !this.next;
+	is_single_in_fragment() {
+		if (this.parent && this.parent.is_dom_node()) {
+			return false;
+		}
+
+		if (this.has_prev_except_debug() || this.has_next_except_debug()) {
+			return false;
+		}
+
+		return true;
+	}
+
+	has_prev_except_debug() {
+		if (!this.prev) {
+			return false;
+		}
+
+		if (this.prev.node.type === 'DebugTag') {
+			return this.prev.has_prev_except_debug();
+		} else {
+			return true;
+		}
+	}
+
+	has_next_except_debug() {
+		if (!this.next) {
+			return false;
+		}
+
+		if (this.next.node.type === 'DebugTag') {
+			return this.next.has_next_except_debug();
+		} else {
+			return true;
+		}
 	}
 
 	render(_block: Block, _parent_node: Identifier, _parent_nodes: Identifier) {

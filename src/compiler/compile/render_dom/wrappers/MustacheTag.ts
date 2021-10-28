@@ -23,38 +23,45 @@ export default class MustacheTagWrapper extends Tag {
 	}
 
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
+		const is_single = this.is_single_in_fragment();
+
 		const { init } = this.rename_this_method(
 			block,
-			value => x`@set_data(${this.get_var()}, ${value})`
+			this.node.should_cache
+				? value => x`${is_single ? this.var : this.get_var()}.data = ${value}`
+				: value => x`@set_data(${is_single ? this.var : this.get_var()}, ${value})`
 		);
 
-		const statement = this.get_create_statement(parent_node);
-		const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next))
-			? statement
-			: b`${statement}
-				${this.get_var()} = @replace_text(${this.get_var()}, ${init});`;
+		if (is_single) {
+			block.add_element(
+				this.var,
+				x`@text(${init})`,
+				parent_nodes && x`@hydrate_text(@text(${init}), ${parent_nodes})`,
+				parent_node
+			);
+		} else {
+			const statement = this.get_create_statement(parent_node);
+			const render_statement = (!is_text(this.node.prev) && !is_text(this.node.next))
+				? statement
+				: b`${statement}
+					${this.get_var()} = @replace_text(${this.get_var()}, ${init});`;
 
-		const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+			block.add_statement(
+				this.var,
+				this.get_var(),
+				render_statement,
+				this.get_claim_statement(block, parent_node, parent_nodes),
+				this.get_mount_statement(),
+				this.get_destroy_statement(),
+				parent_node,
+				this
+			);
 
-		const mount_statement = this.get_mount_statement();
-
-		const destroy_statement = this.get_destroy_statement();
-
-		block.add_statement(
-			this.var,
-			this.get_var(),
-			render_statement,
-			claim_statement,
-			mount_statement,
-			destroy_statement,
-			parent_node,
-			this
-		);
-
-		if (!is_text(this.node.prev) && !is_text(this.node.next)) {
-			block.chunks.create.push(b`
-				${this.get_var()}.data = ${init};	
-			`);
+			if (!is_text(this.node.prev) && !is_text(this.node.next)) {
+				block.chunks.create.push(b`
+					${this.get_var()}.data = ${init};	
+				`);
+			}
 		}
 	}
 }

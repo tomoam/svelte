@@ -9,7 +9,6 @@ import {
 	noop,
 	replace_text,
 	safe_not_equal,
-	set_data,
 	traverse
 } from "svelte/internal";
 
@@ -36,7 +35,7 @@ function create_fragment(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*things*/ 1 && t3_value !== (t3_value = /*things*/ ctx[0].length + "")) set_data(render_nodes[4], t3_value);
+			if (dirty & /*things*/ 1 && t3_value !== (t3_value = /*things*/ ctx[0].length + "")) render_nodes[4].data = t3_value;
 		},
 		i: noop,
 		o: noop,

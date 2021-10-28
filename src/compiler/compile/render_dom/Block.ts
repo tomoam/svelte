@@ -226,7 +226,7 @@ export default class Block {
 				if (!no_detach) this.chunks.destroy.push(b`@detach(${node_name}); /* ${id.name} */`);
 			} 
 		} else {
-			if (self_node.is_single_in_fragment(parent_node)) {
+			if (self_node.is_single_in_fragment()) {
 				this.chunks.mount.push(b`@insert(#target, /* ${id.name} */ ${node_name}, #anchor);`);
 				if (!no_detach) this.chunks.destroy.push(b`if (detaching) @detach(${node_name}); /* ${id.name} */`);
 			} else {

@@ -50,7 +50,7 @@ export default class TextWrapper extends Wrapper {
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {
 		if (this.skip) return;
 
-		if (this.is_single_in_fragment(parent_node)) {
+		if (this.is_single_in_fragment()) {
 
 			block.add_element(
 				this.var,
@@ -58,24 +58,16 @@ export default class TextWrapper extends Wrapper {
 				x`@hydrate_text(${this.template_name}(), ${parent_nodes})`,
 				parent_node
 			);
-			
+
 		} else {
-
-			const render_statement = this.get_create_statement(parent_node);
-
-			const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
-
-			const mount_statement = this.get_mount_statement();
-
-			const destroy_statement = this.get_destroy_statement();
-
+			
 			block.add_statement(
 				this.var,
 				this.get_var(),
-				render_statement,
-				claim_statement,
-				mount_statement,
-				destroy_statement,
+				this.get_create_statement(parent_node),
+				this.get_claim_statement(block, parent_node, parent_nodes),
+				this.get_mount_statement(),
+				this.get_destroy_statement(),
 				parent_node as Identifier,
 				this
 			);

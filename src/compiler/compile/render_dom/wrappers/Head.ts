@@ -40,18 +40,5 @@ export default class HeadWrapper extends Wrapper {
 		}
 
 		this.fragment.render(block, x`@_document.head` as unknown as Identifier, nodes);
-
-		if (this.renderer.options.hydratable && this.next) {
-			if (block.chunks.hydrate.length > 0) {
-				block.chunks.claim.push(b`
-					if (!#nodes.length) {
-						this.h();
-						return;
-					}
-				`);
-			} else {
-				block.chunks.claim.push(b`if (!#nodes.length) return;`);
-			}
-		}
 	}
 }

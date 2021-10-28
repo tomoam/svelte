@@ -11,8 +11,6 @@ import {
 const file = undefined;
 
 function create_fragment(ctx) {
-	let render_nodes = [];
-
 	const block = {
 		c: function create() {
 			{

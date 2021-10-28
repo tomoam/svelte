@@ -11,7 +11,6 @@ import {
 	mount_component,
 	replace_text,
 	safe_not_equal,
-	set_data,
 	transition_in,
 	transition_out,
 	traverse
@@ -57,7 +56,7 @@ function create_fragment(ctx) {
 			render_nodes[4] = replace_text(render_nodes[4], t4_value);
 			render_nodes[6] = replace_text(render_nodes[6], t6_value);
 			render_nodes[7] = replace_text(render_nodes[7], t7_value);
-			create_component(component.$$.fragment);
+			create_component(component);
 			attr(render_nodes[9], "a", div_a_value = /*a*/ ctx[0].normal);
 			attr(render_nodes[9], "b", div_b_value = /*b*/ ctx[1]?.optional);
 			attr(render_nodes[9], "c", div_c_value = /*c*/ ctx[2]['computed']);
@@ -71,12 +70,12 @@ function create_fragment(ctx) {
 			current = true;
 		},
 		p(ctx, [dirty]) {
-			if ((!current || dirty & /*a*/ 1) && t0_value !== (t0_value = /*a*/ ctx[0].normal + "")) set_data(render_nodes[0], t0_value);
-			if ((!current || dirty & /*b*/ 2) && t1_value !== (t1_value = /*b*/ ctx[1]?.optional + "")) set_data(render_nodes[1], t1_value);
-			if ((!current || dirty & /*c*/ 4) && t3_value !== (t3_value = /*c*/ ctx[2]['computed'] + "")) set_data(render_nodes[3], t3_value);
-			if ((!current || dirty & /*d*/ 8) && t4_value !== (t4_value = /*d*/ ctx[3]?.['computed_optional'] + "")) set_data(render_nodes[4], t4_value);
-			if ((!current || dirty & /*e*/ 16) && t6_value !== (t6_value = /*e*/ ctx[4]() + "")) set_data(render_nodes[6], t6_value);
-			if ((!current || dirty & /*f*/ 32) && t7_value !== (t7_value = /*f*/ ctx[5]?.() + "")) set_data(render_nodes[7], t7_value);
+			if ((!current || dirty & /*a*/ 1) && t0_value !== (t0_value = /*a*/ ctx[0].normal + "")) render_nodes[0].data = t0_value;
+			if ((!current || dirty & /*b*/ 2) && t1_value !== (t1_value = /*b*/ ctx[1]?.optional + "")) render_nodes[1].data = t1_value;
+			if ((!current || dirty & /*c*/ 4) && t3_value !== (t3_value = /*c*/ ctx[2]['computed'] + "")) render_nodes[3].data = t3_value;
+			if ((!current || dirty & /*d*/ 8) && t4_value !== (t4_value = /*d*/ ctx[3]?.['computed_optional'] + "")) render_nodes[4].data = t4_value;
+			if ((!current || dirty & /*e*/ 16) && t6_value !== (t6_value = /*e*/ ctx[4]() + "")) render_nodes[6].data = t6_value;
+			if ((!current || dirty & /*f*/ 32) && t7_value !== (t7_value = /*f*/ ctx[5]?.() + "")) render_nodes[7].data = t7_value;
 
 			if (!current || dirty & /*a*/ 1 && div_a_value !== (div_a_value = /*a*/ ctx[0].normal)) {
 				attr(render_nodes[9], "a", div_a_value);

@@ -87,7 +87,7 @@ class IfBlockBranch extends Wrapper {
 	}
 
 	set_index_number(_root_node: Wrapper) {
-		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
+		set_index_number_to_fragment(this.fragment.nodes, this.renderer, this.block);
 	}
 }
 
@@ -201,6 +201,8 @@ export default class IfBlockWrapper extends Wrapper {
 	) {
 		const name = this.var;
 
+		const anchor = this.is_single_in_fragment() ? block.get_unique_name(`${this.var.name}_anchor`) : this.get_var();
+
 		const has_else = !(this.branches[this.branches.length - 1].condition);
 		const if_exists_condition = has_else ? null : name;
 
@@ -221,20 +223,26 @@ export default class IfBlockWrapper extends Wrapper {
 			}
 		});
 
-		const vars = { name, if_exists_condition, has_else, has_transitions };
+		const vars = { name, anchor, if_exists_condition, has_else, has_transitions };
 
 		const detaching = parent_node && !is_head(parent_node) ? null : 'detaching';
 
-		block.add_statement(
-			this.var,
-			this.get_var(),
-			this.get_create_statement(parent_node),
-			undefined,
-			this.get_mount_statement(),
-			this.get_destroy_statement(),
-			parent_node,
-			this
-		);
+		if (this.is_single_in_fragment()) {
+			block.add_variable(anchor as Identifier, x`@comment()`);
+			block.chunks.mount.push(b`@insert(${parent_node || '#target'}, ${anchor}, #anchor);`);
+			block.chunks.destroy.push(b`if (detaching) @detach(${anchor});`);
+		} else {
+			block.add_statement(
+				this.var,
+				this.get_var(),
+				this.get_create_statement(parent_node),
+				undefined,
+				this.get_mount_statement(),
+				this.get_destroy_statement(),
+				parent_node,
+				this
+			);
+		}
 
 		if (this.node.else) {
 			this.branches.forEach(branch => {
@@ -305,7 +313,7 @@ export default class IfBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		_parent_nodes: Identifier,
 		dynamic,
-		{ name, has_else, if_exists_condition, has_transitions },
+		{ name, anchor, has_else, if_exists_condition, has_transitions },
 		detaching
 	) {
 		const select_block_type = this.renderer.component.get_unique_name('select_block_type');
@@ -376,7 +384,7 @@ export default class IfBlockWrapper extends Wrapper {
 		`);
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = this.get_var();
+		const anchor_node = anchor;
 
 		if (if_exists_condition) {
 			block.chunks.mount.push(
@@ -444,7 +452,7 @@ export default class IfBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		_parent_nodes: Identifier,
 		dynamic,
-		{ name, has_else, has_transitions, if_exists_condition },
+		{ name, anchor, has_else, has_transitions, if_exists_condition },
 		detaching
 	) {
 		const select_block_type = this.renderer.component.get_unique_name('select_block_type');
@@ -536,7 +544,7 @@ export default class IfBlockWrapper extends Wrapper {
 		}
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = this.get_var();
+		const anchor_node = anchor;
 
 		block.chunks.mount.push(
 			if_current_block_type_index(
@@ -623,7 +631,7 @@ export default class IfBlockWrapper extends Wrapper {
 		parent_node: Identifier,
 		_parent_nodes: Identifier,
 		dynamic,
-		{ name, if_exists_condition, has_transitions },
+		{ name, anchor, if_exists_condition, has_transitions },
 		detaching
 	) {
 		const branch = this.branches[0];
@@ -636,7 +644,7 @@ export default class IfBlockWrapper extends Wrapper {
 		`);
 
 		const initial_mount_node = parent_node || '#target';
-		const anchor_node = this.get_var();
+		const anchor_node = anchor;
 
 		block.chunks.mount.push(
 			b`if (${name}) ${name}.m(${initial_mount_node}, ${anchor_node});`
