@@ -305,13 +305,6 @@ export function replace_text(elm: ChildNode, data: string) {
 	return textNode;
 }
 
-export function insert_blank_anchor(next_node: ChildNode, parent_node?: ChildNode) {
-	const target = parent_node || next_node.parentNode;
-	const anchor = empty();
-	insert_hydration(target, anchor, next_node);
-	return anchor;
-}
-
 export function make_renderer(html: string) {
 	const template = document.createElement('template');
 	template.innerHTML = html;
@@ -330,6 +323,10 @@ export function space() {
 
 export function empty() {
 	return text('');
+}
+
+export function comment(data: string = '') {
+	return document.createComment(data);
 }
 
 export function listen(node: EventTarget, event: string, handler: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | EventListenerOptions) {

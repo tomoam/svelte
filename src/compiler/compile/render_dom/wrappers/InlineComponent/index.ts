@@ -216,9 +216,14 @@ export default class InlineComponentWrapper extends Wrapper {
 			updates.push(b`const ${name_changes} = {};`);
 		}
 
-		if (this.is_single_in_fragment(parent_node) && this.node.name !== 'svelte:component') {
-			this.template_name = null;
-			this.template = null;
+		const anchor = this.is_single_in_fragment() ? block.get_unique_name(`${this.var.name}_anchor`) : this.get_var();
+
+		if (this.is_single_in_fragment()) {
+			if (this.node.name === 'svelte:component') {
+				block.add_variable(anchor as Identifier, x`@comment()`);
+				block.chunks.mount.push(b`@insert(${parent_node || '#target'}, ${anchor}, #anchor);`);
+				block.chunks.destroy.push(b`if (detaching) @detach(${anchor});`);
+			}
 		} else {
 			block.add_statement(
 				this.var,
@@ -468,14 +473,14 @@ export default class InlineComponentWrapper extends Wrapper {
 				}
 			}
 
-			const initial_anchor_node = this.get_var();
+			const initial_anchor_node = anchor;
 			block.chunks.mount.push(b`
 				if (${name}) {
 					@mount_component(${name}, ${parent_node || '#target'}, ${initial_anchor_node});
 				}
 			`);
 
-			const update_mount_node = this.get_update_mount_node(this.get_var() as Identifier);
+			const update_mount_node = this.get_update_mount_node(anchor as Identifier);
 
 			if (updates.length) {
 				block.chunks.update.push(b`
@@ -502,7 +507,7 @@ export default class InlineComponentWrapper extends Wrapper {
 
 						@create_component(${name});
 						@transition_in(${name}.$$.fragment, 1);
-						@mount_component(${name}, ${update_mount_node}, ${this.get_var()});
+						@mount_component(${name}, ${update_mount_node}, ${initial_anchor_node});
 					} else {
 						${name} = null;
 					}
@@ -602,7 +607,7 @@ export default class InlineComponentWrapper extends Wrapper {
 				block.chunks.mount.push(b`@mount_component(${name}, ${css_custom_properties_wrapper}, null);`);
 			} else {
 				block.chunks.mount.push(
-					b`@mount_component(${name}, ${parent_node || '#target'}, ${!this.is_single_in_fragment(parent_node) ? this.get_var() : '#anchor'});`
+					b`@mount_component(${name}, ${parent_node || '#target'}, ${!this.is_single_in_fragment() ? anchor : '#anchor'});`
 				);
 			}
 

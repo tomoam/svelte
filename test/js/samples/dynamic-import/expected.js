@@ -14,7 +14,6 @@ import {
 import LazyLoad from './LazyLoad.svelte';
 
 function create_fragment(ctx) {
-	let render_nodes = [];
 	let lazyload;
 	let current;
 	lazyload = new LazyLoad({ props: { load: func } });

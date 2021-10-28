@@ -56,7 +56,7 @@ export default class KeyBlockWrapper extends Wrapper {
 
 		this.push_to_node_path(true);
 
-		set_index_number_to_fragment(this.fragment.nodes[0], this.fragment.nodes, this.renderer, this.block);
+		set_index_number_to_fragment(this.fragment.nodes, this.renderer, this.block);
 	}
 
 	render(block: Block, parent_node: Identifier, parent_nodes: Identifier) {

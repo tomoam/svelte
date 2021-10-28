@@ -37,7 +37,7 @@ function create_fragment(ctx) {
 			insert_dev(target, render_nodes[0], anchor); /* p */
 		},
 		p: function update(ctx, [dirty]) {
-			if (dirty & /*foo*/ 1 && t0_value !== (t0_value = Math.max(0, /*foo*/ ctx[0]) + "")) set_data_dev(render_nodes[1], t0_value);
+			if (dirty & /*foo*/ 1 && t0_value !== (t0_value = Math.max(0, /*foo*/ ctx[0]) + "")) render_nodes[1].data = t0_value;
 			if (dirty & /*bar*/ 2) set_data_dev(render_nodes[3], /*bar*/ ctx[1]);
 		},
 		i: noop,

@@ -229,7 +229,7 @@ export default class FragmentWrapper {
 		this.nodes = this.nodes.filter(filter);
 
 		if (!parent && this.nodes.length) {
-			set_index_number_to_fragment(this.nodes[0], this.nodes, renderer, block);
+			set_index_number_to_fragment(this.nodes, renderer, block);
 		}
 
 		if (body_wrapper) {
@@ -240,7 +240,7 @@ export default class FragmentWrapper {
 		head_wrappers.forEach((head_node) => {
 			const frag_nodes = head_node.fragment.nodes.filter(n => n.node.type !== 'Title');
 
-			set_index_number_to_fragment(head_node, frag_nodes, renderer, block);
+			set_index_number_to_fragment(frag_nodes, renderer, block, head_node);
 
 			if (frag_nodes.length) create_template(head_node, frag_nodes, renderer);
 			this.nodes.unshift(head_node);

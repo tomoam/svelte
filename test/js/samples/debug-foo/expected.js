@@ -52,7 +52,7 @@ function create_each_block(ctx) {
 			insert_dev(target, render_nodes[0], anchor); /* span */
 		},
 		p: function update(ctx, dirty) {
-			if (dirty & /*things*/ 1 && t_value !== (t_value = /*thing*/ ctx[2].name + "")) set_data_dev(render_nodes[1], t_value);
+			if (dirty & /*things*/ 1 && t_value !== (t_value = /*thing*/ ctx[2].name + "")) render_nodes[1].data = t_value;
 
 			if (dirty & /*foo*/ 2) {
 				const foo = /*foo*/ ctx[1];
