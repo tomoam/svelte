@@ -4,7 +4,7 @@ import Text from '../../nodes/Text';
 import Element from '../../nodes/Element';
 
 export default function(node: Text, renderer: Renderer, _options: RenderOptions) {
-	let text = node.data.replace(/[\t\n\r ]+/g, ' ');
+	let text = node.find_nearest_element('pre') ? node.data : node.data.replace(/[\t\n\r ]+/g, ' ');
 	if (
 		!node.parent ||
 		node.parent.type !== 'Element' ||
