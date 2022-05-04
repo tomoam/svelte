@@ -522,11 +522,17 @@ export default class Block {
 
 		this.wrappers.filter(node => node.template).forEach((node) => {
 			const make_renderer = /-/.test(node.node.name) ? '@make_custom_renderer' : '@make_renderer';
-			body.push(b`
+			const node_template = b`
 				const ${node.template_name} = ${make_renderer}(
 					${node.template}
 				)
-			`);
+			`;
+
+			if (this.type === 'child_dynamic_element') {
+				this.chunks.create.unshift(node_template);
+			} else {
+				body.push(node_template);
+			}
 
 			if (node.index_in_render_nodes_sequence > 1 || (node.index_in_render_nodes_sequence > 0 && this.renderer.options.hydratable)) {
 				node.node_path[node.node_path.length - 1] = node.node_path[node.node_path.length - 1] || 0 ;

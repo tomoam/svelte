@@ -50,11 +50,11 @@ export default class Wrapper {
 		// (TODO in dev only?)
 		Object.defineProperties(this, {
 			renderer: {
-				value: renderer,
+				value: renderer
 			},
 			parent: {
-				value: parent,
-			},
+				value: parent
+			}
 		});
 
 		this.can_use_innerhtml = true;
@@ -79,10 +79,8 @@ export default class Wrapper {
 	mark_as_on_traverse_path() {
 		this.is_on_traverse_path = true;
 
-		if (this.parent && !this.parent.is_on_traverse_path)
-			this.parent.mark_as_on_traverse_path();
-		if (this.prev && !this.prev.is_on_traverse_path)
-			this.prev.mark_as_on_traverse_path();
+		if (this.parent && !this.parent.is_on_traverse_path) this.parent.mark_as_on_traverse_path();
+		if (this.prev && !this.prev.is_on_traverse_path) this.prev.mark_as_on_traverse_path();
 	}
 
 	set_index_number(root_node: Wrapper) {
@@ -103,7 +101,7 @@ export default class Wrapper {
 			const path = use_in_fragment ? base : (base * -1);
 			this.root_node.node_path.push(path);
 		} else {
-			const path = use_in_fragment ? 0 : "";
+			const path = use_in_fragment ? 0 : '';
 			this.root_node.node_path.push(path);
 		}
 	}
@@ -119,7 +117,7 @@ export default class Wrapper {
 	get_claim_func_map_var(block: Block, if_create: boolean = true) {
 		if (!this.root_node.claim_func_map_var && if_create) {
 			this.root_node.claim_func_map_var =
-				block.get_unique_name("claim_func_var");
+				block.get_unique_name('claim_func_var');
 		}
 		return this.root_node.claim_func_map_var;
 	}
@@ -188,10 +186,10 @@ export default class Wrapper {
 		if (this.template_name && !((!this.parent || !this.parent.is_dom_node()) && !this.prev && !this.next)) {
 			const root = this.root_node;
 			const indexes = {
-				type: "ChainExpression",
+				type: 'ChainExpression',
 				get expression() {
 					return x`[${root.insert_indexes.toString()}]`;
-				},
+				}
 			} as any;
 
 			const statement = b`@insert_all(#target, ${this.render_nodes_var}, ${indexes}, #anchor);`;
@@ -213,10 +211,10 @@ export default class Wrapper {
 		if (this.template_name && !((!this.parent || !this.parent.is_dom_node()) && !this.prev && !this.next)) {
 			const root = this.root_node;
 			const indexes = {
-				type: "ChainExpression",
+				type: 'ChainExpression',
 				get expression() {
 					return x`[${root.detach_indexes.toString()}]`;
-				},
+				}
 			} as any;
 
 			const statements = [];
@@ -242,7 +240,7 @@ export default class Wrapper {
 			: !parent_node || !this.parent.is_dom_node();
 		const anchor = needs_anchor
 			? block.get_unique_name(`${this.var.name}_anchor`)
-			: (this.next && this.next.var) || { type: "Identifier", name: "null" };
+			: (this.next && this.next.var) || { type: 'Identifier', name: 'null' };
 
 		if (needs_anchor) {
 			block.add_element(
@@ -266,9 +264,9 @@ export default class Wrapper {
 
 	is_dom_node() {
 		return (
-			this.node.type === "Element" ||
-			this.node.type === "Text" ||
-			this.node.type === "MustacheTag"
+			this.node.type === 'Element' ||
+			this.node.type === 'Text' ||
+			this.node.type === 'MustacheTag'
 		);
 	}
 
@@ -277,6 +275,18 @@ export default class Wrapper {
 			return false;
 		}
 
+		return this.is_only_child_on_same_level();
+	}
+
+	is_only_child_in_svelte_element() {
+		if (this.parent && this.parent.node.name === 'svelte:element' && this.is_only_child_on_same_level()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	is_only_child_on_same_level() {
 		if (this.has_prev_except_debug() || this.has_next_except_debug()) {
 			return false;
 		}
@@ -309,6 +319,6 @@ export default class Wrapper {
 	}
 
 	render(_block: Block, _parent_node: Identifier, _parent_nodes: Identifier) {
-		throw Error("Wrapper class is not renderable");
+		throw Error('Wrapper class is not renderable');
 	}
 }

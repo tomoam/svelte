@@ -35,6 +35,7 @@ export default class Text extends Node {
 
 		if (parent_element.type === 'Head') return true;
 		if (parent_element.type === 'InlineComponent') return parent_element.children.length === 1 && this === parent_element.children[0];
+		if (parent_element.type === 'SlotTemplate') return this === parent_element.children[0] || this === parent_element.children[parent_element.children.length - 1];
 
 		// svg namespace exclusions
 		if (/svg$/.test(parent_element.namespace)) {

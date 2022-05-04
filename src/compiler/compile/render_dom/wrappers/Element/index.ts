@@ -23,6 +23,7 @@ import Action from '../../../nodes/Action';
 import is_dynamic from '../shared/is_dynamic';
 import create_debugging_comment from '../shared/create_debugging_comment';
 import { push_array } from '../../../../utils/push_array';
+import { set_index_number_to_fragment } from '../shared/set_index_number';
 
 interface BindingGroup {
 	events: string[];
@@ -281,6 +282,25 @@ export default class ElementWrapper extends Wrapper {
 			let ${this.var} = ${tag} && ${this.child_dynamic_element_block.name}(#ctx);
 		`);
 
+		const anchor = this.is_single_in_fragment() ? block.get_unique_name(`${this.var.name}_anchor`) : this.get_var();
+
+		if (this.is_single_in_fragment()) {
+			block.add_variable(anchor as Identifier, x`@comment()`);
+			block.chunks.mount.push(b`@insert(${parent_node || '#target'}, ${anchor}, #anchor);`);
+			block.chunks.destroy.push(b`if (detaching) @detach(${anchor});`);
+		} else {
+			block.add_statement(
+				this.var,
+				this.get_var(),
+				this.get_create_statement(parent_node),
+				undefined,
+				this.get_mount_statement(),
+				this.get_destroy_statement(),
+				parent_node,
+				this
+			);
+		}
+
 		block.chunks.create.push(b`
 			if (${this.var}) ${this.var}.c();
 		`);
@@ -292,10 +312,9 @@ export default class ElementWrapper extends Wrapper {
 		}
 
 		block.chunks.mount.push(b`
-			if (${this.var}) ${this.var}.m(${parent_node || '#target'}, ${parent_node ? 'null' : '#anchor'});
+			if (${this.var}) ${this.var}.m(${parent_node || '#target'}, ${anchor});
 		`);
 
-		const anchor = this.get_or_create_anchor(block, parent_node, parent_nodes);
 		const has_transitions = !!(this.node.intro || this.node.outro);
 		const not_equal = this.renderer.component.component_options.immutable ? x`@not_equal` : x`@safe_not_equal`;
 
@@ -447,7 +466,6 @@ export default class ElementWrapper extends Wrapper {
 			if (this.node.name === 'noscript') {
 				block.chunks.destroy.push(b`if (detaching && ${node}.parentNode) @detach(${node}); /* ${this.var.name} */`);
 			} else {
-				// if (this.is_single_in_fragment(parent_node) || (this.node.namespace && this.node.namespace !== namespaces.svg)) {
 				if (this.is_single_in_fragment() || (this.node.namespace && this.node.namespace !== namespaces.svg)) {
 					block.chunks.destroy.push(b`if (detaching) @detach(${node}); /* ${this.var.name} */`);
 				} else {
@@ -527,17 +545,19 @@ export default class ElementWrapper extends Wrapper {
 			this.push_to_node_path(false);
 		}
 
-		this.fragment.nodes.forEach((child) => {
-			child.set_index_number(root_node);
-		});
+		if (this.child_dynamic_element) {
+			set_index_number_to_fragment([this.child_dynamic_element], this.renderer, this.child_dynamic_element_block);
+		} else {
+			this.fragment.nodes.forEach((child) => {
+				child.set_index_number(root_node);
+			});
+		}
 	}
 
 	get_var() {
 		const { namespace } = this.node;
 		const is: AttributeWrapper = this.attributes.find(attr => attr.node.name === 'is') as any;
-		if (namespace && namespace !== namespaces.svg) {
-			return this.var;
-		} else if (is) {
+		if ((namespace && namespace !== namespaces.svg) || is) {
 			return this.var;
 		}
 
@@ -545,18 +565,13 @@ export default class ElementWrapper extends Wrapper {
 	}
 
 	get_render_statement(block: Block, parent_node: Identifier) {
-		const { name, namespace, tag_expr } = this.node;
+		const { name, namespace } = this.node;
 		const is: AttributeWrapper = this.attributes.find(attr => attr.node.name === 'is') as any;
 	
 		if (namespace && namespace !== namespaces.svg) {
 			return b`${this.var} = @_document.createElementNS("${namespace}", "${name}")`;
 		} else if (is) {
 			return b`${this.var} = @element_is("${name}", ${is.render_chunks(block).reduce((lhs, rhs) => x`${lhs} + ${rhs}`)})`;
-		}
-
-		if (this.node.is_dynamic_element) {
-			const reference = tag_expr.manipulate(block);
-			return x`@element(${reference})`;
 		}
 
 		return this.get_create_statement(parent_node);
@@ -1123,7 +1138,7 @@ export default class ElementWrapper extends Wrapper {
 				block.add_variable(cached_snippet, snippet);
 			}
 
-			const updater = b`@set_style(${this.var}, "${name}", ${should_cache ? cached_snippet : snippet}, false)`;
+			const updater = b`@set_style(${this.get_var()}, "${name}", ${should_cache ? cached_snippet : snippet}, false)`;
 
 			block.chunks.hydrate.push(updater);
 

@@ -71,6 +71,7 @@ export default class FragmentWrapper {
 		let last_child: Wrapper;
 		let window_wrapper;
 		const head_wrappers: Head[] = [];
+		const dynamic_element_wrappers: Element[] = [];
 		let body_wrapper;
 		const debugtag_wrappers: Array<{ wrapper: DebugTag, anchor: Wrapper }> = [];
 
@@ -165,6 +166,10 @@ export default class FragmentWrapper {
 					continue;
 				}
 
+				if (child.type === 'Element' && child.is_dynamic_element) {
+					dynamic_element_wrappers.push(wrapper);
+				}
+
 				this.nodes.unshift(wrapper);
 
 				link(last_child, last_child = wrapper);
@@ -192,6 +197,12 @@ export default class FragmentWrapper {
 		if (this.nodes.length > 0 && (!parent || !parent.node || (parent.node.type !== 'Element' && parent.node.type !== 'Head'))) {
 			create_template(this.nodes[0], this.nodes, renderer);
 		}
+
+		dynamic_element_wrappers.forEach(dew => {
+			dew.child_dynamic_element.node.tag_expr.node =
+				dew.child_dynamic_element.node.tag_expr.manipulate(dew.child_dynamic_element_block);
+			create_template(dew.child_dynamic_element, [dew.child_dynamic_element], dew.renderer);
+		});
 
 		if (debugtag_wrappers.length) {
 			debugtag_wrappers.forEach(dw => {

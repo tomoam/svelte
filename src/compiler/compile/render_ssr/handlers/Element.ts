@@ -17,6 +17,14 @@ export default function (node: Element, renderer: Renderer, options: RenderOptio
 
 	if (!options.hydratable && static_only && node.name === 'noscript') return;
 
+	if (static_only && node.is_dynamic_element) {
+		if (!node.rendered_as_comment) {
+			node.rendered_as_comment = true;
+			renderer.add_string('<!>');
+			return;
+		}
+	}
+
 	const children = remove_whitespace_children(node.children, node.next, options.preserveComments);
 
 	// awkward special case
@@ -69,13 +77,18 @@ export default function (node: Element, renderer: Renderer, options: RenderOptio
 						renderer.add_string(` ${attr_name}`);
 					}
 				} else if (attribute.is_static) {
-					renderer.add_string(` ${attr_name}="`);
-					attribute.chunks.forEach((chunk) => {
-						if (chunk.type === 'Text') {
-							renderer.add_string(chunk.data.replace(/"/g, '&quot;'));
-						}
-					});
-					renderer.add_string('"');
+					const name = attribute.name.toLowerCase();
+					if (name === 'value' && node.name.toLowerCase() === 'textarea') {
+						node_contents = get_attribute_value(attribute);
+					} else {
+						renderer.add_string(` ${attr_name}="`);
+						attribute.chunks.forEach((chunk) => {
+							if (chunk.type === 'Text') {
+								renderer.add_string(chunk.data.replace(/"/g, '&quot;'));
+							}
+						});
+						renderer.add_string('"');
+					}
 				}
 			}
 		});

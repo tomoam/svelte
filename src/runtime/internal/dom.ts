@@ -577,7 +577,7 @@ export function claim_html_tag(nodes, is_svg: boolean) {
 	const end_index = find_comment(nodes, 'HTML_TAG_END', start_index);
 	if (start_index === end_index) {
 		nodes.splice(start_index, start_index + 1);
-		return new HtmlTagHydration(undefined, is_svg);
+		return new HtmlTagHydration(is_svg);
 	}
 
 	init_claim_info(nodes);
@@ -589,7 +589,7 @@ export function claim_html_tag(nodes, is_svg: boolean) {
 		n.claim_order = nodes.claim_info.total_claimed;
 		nodes.claim_info.total_claimed += 1;
 	}
-	return new HtmlTagHydration(claimed_nodes, is_svg);
+	return new HtmlTagHydration(is_svg, claimed_nodes);
 }
 
 export function set_data(text, data) {
@@ -785,7 +785,7 @@ export class HtmlTagHydration extends HtmlTag {
 	// hydration claimed nodes
 	l: ChildNode[] | void;
 
-	constructor(claimed_nodes?: ChildNode[], is_svg: boolean = false) {
+	constructor(is_svg: boolean = false, claimed_nodes?: ChildNode[]) {
 		super(is_svg);
 		this.e = this.n = null;
 		this.l = claimed_nodes;

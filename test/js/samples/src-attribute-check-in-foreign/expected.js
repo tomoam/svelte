@@ -29,9 +29,9 @@ function create_fragment(ctx) {
 		},
 		l(nodes) {
 			this.c();
-			svg = claim_element(nodes, "svg", {});
+			svg = claim_element(nodes, "\"svg\"", {});
 			var svg_nodes = children(svg);
-			img = claim_element(svg_nodes, "img", { alt: true, src: true });
+			img = claim_element(svg_nodes, "\"img\"", { alt: true, src: true });
 			this.h();
 		},
 		h() {

@@ -60,7 +60,7 @@ export default class TextWrapper extends Wrapper {
 			);
 
 		} else {
-			
+
 			block.add_statement(
 				this.var,
 				this.get_var(),

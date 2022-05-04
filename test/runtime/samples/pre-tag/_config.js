@@ -25,12 +25,7 @@ export default {
 		);
 		assert.equal(
 			elementDiv.innerHTML,
-			`A
-  B
-  <span>C
-    D</span>
-  E
-  F`
+			'A B <span>C D</span> E F'
 		);
 		assert.equal(
 			elementDivWithPre.innerHTML,
