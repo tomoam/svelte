@@ -306,9 +306,20 @@ export default class ElementWrapper extends Wrapper {
 		`);
 
 		if (this.renderer.options.hydratable) {
-			block.chunks.claim.push(b`
-				if (${this.var}) ${this.var}.l(${parent_nodes});
-			`);
+			if (!parent_node && !this.prev && !this.next) {
+				block.chunks.claim.push(b`
+					if (${this.var}) ${this.var}.l(${parent_nodes});
+				`);
+			} else {
+				block.chunks.claim.push(b`
+					${this.get_claim_func_map_var(block)}.set(${this.index_in_render_nodes}, (n) => ${this.var}.l(n));
+				`);
+
+				const claim_statement = this.get_claim_statement(block, parent_node, parent_nodes);
+				if (claim_statement) {
+					block.chunks.claim.push(claim_statement);
+				}
+			}
 		}
 
 		block.chunks.mount.push(b`

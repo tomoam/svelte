@@ -1,3 +1,4 @@
+import { is_void } from './ssr';
 import { has_prop } from './utils';
 
 // Track which nodes are claimed during hydration. Unclaimed nodes can then be removed from the DOM
@@ -227,10 +228,17 @@ export function traverse_claim(ssr_nodes: ChildNode[], render_nodes: ChildNode[]
 
 		const render_node = render_nodes[i];
 
+		if (!render_node) {
+			continue;
+		}
+
 		if (render_node.nodeType === 1) {
 			if (!ssr_node) {
 				ssr_node = render_node;
 				insert_hydration(parent_node, ssr_node);
+			} else if ((ssr_node.nodeType != 1 || render_node.nodeName != ssr_node.nodeName) && is_void(render_node.nodeName.toLowerCase())) {
+					insert_hydration(parent_node, render_node, ssr_node);
+					ssr_node = render_node;
 			} else {
 				nodes[0] && nodes.shift();
 	
